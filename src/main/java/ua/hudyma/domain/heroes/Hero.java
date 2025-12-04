@@ -1,0 +1,68 @@
+package ua.hudyma.domain.heroes;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import ua.hudyma.domain.BaseEntity;
+import ua.hudyma.domain.Player;
+import ua.hudyma.domain.artifacts.enums.Artifact;
+import ua.hudyma.domain.heroes.enums.*;
+import ua.hudyma.util.FixedSize;
+import ua.hudyma.util.FixedSizeListDeserializer;
+import ua.hudyma.util.FixedSizeMap;
+import ua.hudyma.util.IdGenerator;
+
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@Entity
+@Table(name = "heroes")
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+public class Hero implements BaseEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String code;
+    private String name;
+    @Enumerated(EnumType.STRING)
+    private HeroFaction faction;
+    @Enumerated(EnumType.STRING)
+    private HeroSubfaction subfaction;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "primary_skill_map")
+    Map<PrimarySkill, Integer> primarySkillMap =
+            new FixedSizeMap<>(new HashMap<>(),4);
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "secondary_skill_map")
+    Map<SecondarySkill, SkillLevel> secondarySkillMap =
+            new FixedSizeMap<>(4, 8);
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "body_inventory_map")
+    Map<ArtifactSlot, List<Artifact>> bodyInventoryMap =
+            new EnumMap<>(ArtifactSlot.class);
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "misc_inventory_map")
+    Map<ArtifactSlot, Artifact> miscInventoryMap =
+            new FixedSizeMap<>(new HashMap<>(), 5);
+    @JsonDeserialize(using = FixedSizeListDeserializer.class)
+    @FixedSize(64)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "backpack_inventory_list")
+    List<Artifact> backpackInventoryList;
+
+    //todo implement army/creatures entities
+
+    @ManyToOne
+    @JoinColumn(name = "player_id")
+    private Player player;
+}
