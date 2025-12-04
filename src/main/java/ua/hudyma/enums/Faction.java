@@ -1,4 +1,4 @@
-package ua.hudyma.domain.heroes.enums;
+package ua.hudyma.enums;
 
 public enum Faction {
     CASTLE,

@@ -9,13 +9,12 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
-import ua.hudyma.domain.Player;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
-import ua.hudyma.util.IdGenerator;
 
 import java.util.EnumMap;
 import java.util.HashMap;

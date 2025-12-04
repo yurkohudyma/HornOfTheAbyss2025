@@ -1,4 +1,4 @@
-package ua.hudyma.domain;
+package ua.hudyma.domain.players;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;

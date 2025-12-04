@@ -5,12 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import ua.hudyma.domain.Player;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
-import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
-import ua.hudyma.util.MessageProcessor;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;

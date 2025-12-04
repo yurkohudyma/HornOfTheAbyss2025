@@ -2,11 +2,12 @@ package ua.hudyma.domain.heroes.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import ua.hudyma.enums.Faction;
 
 import java.util.EnumSet;
 
 import static ua.hudyma.domain.heroes.enums.HeroSubfaction.*;
-import static ua.hudyma.domain.heroes.enums.Faction.*;
+import static ua.hudyma.enums.Faction.*;
 import static java.util.EnumSet.of;
 
 @RequiredArgsConstructor

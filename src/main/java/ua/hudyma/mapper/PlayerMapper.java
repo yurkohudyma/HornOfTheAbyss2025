@@ -1,7 +1,7 @@
 package ua.hudyma.mapper;
 
 import org.springframework.stereotype.Component;
-import ua.hudyma.domain.Player;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 
