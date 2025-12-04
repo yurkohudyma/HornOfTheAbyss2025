@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/hota
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  application:
+    name: HotA2025
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        show_sql: false
+        jdbc:
+          batch_size: 50
+          batch_versioned_data: true
+        order_inserts: true
+        order_updates: true
+
+  mvc:
+    hiddenmethod:
+      filter:
+        enabled: true
+
+logging:
+  level:
+    org:
+      springframework:
+        web: DEBUG
+        web.servlet.DispatcherServlet: DEBUG
+        web.client.RestTemplate: INFO
+        web.HttpLogging: WARN
+        boot.context.config: DEBUG
+        data.repository.config.RepositoryConfigurationExtensionSupport: WARN
