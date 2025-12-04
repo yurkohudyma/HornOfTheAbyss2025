@@ -4,5 +4,6 @@ public enum CreaturePropertyType {
     INTEGER,
     STRING,
     FLOAT,
-    ENUM
+    ENUM,
+    BOOLEAN
 }

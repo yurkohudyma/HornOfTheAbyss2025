@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
+import ua.hudyma.domain.creatures.Creature;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.heroes.enums.*;
@@ -39,28 +41,29 @@ public class Hero implements BaseEntity {
     private HeroSubfaction subfaction;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "primary_skill_map")
-    Map<PrimarySkill, Integer> primarySkillMap =
+    private Map<PrimarySkill, Integer> primarySkillMap =
             new FixedSizeMap<>(new HashMap<>(),4);
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "secondary_skill_map")
-    Map<SecondarySkill, SkillLevel> secondarySkillMap =
+    private Map<SecondarySkill, SkillLevel> secondarySkillMap =
             new FixedSizeMap<>(4, 8);
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "body_inventory_map")
-    Map<ArtifactSlot, List<Artifact>> bodyInventoryMap =
+    private Map<ArtifactSlot, List<Artifact>> bodyInventoryMap =
             new EnumMap<>(ArtifactSlot.class);
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "misc_inventory_map")
-    Map<ArtifactSlot, Artifact> miscInventoryMap =
+    private Map<ArtifactSlot, Artifact> miscInventoryMap =
             new FixedSizeMap<>(new HashMap<>(), 5);
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(64)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "backpack_inventory_list")
-    List<Artifact> backpackInventoryList;
-
-    //todo implement army/creatures entities
-
+    private List<Artifact> backpackInventoryList;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "army_map")
+    private Map<CreatureType, Integer> armyMap = new FixedSizeMap<>(
+            new HashMap<>(), 7);
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;

@@ -28,7 +28,8 @@ public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
                 hero.getSecondarySkillMap(),
                 hero.getBodyInventoryMap(),
                 hero.getMiscInventoryMap(),
-                hero.getBackpackInventoryList()
+                hero.getBackpackInventoryList(),
+                hero.getArmyMap()
         );
     }
 

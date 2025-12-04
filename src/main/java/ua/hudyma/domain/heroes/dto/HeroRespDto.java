@@ -1,6 +1,7 @@
 package ua.hudyma.domain.heroes.dto;
 
 import ua.hudyma.domain.artifacts.enums.Artifact;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.heroes.enums.*;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public record HeroRespDto(
         Map<SecondarySkill, SkillLevel> secondarySkillMap,
         Map<ArtifactSlot, List<Artifact>> bodyInventoryMap,
         Map<ArtifactSlot, Artifact> miscInventoryMap,
-        List<Artifact> backpackInventoryList
+        List<Artifact> backpackInventoryList,
+        Map<CreatureType, Integer> armyMap
 ) {
 }

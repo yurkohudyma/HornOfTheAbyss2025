@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
+import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.repository.HeroRepository;
 
@@ -21,6 +23,7 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 public class HeroService {
     private final HeroMapper heroMapper;
     private final HeroRepository heroRepository;
+    private final Integer ARMY_SLOT_MAX_QTY = 7;
 
     @SneakyThrows
     @Transactional
@@ -42,4 +45,35 @@ public class HeroService {
                         heroCode,
                         EntityNotFoundException::new));
     }
+
+    @Transactional
+    public String reinforceArmy(ReinforceReqDto dto) {
+        var hero = getHero(dto.heroCode());
+        var heroCurrentArmyMap = hero.getArmyMap();
+        var requestedArmyMap = dto.armyMap();
+        if (heroCurrentArmyMap == null) {
+            hero.setArmyMap(requestedArmyMap);
+        }
+        else if (ARMY_SLOT_MAX_QTY - heroCurrentArmyMap.size() <
+                 requestedArmyMap.size()){
+            throw new
+                    ArmyFreeSlotOverflowException("Current "+ hero.getName() +
+                    "'s army HAS no vacant slots");
+        }
+        else {
+            hero.getArmyMap().putAll(requestedArmyMap);
+        }
+        return String.format("%s's army has been reinforced with %d units", hero.getName(), requestedArmyMap.size());
+    }
+
+    //todo cannot add identical key to map, therefore
+    /*"ARCHANGEL": 1,
+            "ARCHDEVIL": 2,
+            "ARCHANGEL": 3,
+            "ARCHDEVIL": 4,
+            "ARCHANGEL": 5*/
+    //would not be saved
+
+    //todo переробити на List<CreatureSlot>, така собі ідея....
+    // todo Але можна тулити однакові юніти
 }

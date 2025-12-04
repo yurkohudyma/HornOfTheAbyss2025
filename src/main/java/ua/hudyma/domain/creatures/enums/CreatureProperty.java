@@ -5,5 +5,6 @@ public enum CreatureProperty {
     HATES,
     SPELL,
     MORAL,
-    LUCK
+    LUCK,
+    NO_RETALIATION
 }
