@@ -11,6 +11,7 @@ import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.heroes.enums.*;
@@ -60,10 +61,11 @@ public class Hero implements BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "backpack_inventory_list")
     private List<Artifact> backpackInventoryList;
+    @JsonDeserialize(using = FixedSizeListDeserializer.class)
+    @FixedSize(7)
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "json", name = "army_map")
-    private Map<CreatureType, Integer> armyMap = new FixedSizeMap<>(
-            new HashMap<>(), 7);
+    @Column(columnDefinition = "json", name = "army_slot_list")
+    private List<CreatureSlot> armyList;
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;

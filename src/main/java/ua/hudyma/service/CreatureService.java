@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.creatures.Creature;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.mapper.CreatureMapper;
@@ -31,6 +32,12 @@ public class CreatureService {
     public CreatureRespDto fetchCreature(Long id) {
         return creatureMapper.toDto(getCreature(id));
 
+    }
+
+    public Creature fetchCreatureByType(CreatureType type) {
+        return creatureRepository.findByCreatureType(type)
+                .orElseThrow(getExceptionSupplier(Creature.class, type,
+                EntityNotFoundException::new));
     }
 
     private Creature getCreature(Long id) {

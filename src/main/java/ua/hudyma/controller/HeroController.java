@@ -25,8 +25,5 @@ public class HeroController {
         return ResponseEntity.ok(heroService
                 .fetchHero(code));
     }
-    @PostMapping("/reinforce")
-    public ResponseEntity<String> addArmyCreatures (@RequestBody ReinforceReqDto dto){
-        return ResponseEntity.ok(heroService.reinforceArmy(dto));
-    }
+
 }

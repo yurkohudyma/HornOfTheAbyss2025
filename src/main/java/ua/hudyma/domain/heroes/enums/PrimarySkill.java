@@ -1,8 +1,15 @@
 package ua.hudyma.domain.heroes.enums;
 
-public enum PrimarySkill {
+import ua.hudyma.domain.creatures.BaseCreatureSkill;
+
+public enum PrimarySkill implements BaseCreatureSkill {
     ATTACK,
     DEFENSE,
     POWER,
-    KNOWLEDGE
+    KNOWLEDGE;
+
+    @Override
+    public String getCode() {
+        return name();
+    }
 }

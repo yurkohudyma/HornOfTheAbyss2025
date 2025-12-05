@@ -1,11 +1,10 @@
 package ua.hudyma.domain.heroes.dto;
 
-import ua.hudyma.domain.creatures.Creature;
-import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 
-import java.util.Map;
+import java.util.List;
 
 public record ReinforceReqDto(
         String heroCode,
-        Map<CreatureType, Integer> armyMap
+        List<CreatureSlot> armyList
 ) {}

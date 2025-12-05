@@ -12,6 +12,28 @@ import static java.time.LocalDateTime.now;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(EnumMappingErrorException.class)
+    public ResponseEntity<ErrorResponse> EnumMappingErrorException(
+            EnumMappingErrorException ex) {
+        var error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ArmyFreeSlotOverflowException.class)
+    public ResponseEntity<ErrorResponse> ArmyFreeSlotOverflowException(
+            ArmyFreeSlotOverflowException ex) {
+        var error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorResponse> EntityNotFoundException(
             EntityNotFoundException ex) {
@@ -48,7 +70,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         var error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Unexpected error: " + ex.getMessage(),
+                "What the fuck?!? " + ex.getMessage(),
                 now()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);

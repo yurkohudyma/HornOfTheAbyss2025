@@ -3,6 +3,8 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.creatures.Creature;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.service.CreatureService;
@@ -26,4 +28,13 @@ public class CreatureController {
         return ResponseEntity.ok(creatureService
                 .fetchCreature(id));
     }
+
+    @GetMapping("/by")
+    public ResponseEntity<Creature> fetchCreatureByType
+            (@RequestParam CreatureType type){
+        return ResponseEntity.ok(creatureService
+                .fetchCreatureByType(type));
+    }
+
+
 }

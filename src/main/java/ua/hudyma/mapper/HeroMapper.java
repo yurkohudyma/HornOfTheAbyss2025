@@ -1,13 +1,11 @@
 package ua.hudyma.mapper;
 
-import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.service.PlayerService;
-import ua.hudyma.util.IdGenerator;
 
 import static ua.hudyma.util.IdGenerator.generateId;
 
@@ -29,7 +27,7 @@ public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
                 hero.getBodyInventoryMap(),
                 hero.getMiscInventoryMap(),
                 hero.getBackpackInventoryList(),
-                hero.getArmyMap()
+                hero.getArmyList()
         );
     }
 
