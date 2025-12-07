@@ -14,6 +14,4 @@ public class CreatureSlot {
     private CreatureType type;
     private Integer quantity;
     private Map<ModifiableSkill, ModifiableData> modifiableDataMap;
-
-
 }

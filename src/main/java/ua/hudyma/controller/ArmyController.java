@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
+import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.service.ArmyService;
 import ua.hudyma.service.CreatureService;
@@ -51,5 +52,11 @@ public class ArmyController {
     public ResponseEntity<String> compressArmy (
             @RequestParam String heroId){
         return ResponseEntity.ok(armyService.compressArmy(heroId));
+    }
+    @PatchMapping("/split")
+    public ResponseEntity<String> splitArmy (
+            @RequestBody SplitReqDto dto){
+        return ResponseEntity.ok(armyService
+                .splitSlot(dto));
     }
 }

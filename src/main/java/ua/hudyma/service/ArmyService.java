@@ -9,6 +9,7 @@ import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.ModifiableData;
+import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
@@ -18,9 +19,10 @@ import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.exception.EnumMappingErrorException;
 import ua.hudyma.mapper.EnumMapper;
 import ua.hudyma.repository.HeroRepository;
+import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -55,40 +57,6 @@ public class ArmyService {
         return " :::: Army successfully compressed in " + iterations + " merge operations";
     }
 
-
-    /*@Transactional
-    public String compressArmy(String heroId) {
-        var army = heroService.getHero(heroId).getArmyList();
-
-        int iterations = 0;
-        while (armyContainsDuplicateSlot(army)) {
-            for (int i = 0; i < army.size() - 1; i++) {
-                var slotA = army.get(i);
-                var slotB = army.get(i + 1);
-                if (slotA.getType().equals(slotB.getType())){
-                    mergeSlot(slotA, slotB, army);
-                    iterations++;
-                }
-            }
-        }
-        return " :::: Army successfully compressed in " + iterations + " iterations";
-    }
-
-    private static boolean armyContainsDuplicateSlot(List<CreatureSlot> army) {
-        return army
-                .stream()
-                .map(CreatureSlot::getType)
-                .collect(Collectors.toSet())
-                .size() != army.size();
-    }
-
-    private void mergeSlot(CreatureSlot slotA, CreatureSlot slotB, List<CreatureSlot> army) {
-        slotA.setQuantity(slotB.getQuantity() + slotA.getQuantity());
-        var slotBId = slotB.getSlotId();
-        army.remove(slotB);
-        log.info(" :::: Slot {} of {} merged with slot {}", slotA.getSlotId(), slotA.getType(), slotBId);
-    }*/
-
     @Transactional
     public String deleteArmy(String heroId) {
         var hero = heroService.getHero(heroId);
@@ -111,7 +79,6 @@ public class ArmyService {
         return "Slot [" + slotId + "] of " + deletableSlot.getType() +
                 " SUCC deleted from " + hero.getName() + "'s army";
     }
-
 
     @Transactional
     public String reinforceArmy(ReinforceReqDto dto) {
@@ -137,6 +104,35 @@ public class ArmyService {
                 hero.getName(), requestedArmyList.size());
     }
 
+    @Transactional
+    public String splitSlot(SplitReqDto dto) {
+        var requestedQuantity = dto.splitQuantity();
+        var hero = heroService.getHero(dto.heroId());
+        var army = hero.getArmyList();
+        if (army.size() == ARMY_SLOT_MAX_QTY) throw new ArmyFreeSlotOverflowException
+                ("Split FAILED, no free slots");
+        var slot = army
+                .stream()
+                .filter(slott -> slott.getSlotId()
+                        .equals(dto.slotId()))
+                .findAny()
+                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
+                        dto.slotId(), EntityNotFoundException::new));
+        var currentQuantity = slot.getQuantity();
+        if (currentQuantity <= requestedQuantity) {
+            throw new ArmyFreeSlotOverflowException
+                    ("Split IMPOSSIBLE: current quantity is LESS or EQUAL than REQUESTED");
+        }
+        int difference = currentQuantity - requestedQuantity;
+        var newSlot = new CreatureSlot();
+        newSlot.setModifiableDataMap(slot.getModifiableDataMap());
+        newSlot.setQuantity(requestedQuantity);
+        army.add(newSlot);
+        slot.setQuantity(difference);
+        return "Slot " + dto.slotId() + " has been SUCC split to " +
+                difference + " and " + requestedQuantity;
+    }
+
     public List<CreatureSlot> viewArmy(String heroId) {
         return heroService.getHero(heroId).getArmyList();
     }
@@ -156,11 +152,11 @@ public class ArmyService {
                                         .map(skill, CreatureSkill.class)
                                         .orElseThrow(() -> new EnumMappingErrorException
                                                 ("Error mapping to " +
-                                                CreatureSkill.class.getSimpleName())))
+                                                        CreatureSkill.class.getSimpleName())))
                                 .get(0);
                         modifiableMap.put(skill, new ModifiableData(
                                         regularSkillValue.value(),
-                                getModifiedValue(hero, skill, regularSkillValue)
+                                        getModifiedValue(hero, skill, regularSkillValue)
                                 )
                         );
                     }
@@ -173,7 +169,7 @@ public class ArmyService {
     private static int getModifiedValue(Hero hero,
                                         ModifiableSkill skill,
                                         CreatureSkillValue regularSkillValue) {
-        var heroPrimarySkill= getPrimarySkill(skill);
+        var heroPrimarySkill = getPrimarySkill(skill);
         var modifiedValue = heroPrimarySkill.isPresent() ? hero.getPrimarySkillMap()
                 .get(heroPrimarySkill.get()) : 0;
         return regularSkillValue.value() + modifiedValue;
@@ -182,6 +178,4 @@ public class ArmyService {
     private static Optional<PrimarySkill> getPrimarySkill(ModifiableSkill skill) {
         return EnumMapper.map(skill, PrimarySkill.class);
     }
-
-    //todo implement compressing units
 }
