@@ -11,7 +11,6 @@ import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.ModifiableData;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
-import ua.hudyma.domain.creatures.enums.CastleCreatureType;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
@@ -182,76 +181,71 @@ public class ArmyService {
         var donorArmy = donor.getArmyList();
         if (donorArmy.size() == 1 && donorArmy.get(0).getQuantity() == 1)
             throw new IllegalArgumentException("Hero cannot transfer minimal unit size");
-        //var lowestLevelCreatureType = discoverLowestLevelCreatureType(donorArmy);
-        //var lowestLevelCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelCreatureType);
-        var lowestLevelCreatureSlot = donorArmy.get(0);
-        mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot);
+        var lowestLevelCreatureType = discoverLowestLevelCreatureType(donorArmy);
+        var lowestLevelCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelCreatureType);
+        //var lowestLevelCreatureSlot = donorArmy.get(0);
+        mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot, acceptorArmyFreeSlotsNumber);
         return acceptor.getName() + "'s army has been resupplied from " + donor.getName();
     }
 
     private static void mergeArmies(List<CreatureSlot> donorArmy,
                                     List<CreatureSlot> acceptorArmy,
-                                    CreatureSlot lowestLevelCreatureSlot) {
+                                    CreatureSlot lowestLevelCreatureSlot,
+                                    int acceptorArmyFreeSlotsNumber) {
         var donorArmyAfterMergeList = new ArrayList<CreatureSlot>();
-        for (int i = 0; i < donorArmy.size(); i++) {
+        for (int i = 0; i < donorArmy.size() && i < acceptorArmyFreeSlotsNumber; i++) {
             var acceptorSlot = acceptorArmy.get(i);
             var donorSlot = donorArmy.get(i);
-            if (acceptorSlot != null && donorSlot.getType()
-                    .equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
-                int minimalUnitSize;
+            if (donorSlot.getType().equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
                 if (donorSlot.getSlotId()
                         .equals(lowestLevelCreatureSlot.getSlotId())) { //якщо це слот з мінімальним рівнем істоти
-                    minimalUnitSize = 1;
                     acceptorSlot.setQuantity(acceptorSlot.getQuantity()
-                            + donorSlot.getQuantity() - minimalUnitSize);
-                    donorSlot.setQuantity(minimalUnitSize);
+                            + donorSlot.getQuantity() - 1);
+                    donorSlot.setQuantity(1);
                     donorArmyAfterMergeList.add(donorSlot);
                 }
-            } else if (acceptorSlot == null) { //якщо слот отримувача порожній, то просто копіюємо
-                acceptorArmy.set(i, donorSlot);
+            } else { //істоти в слотах різні, просто "переносимо" істоти донора до отримувача
+                var newSlot = new CreatureSlot();
+                newSlot.setQuantity(donorSlot.getQuantity() - 1);
+                newSlot.setType(donorSlot.getType());
+                newSlot.setModifiableDataMap(donorSlot.getModifiableDataMap());
+                acceptorArmy.add(newSlot);
+                //todo так само залишаємо юніт з 1 істоти
+                donorSlot.setQuantity(1);
+                donorArmyAfterMergeList.add(donorSlot);
             }
         }
         donorArmy.clear();
         donorArmy.addAll(donorArmyAfterMergeList);
-        //todo поточно від донора слот повністю видаляється
-        //todo в отримувача не з'являється
-        //todo мінімально допустимий механізм не працює.
-    }
-
-    private static CreatureSlot getSlotByCreatureType(
-            List<CreatureSlot> army, CreatureType type) {
-        return army
-                .stream()
-                .filter(s -> s.getType()
-                        .equals(type))
-                .findFirst()
-                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
-                        type, EntityNotFoundException::new));
     }
 
     private static CreatureType discoverLowestLevelCreatureType(
             List<CreatureSlot> armyList) {
         return armyList
                 .stream()
-                .filter(slot -> slot
-                        .getType()
-                        .getLevel()
-                        .equals(findMinimumCreatureLevel(slot.getType())))
+                .filter(slot -> getLevelCreatureTypeMap(
+                        slot.getType()).containsValue(slot.getType()))
                 .map(CreatureSlot::getType)
-                .findAny()
+                .findFirst()
                 .orElseThrow(
                         () -> new IllegalArgumentException
                                 ("Cannot find minimal Level Creature"));
     }
 
-    private static Integer findMinimumCreatureLevel(CreatureType type) {
-        var creatureType = CreatureTypeRegistry.fromCode(type.getCode());
-        var enumsConstants = CastleCreatureType.values();
-        /*return Arrays.stream(enumsConstants)
-                .filter(e -> {
-                    IntStream.of(e.getLevel()).boxed().reduce(Integer::min);
-                };*/
-        return 1;
+    //todo Сформулювати задачу:
+    //1) знайти серед наявних істот у армії донора істоту з найменшим рівнем (якщо таких кілька - першу з них)
+	//2) витягнути слот з такою істотою (якщо кілька - взяти першу)
+	//3) при ітерації через армію донора такий слот при передачі отримувачу скоригувати на 1 одиницю, яка має залишитись донору.
+    //4) все!*/
+
+    @SuppressWarnings("unchecked")
+    private static Map<IntStream, CreatureType> getLevelCreatureTypeMap(
+            CreatureType type) {
+        var enumm = CreatureTypeRegistry
+                .findEnumClassByChildName(type,
+                        CreatureType.class);
+        return CreatureTypeRegistry
+                .convertEnumToLevelMap((Class) enumm);
     }
 
     public List<CreatureSlot> viewArmy(String heroId) {
@@ -302,5 +296,16 @@ public class ArmyService {
 
     private static Optional<PrimarySkill> getPrimarySkill(ModifiableSkill skill) {
         return EnumMapper.map(skill, PrimarySkill.class);
+    }
+
+    private static CreatureSlot getSlotByCreatureType(
+            List<CreatureSlot> army, CreatureType type) {
+        return army
+                .stream()
+                .filter(s -> s.getType()
+                        .equals(type))
+                .findFirst()
+                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
+                        type, EntityNotFoundException::new));
     }
 }
