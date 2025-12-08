@@ -5,7 +5,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
-import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.service.HeroService;
 
 @RestController

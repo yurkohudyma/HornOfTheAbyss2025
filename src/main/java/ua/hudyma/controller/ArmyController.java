@@ -5,10 +5,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
+import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.service.ArmyService;
-import ua.hudyma.service.CreatureService;
-import ua.hudyma.service.HeroService;
 
 import java.util.List;
 
@@ -16,8 +15,6 @@ import java.util.List;
 @RequestMapping("/army")
 @RequiredArgsConstructor
 public class ArmyController {
-    private final HeroService heroService;
-    private final CreatureService creatureService;
     private final ArmyService armyService;
 
     @PostMapping("/reinforce")
@@ -42,10 +39,16 @@ public class ArmyController {
                 .deleteArmy(heroId));
     }
 
-    @GetMapping
+    @GetMapping("/full")
     public ResponseEntity<List<CreatureSlot>> viewArmy (
             @RequestParam String heroId){
         return ResponseEntity.ok(armyService.viewArmy(heroId));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<CreatureSlotRespDto>> viewArmyShort (
+            @RequestParam String heroId){
+        return ResponseEntity.ok(armyService.viewArmyShort(heroId));
     }
 
     @GetMapping("/compress")
@@ -58,5 +61,12 @@ public class ArmyController {
             @RequestBody SplitReqDto dto){
         return ResponseEntity.ok(armyService
                 .splitSlot(dto));
+    }
+
+    @PatchMapping("/distribute")
+    public ResponseEntity<String> distributeSlot (
+            @RequestBody SplitReqDto dto){
+        return ResponseEntity.ok(armyService
+                .splitAndDistribute(dto));
     }
 }

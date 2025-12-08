@@ -13,15 +13,18 @@ import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.exception.EnumMappingErrorException;
+import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -31,7 +34,7 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 @Log4j2
 public class ArmyService {
     private final HeroService heroService;
-    private final HeroRepository heroRepository;
+    private final ArmyMapper armyMapper;
     private final CreatureService creatureService;
     private final Integer ARMY_SLOT_MAX_QTY = 7;
 
@@ -68,16 +71,38 @@ public class ArmyService {
     public String deleteArmySlot(String slotId, String heroId) {
         var hero = heroService.getHero(heroId);
         var army = hero.getArmyList();
-        var deletableSlot = army.stream()
-                .filter(slot -> slot.getSlotId().equals(slotId))
-                .findFirst()
-                .orElseThrow(getExceptionSupplier(
-                        CreatureSlot.class,
-                        slotId,
-                        EntityNotFoundException::new));
+        CreatureSlot deletableSlot = getSlot(army, slotId);
         army.remove(deletableSlot);
         return "Slot [" + slotId + "] of " + deletableSlot.getType() +
                 " SUCC deleted from " + hero.getName() + "'s army";
+    }
+
+    @Transactional
+    public String splitAndDistribute(SplitReqDto dto) {
+        var slotId = dto.slotId();
+        var heroId = dto.heroId();
+        var hero = heroService.getHero(heroId);
+        var army = hero.getArmyList();
+        var slot = getSlot(army, slotId);
+        var freeSlotsCount = ARMY_SLOT_MAX_QTY - army.size();
+        if (freeSlotsCount == 0) throw new ArmyFreeSlotOverflowException("No free Slots for Splitting");
+        var slotQuantity = slot.getQuantity();
+        var distributionNumber = slotQuantity / freeSlotsCount;
+        var remainder = slotQuantity % freeSlotsCount;
+        IntStream.range(0, freeSlotsCount)
+                .mapToObj(i -> {
+                    var newSlot = new CreatureSlot();
+                    newSlot.setType(slot.getType());
+                    newSlot.setQuantity(distributionNumber);
+                    newSlot.setModifiableDataMap(slot.getModifiableDataMap());
+                    return newSlot;
+                })
+                .forEach(army::add);
+        slot.setQuantity(distributionNumber + remainder);
+        return "Slot has been distributed in " + freeSlotsCount + " slots by elements "
+                + distributionNumber + " with remainder " + remainder;
+        //todo redistribute remainder evenly by slots (avoid 100 = 20 + 6 x 16)
+        //todo must be 16,16,16,17,17,17,17
     }
 
     @Transactional
@@ -111,13 +136,7 @@ public class ArmyService {
         var army = hero.getArmyList();
         if (army.size() == ARMY_SLOT_MAX_QTY) throw new ArmyFreeSlotOverflowException
                 ("Split FAILED, no free slots");
-        var slot = army
-                .stream()
-                .filter(slott -> slott.getSlotId()
-                        .equals(dto.slotId()))
-                .findAny()
-                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
-                        dto.slotId(), EntityNotFoundException::new));
+        var slot = getSlot(army, dto.slotId());
         var currentQuantity = slot.getQuantity();
         if (currentQuantity <= requestedQuantity) {
             throw new ArmyFreeSlotOverflowException
@@ -133,8 +152,22 @@ public class ArmyService {
                 difference + " and " + requestedQuantity;
     }
 
+    private static CreatureSlot getSlot(List<CreatureSlot> army, String dto) {
+        return army
+                .stream()
+                .filter(s -> s.getSlotId()
+                        .equals(dto))
+                .findFirst()
+                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
+                        dto, EntityNotFoundException::new));
+    }
+
     public List<CreatureSlot> viewArmy(String heroId) {
         return heroService.getHero(heroId).getArmyList();
+    }
+
+    public List<CreatureSlotRespDto> viewArmyShort(String heroId) {
+        return armyMapper.toDtoList(viewArmy(heroId));
     }
 
     private List<CreatureSlot> upgradeArmySkillToHero(
