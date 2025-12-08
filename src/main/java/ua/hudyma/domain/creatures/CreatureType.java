@@ -8,4 +8,5 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 )
 public interface CreatureType {
     String getCode();
+    Integer getLevel();
 }

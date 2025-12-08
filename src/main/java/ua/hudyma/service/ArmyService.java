@@ -6,10 +6,12 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.ModifiableData;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
+import ua.hudyma.domain.creatures.enums.CastleCreatureType;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
@@ -20,12 +22,9 @@ import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.exception.EnumMappingErrorException;
 import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
-import ua.hudyma.repository.HeroRepository;
-import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -78,6 +77,16 @@ public class ArmyService {
     }
 
     @Transactional
+    public String exchangeArmies(String donorId, String acceptorId) {
+        var donor = heroService.getHero(donorId);
+        var acceptor = heroService.getHero(acceptorId);
+        var bufferArmy = acceptor.getArmyList();
+        acceptor.setArmyList(donor.getArmyList());
+        donor.setArmyList(bufferArmy);
+        return "Armies have been swapped";
+    }
+
+    @Transactional
     public String splitAndDistribute(SplitReqDto dto) {
         var slotId = dto.slotId();
         var heroId = dto.heroId();
@@ -87,7 +96,7 @@ public class ArmyService {
         var freeSlotsCount = ARMY_SLOT_MAX_QTY - army.size();
         if (freeSlotsCount == 0) throw new ArmyFreeSlotOverflowException("No free Slots for Splitting");
         var slotQuantity = slot.getQuantity();
-        var distributionNumber = slotQuantity / freeSlotsCount;
+        var distributionNumber = slotQuantity / ++freeSlotsCount;
         var remainder = slotQuantity % freeSlotsCount;
         IntStream.range(0, freeSlotsCount)
                 .mapToObj(i -> {
@@ -101,8 +110,8 @@ public class ArmyService {
         slot.setQuantity(distributionNumber + remainder);
         return "Slot has been distributed in " + freeSlotsCount + " slots by elements "
                 + distributionNumber + " with remainder " + remainder;
-        //todo redistribute remainder evenly by slots (avoid 100 = 20 + 6 x 16)
-        //todo must be 16,16,16,17,17,17,17
+        //todo redistribute remainder evenly by slots (avoid 100 = 16 + 6 x 14)
+        //todo must be 15,15,14,14,14,14,14
     }
 
     @Transactional
@@ -119,8 +128,9 @@ public class ArmyService {
             if (freeSlotsNumber <
                     requestedArmyList.size()) {
                 throw new
-                        ArmyFreeSlotOverflowException("Requested reinforcent comprises of " + reqArmyList.size() +
-                        " unit(s), while " + hero.getName() + " has " + freeSlotsNumber + " vacant slots");
+                        ArmyFreeSlotOverflowException("Requested reinforcent comprises of "
+                        + reqArmyList.size() + " unit(s), while " + hero.getName() + " has "
+                        + freeSlotsNumber + " vacant slots");
             } else {
                 currentArmyList.addAll(requestedArmyList);
             }
@@ -160,6 +170,88 @@ public class ArmyService {
                 .findFirst()
                 .orElseThrow(getExceptionSupplier(CreatureSlot.class,
                         dto, EntityNotFoundException::new));
+    }
+
+    @Transactional
+    public String transferArmy(String donorId, String acceptorId) {
+        var acceptor = heroService.getHero(acceptorId);
+        var acceptorArmy = acceptor.getArmyList();
+        var acceptorArmyFreeSlotsNumber = ARMY_SLOT_MAX_QTY - acceptorArmy.size();
+        if (acceptorArmyFreeSlotsNumber == 0) throw new ArmyFreeSlotOverflowException("Acceptor has no freeSlots");
+        var donor = heroService.getHero(donorId);
+        var donorArmy = donor.getArmyList();
+        if (donorArmy.size() == 1 && donorArmy.get(0).getQuantity() == 1)
+            throw new IllegalArgumentException("Hero cannot transfer minimal unit size");
+        //var lowestLevelCreatureType = discoverLowestLevelCreatureType(donorArmy);
+        //var lowestLevelCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelCreatureType);
+        var lowestLevelCreatureSlot = donorArmy.get(0);
+        mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot);
+        return acceptor.getName() + "'s army has been resupplied from " + donor.getName();
+    }
+
+    private static void mergeArmies(List<CreatureSlot> donorArmy,
+                                    List<CreatureSlot> acceptorArmy,
+                                    CreatureSlot lowestLevelCreatureSlot) {
+        var donorArmyAfterMergeList = new ArrayList<CreatureSlot>();
+        for (int i = 0; i < donorArmy.size(); i++) {
+            var acceptorSlot = acceptorArmy.get(i);
+            var donorSlot = donorArmy.get(i);
+            if (acceptorSlot != null && donorSlot.getType()
+                    .equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
+                int minimalUnitSize;
+                if (donorSlot.getSlotId()
+                        .equals(lowestLevelCreatureSlot.getSlotId())) { //якщо це слот з мінімальним рівнем істоти
+                    minimalUnitSize = 1;
+                    acceptorSlot.setQuantity(acceptorSlot.getQuantity()
+                            + donorSlot.getQuantity() - minimalUnitSize);
+                    donorSlot.setQuantity(minimalUnitSize);
+                    donorArmyAfterMergeList.add(donorSlot);
+                }
+            } else if (acceptorSlot == null) { //якщо слот отримувача порожній, то просто копіюємо
+                acceptorArmy.set(i, donorSlot);
+            }
+        }
+        donorArmy.clear();
+        donorArmy.addAll(donorArmyAfterMergeList);
+        //todo поточно від донора слот повністю видаляється
+        //todo в отримувача не з'являється
+        //todo мінімально допустимий механізм не працює.
+    }
+
+    private static CreatureSlot getSlotByCreatureType(
+            List<CreatureSlot> army, CreatureType type) {
+        return army
+                .stream()
+                .filter(s -> s.getType()
+                        .equals(type))
+                .findFirst()
+                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
+                        type, EntityNotFoundException::new));
+    }
+
+    private static CreatureType discoverLowestLevelCreatureType(
+            List<CreatureSlot> armyList) {
+        return armyList
+                .stream()
+                .filter(slot -> slot
+                        .getType()
+                        .getLevel()
+                        .equals(findMinimumCreatureLevel(slot.getType())))
+                .map(CreatureSlot::getType)
+                .findAny()
+                .orElseThrow(
+                        () -> new IllegalArgumentException
+                                ("Cannot find minimal Level Creature"));
+    }
+
+    private static Integer findMinimumCreatureLevel(CreatureType type) {
+        var creatureType = CreatureTypeRegistry.fromCode(type.getCode());
+        var enumsConstants = CastleCreatureType.values();
+        /*return Arrays.stream(enumsConstants)
+                .filter(e -> {
+                    IntStream.of(e.getLevel()).boxed().reduce(Integer::min);
+                };*/
+        return 1;
     }
 
     public List<CreatureSlot> viewArmy(String heroId) {

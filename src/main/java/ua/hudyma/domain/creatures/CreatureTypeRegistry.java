@@ -6,7 +6,8 @@ import ua.hudyma.domain.creatures.enums.InfernoCreatureType;
 import java.util.List;
 
 public class CreatureTypeRegistry {
-    private static final List<Class<? extends CreatureType>> ENUM_TYPES = List.of(
+    private static final List<Class<? extends CreatureType>> ENUM_TYPES =
+            List.of(
             CastleCreatureType.class,
             InfernoCreatureType.class
     );

@@ -18,7 +18,7 @@ public class ArmyController {
     private final ArmyService armyService;
 
     @PostMapping("/reinforce")
-    public ResponseEntity<String> addArmyCreatures (
+    public ResponseEntity<String> reinforceArmy (
             @RequestBody ReinforceReqDto dto){
         return ResponseEntity.ok(armyService
                 .reinforceArmy(dto));
@@ -42,19 +42,23 @@ public class ArmyController {
     @GetMapping("/full")
     public ResponseEntity<List<CreatureSlot>> viewArmy (
             @RequestParam String heroId){
-        return ResponseEntity.ok(armyService.viewArmy(heroId));
+        return ResponseEntity.ok(armyService
+                .viewArmy(heroId));
     }
 
     @GetMapping
-    public ResponseEntity<List<CreatureSlotRespDto>> viewArmyShort (
+    public ResponseEntity<List<CreatureSlotRespDto>>
+    viewArmyShort (
             @RequestParam String heroId){
-        return ResponseEntity.ok(armyService.viewArmyShort(heroId));
+        return ResponseEntity.ok(armyService
+                .viewArmyShort(heroId));
     }
 
     @GetMapping("/compress")
     public ResponseEntity<String> compressArmy (
             @RequestParam String heroId){
-        return ResponseEntity.ok(armyService.compressArmy(heroId));
+        return ResponseEntity.ok(armyService
+                .compressArmy(heroId));
     }
     @PatchMapping("/split")
     public ResponseEntity<String> splitArmy (
@@ -68,5 +72,19 @@ public class ArmyController {
             @RequestBody SplitReqDto dto){
         return ResponseEntity.ok(armyService
                 .splitAndDistribute(dto));
+    }
+    @PatchMapping("/exchange")
+    public ResponseEntity<String> exchangeArmies (
+            @RequestParam String hero1Id,
+            @RequestParam String hero2Id){
+        return ResponseEntity.ok(armyService
+                .exchangeArmies(hero1Id, hero2Id));
+    }
+    @PatchMapping("/transfer")
+    public ResponseEntity<String> transferArmy (
+            @RequestParam String hero1Id,
+            @RequestParam String hero2Id){
+        return ResponseEntity.ok(armyService
+                .transferArmy(hero1Id, hero2Id));
     }
 }
