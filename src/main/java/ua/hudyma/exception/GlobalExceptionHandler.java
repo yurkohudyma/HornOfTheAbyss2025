@@ -12,6 +12,19 @@ import static java.time.LocalDateTime.now;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+
+
+    @ExceptionHandler(MinimalUnitOperationException.class)
+    public ResponseEntity<ErrorResponse> MinimalUnitOperationException(
+            MinimalUnitOperationException ex) {
+        var error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),
+                now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(EnumMappingErrorException.class)
     public ResponseEntity<ErrorResponse> EnumMappingErrorException(
             EnumMappingErrorException ex) {

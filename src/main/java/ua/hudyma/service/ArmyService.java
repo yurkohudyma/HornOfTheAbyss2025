@@ -20,6 +20,7 @@ import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.exception.EnumMappingErrorException;
+import ua.hudyma.exception.MinimalUnitOperationException;
 import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
 
@@ -63,7 +64,15 @@ public class ArmyService {
     @Transactional
     public String deleteArmy(String heroId) {
         var hero = heroService.getHero(heroId);
-        hero.getArmyList().clear();
+        var armyList = hero.getArmyList();
+        if (armyContainsMinimalSizeUnit(armyList))
+            throw new MinimalUnitOperationException
+                    ("Trying to remove minimal unit size");
+        var lowestcreatureType = getLowestCreature(armyList);
+        var lowestSlot = getSlotByCreatureType(armyList, lowestcreatureType);
+        armyList.clear();
+        lowestSlot.setQuantity(1);
+        armyList.add(lowestSlot);
         return hero.getName() + "'s army HAS BEEN demolished";
     }
 
@@ -91,7 +100,9 @@ public class ArmyService {
         var hero = heroService.getHero(heroId);
         var heroArmy = hero.getArmyList();
         return discoverLowestLevelCreatureType(heroArmy);
-        //todo видає lowest creature лише для істот свого замку
+    }
+    public CreatureType getLowestCreature(List<CreatureSlot> armyList) {
+        return discoverLowestLevelCreatureType(armyList);
     }
 
     @Transactional
@@ -189,23 +200,37 @@ public class ArmyService {
             throw new ArmyFreeSlotOverflowException("Acceptor has no freeSlots");
         var donor = heroService.getHero(donorId);
         var donorArmy = donor.getArmyList();
-        if (donorArmy.size() == 1 && donorArmy.get(0).getQuantity() == 1)
-            throw new IllegalArgumentException("Hero cannot transfer minimal unit size");
+        if (armyContainsMinimalSizeUnit(donorArmy))
+            throw new MinimalUnitOperationException("Hero cannot transfer minimal unit size");
         var lowestLevelCreatureType = discoverLowestLevelCreatureType(donorArmy);
         var lowestLevelCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelCreatureType);
-        mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot, acceptorArmyFreeSlotsNumber);
+        mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot, acceptorArmyFreeSlotsNumber, donorId);
         return acceptor.getName() + "'s army has been resupplied from " + donor.getName();
     }
 
-    private static void mergeArmies(List<CreatureSlot> donorArmy,
+    private static boolean armyContainsMinimalSizeUnit(List<CreatureSlot> donorArmy) {
+        return donorArmy.size() == 1 && donorArmy.get(0).getQuantity() == 1;
+    }
+
+    private void mergeArmies(List<CreatureSlot> donorArmy,
                                     List<CreatureSlot> acceptorArmy,
                                     CreatureSlot lowestLevelCreatureSlot,
-                                    int acceptorArmyFreeSlotsNumber) {
+                                    int acceptorArmyFreeSlotsNumber,
+                             String donorId) {
         var donorArmyAfterMergeList = new ArrayList<CreatureSlot>();
         for (int i = 0; i < donorArmy.size() && i < acceptorArmyFreeSlotsNumber; i++) {
-            var acceptorSlot = acceptorArmy.get(i);
+            compressArmy(donorId);
+            CreatureSlot acceptorSlot;
+            try {
+                acceptorSlot = acceptorArmy.get(i);
+            } catch (IndexOutOfBoundsException e) {
+                log.error("::Acceptor slot is NULL");
+                acceptorSlot = null;
+            }
             var donorSlot = donorArmy.get(i);
-            if (donorSlot.getType().equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
+            if (acceptorSlot != null && donorSlot
+                    .getType()
+                    .equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
                 if (donorSlot.getSlotId()
                         .equals(lowestLevelCreatureSlot.getSlotId())) { //якщо це слот з мінімальним рівнем істоти
                     acceptorSlot.setQuantity(acceptorSlot.getQuantity()
@@ -213,7 +238,7 @@ public class ArmyService {
                     donorSlot.setQuantity(1);
                     donorArmyAfterMergeList.add(donorSlot);
                 }
-            } else { //істоти в слотах різні, просто "переносимо" істоти донора до отримувача
+            } else { //істоти в слотах різні, або у отримувача порожній слот. Просто "переносимо" істоти донора до отримувача
                 var newSlot = new CreatureSlot();
                 newSlot.setQuantity(donorSlot.getQuantity() - 1);
                 newSlot.setType(donorSlot.getType());
@@ -226,15 +251,16 @@ public class ArmyService {
         }
         donorArmy.clear();
         donorArmy.addAll(donorArmyAfterMergeList);
-        //todo працює неправильно. Якщо в донора є 1 воїн 7 рівня і багато 1 рівня
-        //todo то він передає перший рівень так, наче 7 нема
-        //todo якщо є 2 юніта (1 і 7 рівня), то передає обидва
-        // із залишком для донора
+        //todo працює неправильно.
+        //todo донор (арх 1 + піхота 500 + арх 500) ==> отримувач (
     }
 
     private static CreatureType discoverLowestLevelCreatureType(
             List<CreatureSlot> armyList) {
         var allLowestCreatureMap = new HashMap<CreatureType, Integer>();
+
+        //todo отримуємо мапу констант з енумів всіх істот типу з рівнем і агрегуємо
+        // всіх виявлених у армії у загальну мапу
         armyList
                 .forEach(slot -> {
                         var levelCreatureMap = getLevelCreatureTypeMap(slot.getType());
@@ -243,6 +269,8 @@ public class ArmyService {
                                 .filter(v -> v.getValue().equals(slot.getType()))
                                 .forEach(k -> allLowestCreatureMap.put(k.getValue(), k.getKey()));
                         });
+        //todo сортуємо цю мапу по значенню (яка тут вже LEVEL) і беремо перший-ліпший тип істоти.
+        // Тобто видасть випадкове значення, яке буде першим у values(), навіть якщо це не є factionwise
         return allLowestCreatureMap
                 .entrySet()
                 .stream()
@@ -251,17 +279,7 @@ public class ArmyService {
                 .findAny()
                 .orElseThrow(() -> new IllegalArgumentException
                         ("Cannot find minimal Level Creature"));
-
-        //todo для кожної істоти вираховується найпростіший тип істоти
-        //todo якщо істот декілька, то буде наданий результат по останньому елементі в лісті
-        //todo потрібно це пофіксити
     }
-
-    //todo Сформулювати задачу:
-    //1) знайти серед наявних істот у армії донора істоту з найменшим рівнем (якщо таких кілька - першу з них)
-	//2) витягнути слот з такою істотою (якщо кілька - взяти першу)
-	//3) при ітерації через армію донора такий слот при передачі отримувачу скоригувати на 1 одиницю, яка має залишитись донору.
-    //4) все!*/
 
     @SuppressWarnings("unchecked")
     private static Map<Integer, CreatureType> getLevelCreatureTypeMap(

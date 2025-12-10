@@ -60,7 +60,7 @@ public class CreatureTypeRegistry {
     }
 
     /**
-     * Метод створює мапу: enum -> список строкових значень його полів.
+     * Метод створює мапу: enum -> список рядкових значень його полів.
      *
      * @param enumClass enum-клас, що реалізує CreatureType
      * @param <T>       тип enum-класу
