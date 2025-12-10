@@ -3,6 +3,7 @@ package ua.hudyma.service;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.CreatureType;
@@ -23,6 +24,7 @@ import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -83,6 +85,13 @@ public class ArmyService {
         acceptor.setArmyList(donor.getArmyList());
         donor.setArmyList(bufferArmy);
         return "Armies have been swapped";
+    }
+
+    public CreatureType getLowestCreature(String heroId) {
+        var hero = heroService.getHero(heroId);
+        var heroArmy = hero.getArmyList();
+        return discoverLowestLevelCreatureType(heroArmy);
+        //todo видає lowest creature лише для істот свого замку
     }
 
     @Transactional
@@ -176,14 +185,14 @@ public class ArmyService {
         var acceptor = heroService.getHero(acceptorId);
         var acceptorArmy = acceptor.getArmyList();
         var acceptorArmyFreeSlotsNumber = ARMY_SLOT_MAX_QTY - acceptorArmy.size();
-        if (acceptorArmyFreeSlotsNumber == 0) throw new ArmyFreeSlotOverflowException("Acceptor has no freeSlots");
+        if (acceptorArmyFreeSlotsNumber == 0)
+            throw new ArmyFreeSlotOverflowException("Acceptor has no freeSlots");
         var donor = heroService.getHero(donorId);
         var donorArmy = donor.getArmyList();
         if (donorArmy.size() == 1 && donorArmy.get(0).getQuantity() == 1)
             throw new IllegalArgumentException("Hero cannot transfer minimal unit size");
         var lowestLevelCreatureType = discoverLowestLevelCreatureType(donorArmy);
         var lowestLevelCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelCreatureType);
-        //var lowestLevelCreatureSlot = donorArmy.get(0);
         mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot, acceptorArmyFreeSlotsNumber);
         return acceptor.getName() + "'s army has been resupplied from " + donor.getName();
     }
@@ -217,19 +226,35 @@ public class ArmyService {
         }
         donorArmy.clear();
         donorArmy.addAll(donorArmyAfterMergeList);
+        //todo працює неправильно. Якщо в донора є 1 воїн 7 рівня і багато 1 рівня
+        //todo то він передає перший рівень так, наче 7 нема
+        //todo якщо є 2 юніта (1 і 7 рівня), то передає обидва
+        // із залишком для донора
     }
 
     private static CreatureType discoverLowestLevelCreatureType(
             List<CreatureSlot> armyList) {
-        return armyList
+        var allLowestCreatureMap = new HashMap<CreatureType, Integer>();
+        armyList
+                .forEach(slot -> {
+                        var levelCreatureMap = getLevelCreatureTypeMap(slot.getType());
+                        levelCreatureMap.entrySet()
+                                .stream()
+                                .filter(v -> v.getValue().equals(slot.getType()))
+                                .forEach(k -> allLowestCreatureMap.put(k.getValue(), k.getKey()));
+                        });
+        return allLowestCreatureMap
+                .entrySet()
                 .stream()
-                .filter(slot -> getLevelCreatureTypeMap(
-                        slot.getType()).containsValue(slot.getType()))
-                .map(CreatureSlot::getType)
-                .findFirst()
-                .orElseThrow(
-                        () -> new IllegalArgumentException
-                                ("Cannot find minimal Level Creature"));
+                .sorted(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException
+                        ("Cannot find minimal Level Creature"));
+
+        //todo для кожної істоти вираховується найпростіший тип істоти
+        //todo якщо істот декілька, то буде наданий результат по останньому елементі в лісті
+        //todo потрібно це пофіксити
     }
 
     //todo Сформулювати задачу:
@@ -239,7 +264,7 @@ public class ArmyService {
     //4) все!*/
 
     @SuppressWarnings("unchecked")
-    private static Map<IntStream, CreatureType> getLevelCreatureTypeMap(
+    private static Map<Integer, CreatureType> getLevelCreatureTypeMap(
             CreatureType type) {
         var enumm = CreatureTypeRegistry
                 .findEnumClassByChildName(type,

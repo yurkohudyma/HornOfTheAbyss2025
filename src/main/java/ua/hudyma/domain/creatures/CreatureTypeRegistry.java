@@ -8,7 +8,7 @@ import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toMap;
 
 public class CreatureTypeRegistry {
-    private final static Reflections reflections;
+    private static final Reflections reflections;
 
     private static final Set<Class<? extends CreatureType>> ENUM_TYPES;
 
@@ -77,23 +77,4 @@ public class CreatureTypeRegistry {
                         LinkedHashMap::new
                 ));
     }
-
-
 }
-
-
-/* private static final List<Class<? extends CreatureType>> ENUM_TYPES =
-             List.of(
-             CastleCreatureType.class,
-             InfernoCreatureType.class
-     );
-
-     public static CreatureType fromCode(String code) {
-         for (Class<? extends CreatureType> type : ENUM_TYPES) {
-             if (type.isEnum()) {
-                 CreatureType result = enumFromCode(type, code);
-                 if (result != null) return result;
-             }
-         }
-         throw new IllegalArgumentException("Unknown CreatureType code: " + code);
-     }*/

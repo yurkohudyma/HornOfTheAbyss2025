@@ -3,6 +3,7 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
@@ -86,5 +87,11 @@ public class ArmyController {
             @RequestParam String hero2Id){
         return ResponseEntity.ok(armyService
                 .transferArmy(hero1Id, hero2Id));
+    }
+
+    @GetMapping("lowestCreature")
+    public ResponseEntity<CreatureType> getLowestLevelCreature (
+            @RequestParam String heroId){
+        return ResponseEntity.ok(armyService.getLowestCreature(heroId));
     }
 }
