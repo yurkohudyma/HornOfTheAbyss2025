@@ -9,7 +9,6 @@ import static java.util.stream.Collectors.toMap;
 
 public class CreatureTypeRegistry {
     private static final Reflections reflections;
-
     private static final Set<Class<? extends CreatureType>> ENUM_TYPES;
 
     static {

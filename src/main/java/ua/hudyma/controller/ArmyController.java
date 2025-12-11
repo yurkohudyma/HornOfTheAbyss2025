@@ -92,6 +92,7 @@ public class ArmyController {
     @GetMapping("lowestCreature")
     public ResponseEntity<CreatureType> getLowestLevelCreature (
             @RequestParam String heroId){
-        return ResponseEntity.ok(armyService.getLowestCreature(heroId));
+        return ResponseEntity.ok(armyService
+                .getLowestCreature(heroId));
     }
 }
