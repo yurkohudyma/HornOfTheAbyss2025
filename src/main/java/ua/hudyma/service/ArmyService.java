@@ -37,7 +37,7 @@ public class ArmyService {
     private final HeroService heroService;
     private final ArmyMapper armyMapper;
     private final CreatureService creatureService;
-    private final Integer ARMY_SLOT_MAX_QTY = 7;
+    private static final Integer ARMY_SLOT_MAX_QTY = 7;
 
     @Transactional
     public String compressArmy(String heroId) {
@@ -113,7 +113,8 @@ public class ArmyService {
         var army = hero.getArmyList();
         var slot = getSlot(army, slotId);
         var freeSlotsCount = ARMY_SLOT_MAX_QTY - army.size();
-        if (freeSlotsCount == 0) throw new ArmyFreeSlotOverflowException("No free Slots for Splitting");
+        if (freeSlotsCount == 0) throw new ArmyFreeSlotOverflowException
+                ("No free Slots for Splitting");
         var slotQuantity = slot.getQuantity();
         var distributionNumber = slotQuantity / ++freeSlotsCount;
         var remainder = slotQuantity % freeSlotsCount;
@@ -202,9 +203,9 @@ public class ArmyService {
         var donorArmy = donor.getArmyList();
         if (armyContainsMinimalSizeUnit(donorArmy))
             throw new MinimalUnitOperationException("Hero cannot transfer minimal unit size");
-        var lowestLevelCreatureType = discoverLowestLevelCreatureType(donorArmy);
-        var lowestLevelCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelCreatureType);
-        mergeArmies(donorArmy, acceptorArmy, lowestLevelCreatureSlot, acceptorArmyFreeSlotsNumber, donorId);
+        var lowestLevelDonorCreatureType = discoverLowestLevelCreatureType(donorArmy);
+        var lowestLevelDonorCreatureSlot = getSlotByCreatureType(donorArmy, lowestLevelDonorCreatureType);
+        mergeArmies(donorArmy, acceptorArmy, lowestLevelDonorCreatureSlot, acceptorArmyFreeSlotsNumber, donorId);
         return acceptor.getName() + "'s army has been resupplied from " + donor.getName();
     }
 
@@ -214,7 +215,7 @@ public class ArmyService {
 
     private void mergeArmies(List<CreatureSlot> donorArmy,
                                     List<CreatureSlot> acceptorArmy,
-                                    CreatureSlot lowestLevelCreatureSlot,
+                                    CreatureSlot lowestLevelDonorCreatureSlot,
                                     int acceptorArmyFreeSlotsNumber,
                              String donorId) {
         var donorArmyAfterMergeList = new ArrayList<CreatureSlot>();
@@ -228,31 +229,41 @@ public class ArmyService {
                 acceptorSlot = null;
             }
             var donorSlot = donorArmy.get(i);
-            if (acceptorSlot != null && donorSlot
-                    .getType()
+            if (acceptorSlot != null && donorSlot.getType()
                     .equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
                 if (donorSlot.getSlotId()
-                        .equals(lowestLevelCreatureSlot.getSlotId())) { //якщо це слот з мінімальним рівнем істоти
-                    acceptorSlot.setQuantity(acceptorSlot.getQuantity()
-                            + donorSlot.getQuantity() - 1);
+                        .equals(lowestLevelDonorCreatureSlot.getSlotId())) { //todo слот з мінімальним рівнем істоти
+                    //todo - lowestLevelDonorCreatureSlot - вибирається перший-ліпший слот із істотою найнижчого із
+                    //todo доступних в армії істот рівня
+                    acceptorSlot.setQuantity(acceptorSlot.getQuantity() //todo переписати донорський слот до отримувача
+                            + donorSlot.getQuantity() - 1); //todo за винятком одного мінімально обов'язкового юніта
+                    donorSlot.setQuantity(1); //todo донорський слот із найслабшою істотою зменшуємо до мінімуму
+                    donorArmyAfterMergeList.add(donorSlot); //todo додаємо до нової мапи істот донора,
+                                                            //todo щоб не було дірок у слотах
+                }
+                else { //todo слот НЕ з мінімальним рівнем істоти
+                    //todo тоді просто переписати з одного слота в інший
+                    acceptorSlot.setQuantity(acceptorSlot.getQuantity() + donorSlot.getQuantity());
+                }
+            } else { //todo у отримувача порожній слот АБО істоти в слотах різні
+                var newSlot = new CreatureSlot();
+                newSlot.setType(donorSlot.getType());
+                newSlot.setModifiableDataMap(donorSlot.getModifiableDataMap());
+                if (donorSlot.getSlotId()
+                        .equals(lowestLevelDonorCreatureSlot.getSlotId())) { //todo слот з мінімальним рівнем істоти
+                    newSlot.setQuantity(donorSlot.getQuantity() - 1);
+                    acceptorArmy.add(newSlot);
                     donorSlot.setQuantity(1);
                     donorArmyAfterMergeList.add(donorSlot);
                 }
-            } else { //істоти в слотах різні, або у отримувача порожній слот. Просто "переносимо" істоти донора до отримувача
-                var newSlot = new CreatureSlot();
-                newSlot.setQuantity(donorSlot.getQuantity() - 1);
-                newSlot.setType(donorSlot.getType());
-                newSlot.setModifiableDataMap(donorSlot.getModifiableDataMap());
-                acceptorArmy.add(newSlot);
-                //todo так само залишаємо юніт з 1 істоти
-                donorSlot.setQuantity(1);
-                donorArmyAfterMergeList.add(donorSlot);
+                else { //todo слот з іншим рівнем істоти -> просто переносимо без мінімального юніта
+                    newSlot.setQuantity(donorSlot.getQuantity());
+                    acceptorArmy.add(newSlot);
+                }
             }
         }
-        donorArmy.clear();
+        donorArmy.clear(); //todo каже шиша, що це зайва процедура, оскільки ArrayList після remove перезбирає новий ліст сам
         donorArmy.addAll(donorArmyAfterMergeList);
-        //todo працює неправильно.
-        //todo донор (арх 1 + піхота 500 + арх 500) ==> отримувач (
     }
 
     private static CreatureType discoverLowestLevelCreatureType(
@@ -303,7 +314,8 @@ public class ArmyService {
             List<CreatureSlot> armyList,
             Hero hero) {
         armyList.forEach(armyslot -> {
-                    var modifiableMap = new HashMap<ModifiableSkill, ModifiableData>();
+                    var modifiableMap = new EnumMap<ModifiableSkill, ModifiableData>
+                            (ModifiableSkill.class);
                     var skillEnums = ModifiableSkill.values();
                     var regularCreatureSkillMap =
                             creatureService.fetchCreatureByType(armyslot.getType())
