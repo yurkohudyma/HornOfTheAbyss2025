@@ -21,7 +21,9 @@ public class TownService {
     @SneakyThrows
     public String createTown(TownReqDto dto){
         var town = townMapper.toEntity(dto);
-        GrailBuildingType grailBuilding = BuildingType.grailBuilding;
-        return MessageProcessor.getReturnMessage(town, "name");
+        GrailBuildingType grailBuilding = BuildingType
+                .grailBuilding;
+        return MessageProcessor
+                .getReturnMessage(town, "name");
     }
 }

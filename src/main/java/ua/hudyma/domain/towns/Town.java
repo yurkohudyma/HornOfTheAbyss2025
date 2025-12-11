@@ -7,6 +7,7 @@ import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.towns.enums.BuildingType;
+import ua.hudyma.domain.towns.enums.CastleBuildingConfig;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 import java.util.List;
@@ -29,4 +30,6 @@ public class Town implements BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "creatures")
     private List<CreatureType> creatureTypeList;
+    private BuildingType buildingConfig = new CastleBuildingConfig();
+
 }
