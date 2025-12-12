@@ -68,6 +68,13 @@
       <version>0.10.2</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.hypersistence</groupId>
+      <artifactId>hypersistence-utils-hibernate-62</artifactId>
+      <version>3.5.0</version>
+      <!-- import io.hypersistence.utils.hibernate.type.json.JsonType; -->
+    </dependency>
+
   </dependencies>
 
   <dependencyManagement>

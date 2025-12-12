@@ -3,6 +3,7 @@ package ua.hudyma.domain.players;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.ToString;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.util.FixedSize;
@@ -21,7 +22,9 @@ public class Player {
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(8)
     @OneToMany(mappedBy = "player")
+    @ToString.Exclude
     private List<Hero> heroList;
     @OneToMany(mappedBy = "player")
+    @ToString.Exclude
     private List<Town> townsList;
 }

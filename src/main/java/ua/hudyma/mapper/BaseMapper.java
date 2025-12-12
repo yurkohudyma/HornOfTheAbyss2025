@@ -1,5 +1,7 @@
 package ua.hudyma.mapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.util.List;
 import java.util.function.Function;
 

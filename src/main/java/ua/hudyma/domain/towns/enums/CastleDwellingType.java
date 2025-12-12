@@ -1,5 +1,6 @@
 package ua.hudyma.domain.towns.enums;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.enums.CastleCreatureType;
@@ -20,5 +21,10 @@ public enum CastleDwellingType implements DwellingType {
     @Override
     public String getCode() {
         return name();
+    }
+
+    @Override
+    public String getCreature() {
+        return creature.name();
     }
 }

@@ -9,5 +9,7 @@ public enum Faction {
     DUNGEON,
     STRONGHOLD,
     FORTRESS,
-    CONFLUX
+    CONFLUX,
+    COVE,
+    FACTORY
 }

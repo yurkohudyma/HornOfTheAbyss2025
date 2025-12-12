@@ -1,8 +1,11 @@
-package ua.hudyma.domain.towns.enums;
+package ua.hudyma.domain.towns.config;
 
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import ua.hudyma.domain.towns.AbstractBuildingConfig;
+import lombok.NoArgsConstructor;
+import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
+import ua.hudyma.domain.towns.enums.*;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -13,7 +16,8 @@ import static ua.hudyma.domain.towns.enums.HordeBuildingType.GRIFFIN_BASTION;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class CastleBuildingConfig extends AbstractBuildingConfig implements InitialBuildingConfig {
+@NoArgsConstructor
+public non-sealed class CastleBuildingConfig extends AbstractBuildingConfig implements InitialBuildingConfig {
     protected HallType hall = InitialBuildingConfig.hall;
     protected FortificationType fortification =
             InitialBuildingConfig.fortification;
@@ -22,6 +26,7 @@ public class CastleBuildingConfig extends AbstractBuildingConfig implements Init
             .noneOf(CommonBuildingType.class);
     protected List<HordeBuildingType> hordeBuildingList = new ArrayList<>(
             List.of(GRIFFIN_BASTION));
+    @Transient
     protected GrailBuildingType grailBuilding = GrailBuildingType.COLOSSUS;
 
 
