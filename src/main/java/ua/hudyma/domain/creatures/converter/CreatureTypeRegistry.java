@@ -1,6 +1,7 @@
-package ua.hudyma.domain.creatures;
+package ua.hudyma.domain.creatures.converter;
 
 import org.reflections.Reflections;
+import ua.hudyma.domain.creatures.CreatureType;
 
 import java.util.*;
 

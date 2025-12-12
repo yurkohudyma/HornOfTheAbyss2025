@@ -7,19 +7,24 @@ import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 
-import java.util.List;
-
 @Component
 public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
     @Override
     public TownRespDto toDto(Town town) {
         var townConfig = (CastleBuildingConfig) town.getBuildingConfig();
-        townConfig.setHall(HallType.CAPITOL);
-        var commonBuildingList = townConfig.commonBuildingList;
+        var commonBuildingList = townConfig
+                .commonBuildingList;
         commonBuildingList.add(CommonBuildingType.BLACKSMITH);
-        townConfig.setFortification(FortificationType.NONE);
-        townConfig.setShipyard(Shipyard.NONE);
-        return new TownRespDto();
+        return new TownRespDto(
+                town.getPlayer().getName(),
+                town.getName(),
+                town.getAlignment(),
+                town.getFaction(),
+                town.getDwellingTypeList(),
+                town.getGarrisonArmy(),
+                townConfig.commonBuildingList,
+                townConfig.getInitialConstantList()
+        );
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.Data;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.towns.Town;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 
@@ -21,4 +22,6 @@ public class Player {
     @FixedSize(8)
     @OneToMany(mappedBy = "player")
     private List<Hero> heroList;
+    @OneToMany(mappedBy = "player")
+    private List<Town> townsList;
 }

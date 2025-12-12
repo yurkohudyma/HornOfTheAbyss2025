@@ -1,7 +1,8 @@
-package ua.hudyma.domain.creatures;
+package ua.hudyma.domain.creatures.converter;
 
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.KeyDeserializer;
+import ua.hudyma.domain.creatures.CreatureType;
 
 import java.io.IOException;
 

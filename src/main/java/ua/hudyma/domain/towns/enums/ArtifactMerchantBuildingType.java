@@ -1,5 +1,5 @@
 package ua.hudyma.domain.towns.enums;
 
-public enum ArtifactMerchantBuildingType implements BuildingType{
+public enum ArtifactMerchantBuildingType implements InitialBuildingConfig {
 
 }

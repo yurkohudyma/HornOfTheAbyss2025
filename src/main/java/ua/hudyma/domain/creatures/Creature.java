@@ -5,7 +5,7 @@ import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
-import ua.hudyma.domain.CreatureTypeConverter;
+import ua.hudyma.domain.creatures.converter.CreatureTypeConverter;
 import ua.hudyma.domain.creatures.dto.CreaturePropertyValue;
 import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.enums.CreatureProperty;
