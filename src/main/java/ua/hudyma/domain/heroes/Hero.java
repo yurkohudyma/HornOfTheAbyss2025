@@ -9,12 +9,11 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
-import ua.hudyma.domain.creatures.Creature;
-import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.heroes.enums.*;
+import ua.hudyma.domain.towns.Town;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
@@ -69,4 +68,10 @@ public class Hero implements BaseEntity {
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
+    @OneToOne(mappedBy = "visitingHero")
+    private Town visitingTown;
+    //todo add to dto
+    @OneToOne(mappedBy = "garrisonHero")
+    private Town garrisonTown;
+    //todo add to dto
 }

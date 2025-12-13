@@ -7,5 +7,6 @@ public enum CreatureProperty {
     SPELL,
     MORAL,
     LUCK,
-    NO_RETALIATION
+    NO_RETALIATION,
+    ATTACKS_TWICE
 }

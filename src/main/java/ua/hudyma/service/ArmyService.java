@@ -308,7 +308,7 @@ public class ArmyService {
         return armyMapper.toDtoList(viewArmy(heroId));
     }
 
-    private List<CreatureSlot> upgradeArmySkillToHero(
+    public List<CreatureSlot> upgradeArmySkillToHero(
             List<CreatureSlot> armyList,
             Hero hero) {
         armyList.forEach(armyslot -> {

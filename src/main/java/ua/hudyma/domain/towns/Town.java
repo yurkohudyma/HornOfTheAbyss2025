@@ -10,6 +10,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
+import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.enums.DwellingType;
@@ -27,7 +28,14 @@ public class Town implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String name;
+    @OneToOne
+    @JoinColumn(name = "visitor_hero_id")
+    private Hero visitingHero;
+    @OneToOne
+    @JoinColumn(name = "garrison_hero_id")
+    private Hero garrisonHero;
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;

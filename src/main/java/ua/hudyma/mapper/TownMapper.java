@@ -1,17 +1,15 @@
 package ua.hudyma.mapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
+import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.config.CastleBuildingConfig;
 import ua.hudyma.domain.towns.config.InfernoBuildingConfig;
-import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.TownReqDto;
-import ua.hudyma.domain.towns.enums.*;
+import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.service.PlayerService;
@@ -24,16 +22,23 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
 
     @Override
     public TownRespDto toDto(Town town) {
-        var townConfig = (CastleBuildingConfig) town.getBuildingConfig();
+        var townConfig = town.getBuildingConfig();
+        var visitingHero = town.getVisitingHero();
+        var garrisonHero = town.getGarrisonHero();
         return new TownRespDto(
                 town.getPlayer().getName(),
                 town.getName(),
                 town.getAlignment(),
                 town.getFaction(),
+                visitingHero != null ? visitingHero.getName() : "NA",
+                garrisonHero != null ? garrisonHero.getName() : "NA",
                 town.getDwellingTypeList(),
                 town.getGarrisonArmy(),
                 townConfig.commonBuildingList,
-                townConfig.getInitialConstantList()
+                townConfig.getHordeBuildingList(),
+                townConfig.uniqueBuildingList,
+                townConfig.getGrailBuilding()
+                //townConfig.initialBuildingList
         );
     }
 

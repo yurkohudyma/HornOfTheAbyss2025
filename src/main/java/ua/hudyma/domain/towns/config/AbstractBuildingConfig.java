@@ -22,4 +22,6 @@ public abstract sealed class AbstractBuildingConfig
     public List<CommonBuildingType> commonBuildingList;
     public List<ArtifactMerchantBuildingType> artifactMerchantBuildingList;
     public List<HordeBuildingType> hordeBuildingList;
+    public List<UniqueBuildingType> uniqueBuildingList;
+    public GrailBuildingType grailBuilding;
 }

@@ -10,6 +10,8 @@ public class DwellingTypeRegistry {
     private static final Reflections reflections;
     private static final Set<Class<? extends DwellingType>> ENUM_TYPES;
 
+    private DwellingTypeRegistry (){}
+
     static {
         reflections = new Reflections("ua.hudyma.domain.towns.enums");
         ENUM_TYPES = reflections.getSubTypesOf(DwellingType.class);
@@ -47,9 +49,11 @@ public class DwellingTypeRegistry {
     @SuppressWarnings("unchecked")
     public static <B> Class<? extends Enum<?>> findEnumClassByChildName(
             DwellingType type, Class<B> baseInterface) {
-        Set<Class<? extends B>> subtypes = reflections.getSubTypesOf(baseInterface);
+        Set<Class<? extends B>> subtypes = reflections
+                .getSubTypesOf(baseInterface);
         for (Class<? extends B> subtype : subtypes) {
-            if (subtype.isEnum() && Arrays.asList(subtype.getEnumConstants()).contains(type)) {
+            if (subtype.isEnum() && Arrays.asList(subtype
+                    .getEnumConstants()).contains(type)) {
                 return (Class<? extends Enum<?>>) subtype;
             }
         }

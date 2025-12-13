@@ -9,7 +9,8 @@ public enum CreatureSkill implements BaseCreatureSkill {
     DAMAGE,
     SPEED,
     GROWTH,
-    SIZE;
+    SIZE,
+    SHOTS;
 
     @Override
     public String getCode() {

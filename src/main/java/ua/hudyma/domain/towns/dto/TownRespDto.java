@@ -1,8 +1,7 @@
-package ua.hudyma.mapper;
+package ua.hudyma.domain.towns.dto;
 
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
-import ua.hudyma.domain.towns.enums.CommonBuildingType;
-import ua.hudyma.domain.towns.enums.DwellingType;
+import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 
@@ -13,7 +12,13 @@ public record TownRespDto(
         String name,
         Alignment alignment,
         Faction faction,
+        String visitingHero,
+        String garrisonHero,
         List<DwellingType> dwellingTypeList,
         List<CreatureSlot> garrisonArmy,
         List<CommonBuildingType> commonBuildingList,
-        List<Enum<?>> initialConstantList) {}
+        List<HordeBuildingType> hordeBuildingList,
+        List<UniqueBuildingType> uniqueBuildingList,
+        GrailBuildingType grailBuilding)
+        //List<Enum<?>> initialConstantList)
+{}
