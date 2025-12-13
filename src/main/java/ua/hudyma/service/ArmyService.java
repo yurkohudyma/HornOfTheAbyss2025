@@ -230,37 +230,33 @@ public class ArmyService {
             if (acceptorSlot != null && donorSlot.getType()
                     .equals(acceptorSlot.getType())) { // якщо слоти з однаковим типом істот
                 if (donorSlot.getSlotId()
-                        .equals(lowestLevelDonorCreatureSlot.getSlotId())) { //todo слот з мінімальним рівнем істоти
-                    //todo - lowestLevelDonorCreatureSlot - вибирається перший-ліпший слот із істотою найнижчого із
-                    //todo доступних в армії істот рівня
-                    acceptorSlot.setQuantity(acceptorSlot.getQuantity() //todo переписати донорський слот до отримувача
-                            + donorSlot.getQuantity() - 1); //todo за винятком одного мінімально обов'язкового юніта
-                    donorSlot.setQuantity(1); //todo донорський слот із найслабшою істотою зменшуємо до мінімуму
-                    donorArmyAfterMergeList.add(donorSlot); //todo додаємо до нової мапи істот донора,
-                                                            //todo щоб не було дірок у слотах
+                        .equals(lowestLevelDonorCreatureSlot.getSlotId())) {
+                    acceptorSlot.setQuantity(acceptorSlot.getQuantity()
+                            + donorSlot.getQuantity() - 1);
+                    donorSlot.setQuantity(1);
+                    donorArmyAfterMergeList.add(donorSlot);
                 }
-                else { //todo слот НЕ з мінімальним рівнем істоти
-                    //todo тоді просто переписати з одного слота в інший
+                else {
                     acceptorSlot.setQuantity(acceptorSlot.getQuantity() + donorSlot.getQuantity());
                 }
-            } else { //todo у отримувача порожній слот АБО істоти в слотах різні
+            } else {
                 var newSlot = new CreatureSlot();
                 newSlot.setType(donorSlot.getType());
                 newSlot.setModifiableDataMap(donorSlot.getModifiableDataMap());
                 if (donorSlot.getSlotId()
-                        .equals(lowestLevelDonorCreatureSlot.getSlotId())) { //todo слот з мінімальним рівнем істоти
+                        .equals(lowestLevelDonorCreatureSlot.getSlotId())) {
                     newSlot.setQuantity(donorSlot.getQuantity() - 1);
                     acceptorArmy.add(newSlot);
                     donorSlot.setQuantity(1);
                     donorArmyAfterMergeList.add(donorSlot);
                 }
-                else { //todo слот з іншим рівнем істоти -> просто переносимо без мінімального юніта
+                else {
                     newSlot.setQuantity(donorSlot.getQuantity());
                     acceptorArmy.add(newSlot);
                 }
             }
         }
-        donorArmy.clear(); //todo каже шиша, що це зайва процедура, оскільки ArrayList після remove перезбирає новий ліст сам
+        donorArmy.clear();
         donorArmy.addAll(donorArmyAfterMergeList);
     }
 
@@ -268,7 +264,7 @@ public class ArmyService {
             List<CreatureSlot> armyList) {
         var allLowestCreatureMap = new HashMap<CreatureType, Integer>();
 
-        //todo отримуємо мапу констант з енумів всіх істот типу з рівнем і агрегуємо
+        // отримуємо мапу констант з енумів всіх істот типу з рівнем і агрегуємо
         // всіх виявлених у армії у загальну мапу
         armyList
                 .forEach(slot -> {
@@ -278,7 +274,7 @@ public class ArmyService {
                                 .filter(v -> v.getValue().equals(slot.getType()))
                                 .forEach(k -> allLowestCreatureMap.put(k.getValue(), k.getKey()));
                         });
-        //todo сортуємо цю мапу по значенню (яка тут вже LEVEL) і беремо перший-ліпший тип істоти.
+        //сортуємо цю мапу по значенню (яка тут вже LEVEL) і беремо перший-ліпший тип істоти.
         // Тобто видасть випадкове значення, яке буде першим у values(), навіть якщо це не є factionwise
         return allLowestCreatureMap
                 .entrySet()

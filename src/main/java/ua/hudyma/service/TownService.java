@@ -77,7 +77,9 @@ public class TownService {
         town.setGarrisonHero(visitingHero);
         town.setVisitingHero(incomingHero);
         log.info("Hero {} is now garnisoned in {}, while {} is Visitor",
-                town.getGarrisonHero(), town.getName(), town.getVisitingHero());
+                town.getGarrisonHero().getName(),
+                town.getName(),
+                town.getVisitingHero().getName());
     }
 
     @Transactional
@@ -90,7 +92,9 @@ public class TownService {
         }
         swapHeroesAtTownGarrison(garnisoner, visitor, town);
         upgradeGarnisonSkillsByHero(town, visitor);
-        return "Heroes rotated in town";
+        return String.format("Heroes [%s <-- --> %s] rotated in town",
+                garnisoner.getName(),
+                visitor.getName());
     }
 
     private Town getTown(String name) {
