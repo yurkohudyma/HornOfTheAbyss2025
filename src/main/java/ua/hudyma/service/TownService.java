@@ -41,28 +41,57 @@ public class TownService {
     public String allocateVisitingHero (String heroId, String townName){
         var town = getTown(townName);
         var incomingHero = heroService.getHero(heroId);
+        var visitingHero = town.getVisitingHero();
         if (town.getPlayer() != incomingHero.getPlayer()){
             combatService.initTownBattle(incomingHero, town);
             log.error("Town is OCCUPIED by enemy player {}", town.getPlayer().getName());
             //todo if battle succeeds, proceed with allocation
         }
-        else if (town.getVisitingHero() != null) {
-            swapHeroesAtTownGarrison(town.getGarrisonHero(), incomingHero);
+        else if (incomingHero == visitingHero || incomingHero == town.getGarrisonHero()){
+            return String.format("Hero %s is ALREADY in %s",
+                    incomingHero.getName(), town.getName());
         }
-        if (town.getGarrisonArmy() != null){ //todo in reality visiting incomingHero
-            // todo does not upscale creature until garrison army has been transferred to him
-            var upgradedGarrisonArmy = armyService
-                    .upgradeArmySkillToHero(town.getGarrisonArmy(), incomingHero);
-            town.setGarrisonArmy(upgradedGarrisonArmy);
+        else if (visitingHero != null) {
+            swapHeroesAtTownGarrison(incomingHero, visitingHero, town);
+            if (town.getGarrisonArmy() != null) { //todo in reality visiting incomingHero
+                // todo does not upscale creature until garrison army has been transferred to him
+                upgradeGarnisonSkillsByHero(town, incomingHero);
+            }
+            return String.format("Hero %s is now garnisoned in %s, while %s is Visitor",
+                    incomingHero.getName(), town.getName(), visitingHero.getName());
         }
-        town.setVisitingHero(incomingHero);
+        else {
+            town.setVisitingHero(incomingHero);
+        }
         return String.format("Hero %s is now visiting %s", incomingHero.getName(), town.getName());
     }
 
-    private void swapHeroesAtTownGarrison(Hero garrisonHero, Hero hero) {
-        throw new IllegalStateException("swapHeroesAtTownGarrison :: Method not implemented");
+    private void upgradeGarnisonSkillsByHero(Town town, Hero hero) {
+        var upgradedGarrisonArmy = armyService
+                .upgradeArmySkillToHero(town.getGarrisonArmy(), hero);
+        town.setGarrisonArmy(upgradedGarrisonArmy);
     }
 
+
+    private void swapHeroesAtTownGarrison(Hero incomingHero, Hero visitingHero, Town town) {
+        town.setGarrisonHero(visitingHero);
+        town.setVisitingHero(incomingHero);
+        log.info("Hero {} is now garnisoned in {}, while {} is Visitor",
+                town.getGarrisonHero(), town.getName(), town.getVisitingHero());
+    }
+
+    @Transactional
+    public String swapHeroesInTown(String townName) {
+        var town = getTown(townName);
+        var visitor = town.getVisitingHero();
+        var garnisoner = town.getGarrisonHero();
+        if (visitor == null || garnisoner == null){
+            return "Either visiting or garnison hero is missing";
+        }
+        swapHeroesAtTownGarrison(garnisoner, visitor, town);
+        upgradeGarnisonSkillsByHero(town, visitor);
+        return "Heroes rotated in town";
+    }
 
     private Town getTown(String name) {
         return townRepository.findByName(name)

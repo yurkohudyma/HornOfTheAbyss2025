@@ -25,4 +25,10 @@ public class TownController {
             @RequestParam String heroId, @RequestParam String townName){
         return ResponseEntity.ok(townService.allocateVisitingHero(heroId, townName));
     }
+
+    @GetMapping("/swapHeroes")
+    public ResponseEntity<String> allocateHeroAsVisitorInTown (
+            @RequestParam String townName){
+        return ResponseEntity.ok(townService.swapHeroesInTown(townName));
+    }
 }
