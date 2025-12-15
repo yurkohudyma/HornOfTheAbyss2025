@@ -5,7 +5,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
-import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.enums.AttackResultDto;
@@ -21,6 +20,7 @@ import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 public class CombatService {
     private final HeroService heroService;
     private final CreatureService creatureService;
+    private final ArmyService armyService;
 
     public void initTownBattle(Hero hero, Town town) {
         throw new IllegalStateException
@@ -47,13 +47,47 @@ public class CombatService {
         else {
             dto = attackSlot(attackerSlot, defenderSlot);
         }
+        checkArmySizeAndBanHeroAtLastSlotDefeat(defender, attacker, attackerSlot, defenderSlot, dto);
         return dto;
+    }
+
+    private static void checkArmySizeAndBanHeroAtLastSlotDefeat(
+            Hero defender,
+            Hero attacker,
+            CreatureSlot attackerSlot,
+            CreatureSlot defenderSlot,
+            AttackResultDto dto) {
+        if (!dto.defenderSurvivedAttack()) {
+            if (defender.getArmyList().size() > 1) {
+                //defender.getArmyList().remove(defenderSlot); uncomment for real removal
+                log.info("Defender slot {} has fallen in attack",
+                        defenderSlot.getType());
+            }
+            else {
+                //heroService.vanquishHero(defender); uncomment for real removal
+                log.info("Hero {} has been vanquished by defeating his last slot {}",
+                        defender.getName(),
+                        defenderSlot.getType());
+            }
+        } else if (!dto.attackedSurvivedRetaliation()) {
+            if (attacker.getArmyList().size() > 1) {
+                //attacker.getArmyList().remove(attackerSlot); uncomment for real removal
+                log.info("Attacker slot {} has fallen in retaliation",
+                        attackerSlot.getType());
+            }
+            else {
+                //heroService.vanquishHero(attacker); uncomment for real removal
+                log.info("Hero {} has been vanquished by defeating his last slot {}",
+                        attacker.getName(),
+                        attackerSlot.getType());
+            }
+        }
     }
 
     private AttackResultDto attackSlot(CreatureSlot attackerSlot, CreatureSlot defenderSlot) {
         var attackerDamage = attackerSlot.getModifiableDataMap()
                 .get(DAMAGE).getCurrentValue();
-        log.info("::: {} attacks {}",
+        log.info("::: {} attacks {} :::",
                 attackerSlot.getType(),
                 defenderSlot.getType());
         var defenderHealth = defenderSlot
@@ -62,18 +96,22 @@ public class CombatService {
                 .getCurrentValue();
         var attackerSlotId = attackerSlot.getSlotId();
         var defenderSlotId = defenderSlot.getSlotId();
+        var attackerCreature = attackerSlot.getType().getCode();
+        var defenderCreature = defenderSlot.getType().getCode();
         if (attackerDamage >= defenderHealth){
             return new AttackResultDto(
                     attackerSlotId,
                     defenderSlotId,
-                  attackerSlot.getType().getCode(),
-                  defenderSlot.getType().getCode(),
+                    attackerCreature,
+                    defenderCreature,
                   attackerDamage,
                   defenderHealth,
                   Boolean.FALSE,
                   null,
                   null,
                   null,
+                    null,
+                    null,
                     null
             );
         }
@@ -82,19 +120,24 @@ public class CombatService {
                     .get(DAMAGE).getCurrentValue();
             var attackerHealth = attackerSlot.getModifiableDataMap()
                     .get(HEALTH).getCurrentValue();
-            var retaliationResult = retaliationDamage - attackerHealth;
+            var retaliationResult = attackerHealth - retaliationDamage;
+            log.info("::: {} survives and strikes {} back :::",
+                    defenderCreature, attackerCreature);
             return new AttackResultDto(
                     attackerSlotId,
                     defenderSlotId,
-                    defenderSlot.getType().getCode(),
-                    attackerSlot.getType().getCode(),
+                    attackerCreature,
+                    defenderCreature,
                     retaliationDamage,
                     attackerHealth,
                     Boolean.TRUE,
                     defenderHealth - attackerDamage,
                     true,
+                    retaliationDamage,
                     retaliationResult,
+                    attackerHealth - attackerDamage,
                     retaliationResult > 0
+                    //todo there are some confusion on the results displayed, correct 'em if you wish
             );
         }
     }

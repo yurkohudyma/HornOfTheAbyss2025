@@ -12,6 +12,8 @@ public record AttackResultDto(
         Boolean defenderSurvivedAttack,
         Integer defenderHealthLeft,
         Boolean retaliationCommenced,
+        Integer retaliatorDamage,
+        Integer defendingFromRetaliatorHeath,
         Integer attackerHealthLeft,
         Boolean attackedSurvivedRetaliation
 

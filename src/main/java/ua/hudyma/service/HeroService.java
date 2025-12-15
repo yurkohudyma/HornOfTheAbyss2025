@@ -55,4 +55,8 @@ public class HeroService {
                         heroCode,
                         EntityNotFoundException::new));
     }
+
+    public void vanquishHero(Hero hero) {
+        heroRepository.delete(hero);
+    }
 }

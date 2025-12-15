@@ -78,7 +78,7 @@ public class ArmyService {
     public String deleteArmySlot(String slotId, String heroId) {
         var hero = heroService.getHero(heroId);
         var army = hero.getArmyList();
-        CreatureSlot deletableSlot = getSlot(army, slotId);
+        var deletableSlot = getSlot(army, slotId);
         army.remove(deletableSlot);
         return "Slot [" + slotId + "] of " + deletableSlot.getType() +
                 " SUCC deleted from " + hero.getName() + "'s army";
