@@ -13,6 +13,7 @@ public class CreatureMapper extends BaseMapper<CreatureRespDto, Creature, Creatu
                 creature.getId(),
                 creature.getFaction(),
                 creature.getCreatureType(),
+                creature.getAttackType(),
                 creature.getCreaturePropertyMap(),
                 creature.getCreatureSkillMap()
 
@@ -23,6 +24,7 @@ public class CreatureMapper extends BaseMapper<CreatureRespDto, Creature, Creatu
     public Creature toEntity(CreatureReqDto dto) {
         var creature = new Creature();
         creature.setFaction(dto.faction());
+        creature.setAttackType(dto.attackType());
         creature.setCreatureType(dto.creatureType());
         creature.setCreaturePropertyMap(dto.creaturePropertyMap());
         creature.setCreatureSkillMap(dto.creatureSkillMap());

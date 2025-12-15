@@ -8,6 +8,7 @@ import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.converter.CreatureTypeConverter;
 import ua.hudyma.domain.creatures.dto.CreaturePropertyValue;
 import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
+import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.creatures.enums.CreatureProperty;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.enums.Faction;
@@ -24,6 +25,9 @@ public class Creature implements BaseEntity {
     private Long id;
     @Enumerated(EnumType.STRING)
     private Faction faction;
+
+    @Enumerated(EnumType.STRING)
+    private AttackType attackType;
     @Convert(converter = CreatureTypeConverter.class)
     private CreatureType creatureType;
     @JdbcTypeCode(SqlTypes.JSON)
