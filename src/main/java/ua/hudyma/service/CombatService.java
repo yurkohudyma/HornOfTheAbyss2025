@@ -20,11 +20,16 @@ import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 public class CombatService {
     private final HeroService heroService;
     private final CreatureService creatureService;
-    private final ArmyService armyService;
+    private final BattlefieldService battlefieldService;
 
     public void initTownBattle(Hero hero, Town town) {
         throw new IllegalStateException
                 ("initTownBattle :: Method not implemented");
+    }
+
+    public String initBattlefield (){
+        var array = battlefieldService.initBattlefieldMap();
+        return "Battlefield has been SUCC initialised";
     }
 
     public AttackResultDto initBattle(String attackerId, String defenderId) {

@@ -5,7 +5,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.service.HeroService;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/heroes")
@@ -20,9 +23,8 @@ public class HeroController {
     }
     @GetMapping
     public ResponseEntity<HeroRespDto> fetchHero (
-            @RequestParam String code){
+            @RequestParam String heroCode){
         return ResponseEntity.ok(heroService
-                .fetchHero(code));
+                .fetchHero(heroCode));
     }
-
 }

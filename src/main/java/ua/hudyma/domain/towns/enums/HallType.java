@@ -1,11 +1,15 @@
 package ua.hudyma.domain.towns.enums;
 
-import ua.hudyma.domain.towns.Town;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-public enum HallType {
-    VILLAGE_HALL,
-    TOWN_HALL,
-    CITY_HALL,
-    CAPITOL
+@Getter
+@RequiredArgsConstructor public enum HallType {
+    VILLAGE_HALL (500),
+    TOWN_HALL (1000),
+    CITY_HALL (2000),
+    CAPITOL (4000);
+
+    private final Integer income;
 
     }

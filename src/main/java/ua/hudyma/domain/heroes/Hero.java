@@ -11,6 +11,7 @@ import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.domain.towns.Town;
+import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
@@ -74,9 +75,7 @@ public class Hero implements BaseEntity {
     @OneToOne(mappedBy = "visitingHero")
     @ToString.Exclude
     private Town visitingTown;
-    //todo add to dto
     @OneToOne(mappedBy = "garrisonHero")
     @ToString.Exclude
     private Town garrisonTown;
-    //todo add to dto
 }
