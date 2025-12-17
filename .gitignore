@@ -1,2 +1,6 @@
 /.idea/
 /target/
+/sql/hota_creatures.sql
+/sql/hota_heroes.sql
+/sql/hota_players.sql
+/sql/hota_towns.sql

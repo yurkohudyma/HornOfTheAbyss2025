@@ -33,7 +33,6 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 public class HeroService {
     private final HeroMapper heroMapper;
     private final HeroRepository heroRepository;
-    private final CreatureService creatureService;
 
     @SneakyThrows
     @Transactional

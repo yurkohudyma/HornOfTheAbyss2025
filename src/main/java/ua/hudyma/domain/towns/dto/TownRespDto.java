@@ -19,6 +19,6 @@ public record TownRespDto(
         List<CommonBuildingType> commonBuildingList,
         List<HordeBuildingType> hordeBuildingList,
         List<UniqueBuildingType> uniqueBuildingList,
-        GrailBuildingType grailBuilding)
-        //List<Enum<?>> initialConstantList)
+        GrailBuildingType grailBuilding,
+        List<Enum<?>> initialConstantList)
 {}

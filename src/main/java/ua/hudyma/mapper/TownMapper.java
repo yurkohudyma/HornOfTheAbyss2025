@@ -10,6 +10,7 @@ import ua.hudyma.domain.towns.config.CastleBuildingConfig;
 import ua.hudyma.domain.towns.config.InfernoBuildingConfig;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.domain.towns.enums.InitialBuildingConfig;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.service.PlayerService;
@@ -37,8 +38,8 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
                 townConfig.commonBuildingList,
                 townConfig.getHordeBuildingList(),
                 townConfig.uniqueBuildingList,
-                townConfig.getGrailBuilding()
-                //townConfig.initialBuildingList
+                townConfig.getGrailBuilding(),
+                ((InitialBuildingConfig) townConfig).getInitialConstantList()
         );
     }
 
