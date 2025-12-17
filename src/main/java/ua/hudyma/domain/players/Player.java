@@ -30,7 +30,7 @@ public class Player implements BaseEntity {
     private String name;
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(8)
-    @OneToMany(mappedBy = "player")
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Hero> heroList;
     @OneToMany(mappedBy = "player")

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
+import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
@@ -46,7 +47,7 @@ public class PlayerService {
         return String.format("%s's resources have been replenished", player.getName());
     }
 
-    @Transactional(readOnly = true)
+    @Transactional/*(readOnly = true)*/
     public Integer calcDailyIncome(Long playerId) {
         var player = getPlayer(playerId);
         return player
@@ -64,6 +65,11 @@ public class PlayerService {
         var player = playerMapper.toEntity(dto);
         playerRepository.save(player);
         return getReturnMessage(player, "name");
+    }
+
+    @Transactional
+    public PlayerRespDto fetchPlayer(Long playerId) {
+        return playerMapper.toDto(getPlayer(playerId));
     }
 
     public Map<ResourceType, Integer> fetchResource(Long playerId) {

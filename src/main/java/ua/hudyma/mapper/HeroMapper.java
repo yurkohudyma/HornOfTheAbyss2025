@@ -12,7 +12,7 @@ import static ua.hudyma.util.IdGenerator.generateId;
 @Component
 @RequiredArgsConstructor
 public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
-    private final PlayerService playerService;
+
 
     @Override
     public HeroRespDto toDto(Hero hero) {
@@ -33,12 +33,10 @@ public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
 
     @Override
     public Hero toEntity(HeroReqDto dto) {
-        var player = playerService.getPlayer(dto.playerId());
         return Hero
                 .builder()
                 .name(dto.name())
                 .code( generateId(1,3))
-                .player(player)
                 .faction(dto.faction())
                 .subfaction(dto.subfaction())
                 .primarySkillMap(dto.primarySkillMap())

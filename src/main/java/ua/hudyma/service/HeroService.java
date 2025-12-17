@@ -33,11 +33,14 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 public class HeroService {
     private final HeroMapper heroMapper;
     private final HeroRepository heroRepository;
+    private final PlayerService playerService;
 
     @SneakyThrows
     @Transactional
     public String createHero(HeroReqDto dto) {
         var hero = heroMapper.toEntity(dto);
+        var player = playerService.getPlayer(dto.playerId());
+        hero.setPlayer(player);
         heroRepository.save(hero);
         return getReturnMessage(hero, "name");
     }
@@ -45,6 +48,10 @@ public class HeroService {
     public HeroRespDto fetchHero(String code) {
         var hero = getHero(code);
         return heroMapper.toDto(hero);
+    }
+
+    public List<HeroRespDto> fetchHeroDtoList (List<Hero> heroList){
+        return heroMapper.toDtoList(heroList);
     }
 
     public Hero getHero(String heroCode) {
