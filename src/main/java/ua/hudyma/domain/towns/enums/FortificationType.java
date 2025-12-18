@@ -1,9 +1,8 @@
 package ua.hudyma.domain.towns.enums;
 
-public enum FortificationType {
+public enum FortificationType implements AbstractBuildingType {
     NONE,
     FORT,
     CITADEL,
     CASTLE
-
-    }
+}

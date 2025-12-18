@@ -8,7 +8,7 @@ import static ua.hudyma.enums.Faction.*;
 
 @Getter
 @RequiredArgsConstructor
-public enum UniqueBuildingType {
+public enum UniqueBuildingType implements AbstractBuildingType{
 
     //castle
     LIGHTHOUSE (CASTLE),

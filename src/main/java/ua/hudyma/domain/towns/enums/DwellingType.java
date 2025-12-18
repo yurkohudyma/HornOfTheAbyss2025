@@ -5,7 +5,7 @@ import ua.hudyma.domain.towns.converter.DwellingTypeDeserializer;
 
 @JsonDeserialize(
         using = DwellingTypeDeserializer.class)
-public interface DwellingType {
+public interface DwellingType extends AbstractBuildingType{
     String getCode();
     String getCreature();
 }
