@@ -12,6 +12,17 @@ import static java.time.LocalDateTime.now;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(InsufficientResourcesException.class)
+    public ResponseEntity<ErrorResponse> InsufficientResourcesException(
+            InsufficientResourcesException ex) {
+        var error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
 
 
     @ExceptionHandler(MinimalUnitOperationException.class)
@@ -83,7 +94,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         var error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "What the fuck?!? " + ex.getMessage(),
+                "Holy crap! " + ex.getMessage(),
                 now()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);

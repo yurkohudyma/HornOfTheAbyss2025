@@ -6,11 +6,11 @@ import ua.hudyma.domain.towns.enums.properties.AbstractBuildingTypeProperties;
 import java.util.Arrays;
 import java.util.Set;
 
-public class AbstractBuildingTypeRegistry {
+public class AbstractBuildingTypePropertiesRegistry {
     private static final Reflections reflections;
     private static final Set<Class<? extends AbstractBuildingTypeProperties>> ENUM_TYPES;
 
-    private AbstractBuildingTypeRegistry(){}
+    private AbstractBuildingTypePropertiesRegistry(){}
 
     static {
         reflections = new Reflections("ua.hudyma.domain.towns.enums.properties");
@@ -28,7 +28,8 @@ public class AbstractBuildingTypeRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E> & AbstractBuildingTypeProperties> AbstractBuildingTypeProperties enumFromCode(
+    private static <E extends Enum<E> & AbstractBuildingTypeProperties>
+    AbstractBuildingTypeProperties enumFromCode(
             Class<? extends AbstractBuildingTypeProperties> type, String code) {
         Class<E> enumClass = (Class<E>) type;
         try {

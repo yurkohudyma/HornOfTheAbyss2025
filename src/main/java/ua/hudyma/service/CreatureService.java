@@ -37,13 +37,13 @@ public class CreatureService {
     public Creature fetchCreatureByType(CreatureType type) {
         return creatureRepository.findByCreatureType(type)
                 .orElseThrow(getExceptionSupplier(Creature.class, type,
-                EntityNotFoundException::new));
+                EntityNotFoundException::new, false));
     }
 
     private Creature getCreature(Long id) {
         return creatureRepository
                 .findById(id)
                 .orElseThrow(getExceptionSupplier(Creature.class, id,
-                        EntityNotFoundException::new));
+                        EntityNotFoundException::new, false));
     }
 }

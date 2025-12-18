@@ -5,7 +5,9 @@ import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public record TownRespDto(
         String ownerName,
@@ -16,7 +18,7 @@ public record TownRespDto(
         String garrisonHero,
         List<DwellingType> dwellingTypeList,
         List<CreatureSlot> garrisonArmy,
-        List<CommonBuildingType> commonBuildingList,
+        List<String> commonBuildingList,
         List<HordeBuildingType> hordeBuildingList,
         List<UniqueBuildingType> uniqueBuildingList,
         GrailBuildingType grailBuilding,

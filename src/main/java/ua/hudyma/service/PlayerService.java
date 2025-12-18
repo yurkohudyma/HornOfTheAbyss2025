@@ -83,6 +83,6 @@ public class PlayerService {
                 .orElseThrow(getExceptionSupplier(
                         Player.class,
                         playerId,
-                        EntityNotFoundException::new));
+                        EntityNotFoundException::new, false));
     }
 }

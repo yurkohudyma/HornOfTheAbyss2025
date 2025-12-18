@@ -40,7 +40,7 @@ public class ArmyService {
     @Transactional
     public String compressArmy(String heroId) {
         var army = heroService.getHero(heroId).getArmyList();
-        Map<CreatureType, CreatureSlot> merged = new LinkedHashMap<>();
+        var merged = new LinkedHashMap<CreatureType, CreatureSlot>();
         for (CreatureSlot slot : army) {
             merged.compute(slot.getType(), (type, existingSlot) -> {
                 if (existingSlot == null) {
@@ -187,7 +187,7 @@ public class ArmyService {
                         .equals(dto))
                 .findFirst()
                 .orElseThrow(getExceptionSupplier(CreatureSlot.class,
-                        dto, EntityNotFoundException::new));
+                        dto, EntityNotFoundException::new, false));
     }
 
     @Transactional
@@ -355,6 +355,6 @@ public class ArmyService {
                         .equals(type))
                 .findFirst()
                 .orElseThrow(getExceptionSupplier(CreatureSlot.class,
-                        type, EntityNotFoundException::new));
+                        type, EntityNotFoundException::new, false));
     }
 }

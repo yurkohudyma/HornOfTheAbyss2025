@@ -3,8 +3,10 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 
 @RestController
@@ -13,22 +15,39 @@ import ua.hudyma.service.TownService;
 public class TownController {
     private final TownService townService;
     @PostMapping
-    public ResponseEntity<String> createTown (@RequestBody TownReqDto dto){
+    public ResponseEntity<String> createTown (
+            @RequestBody TownReqDto dto){
         return ResponseEntity.ok(townService.createTown(dto));
     }
     @GetMapping
-    public ResponseEntity<TownRespDto> fetchTown (@RequestParam String name){
+    public ResponseEntity<TownRespDto> fetchTown (
+            @RequestParam String name){
         return ResponseEntity.ok(townService.fetchTown(name));
     }
     @GetMapping("/allocateVisitor")
     public ResponseEntity<String> allocateHeroAsVisitorInTown (
-            @RequestParam String heroId, @RequestParam String townName){
-        return ResponseEntity.ok(townService.allocateVisitingHero(heroId, townName));
+            @RequestParam String heroId,
+            @RequestParam String townName){
+        return ResponseEntity.ok(townService
+                .allocateVisitingHero(heroId, townName));
     }
 
     @GetMapping("/swapHeroes")
     public ResponseEntity<String> allocateHeroAsVisitorInTown (
             @RequestParam String townName){
-        return ResponseEntity.ok(townService.swapHeroesInTown(townName));
+        return ResponseEntity.ok(townService
+                .swapHeroesInTown(townName));
+    }
+
+    @PostMapping("/build")
+    public ResponseEntity<String> build (@RequestBody BuildReqDto dto){
+        return ResponseEntity.ok(townService
+                .build(dto));
+    }
+    @GetMapping("/getResourceDemand")
+    public ResponseEntity<ResourceDemandRespDto> getResourceDemand
+            (@RequestParam String type){
+        return ResponseEntity.ok(townService
+                .getResourceDemand(type));
     }
 }

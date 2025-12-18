@@ -59,7 +59,7 @@ public class HeroService {
                 .orElseThrow(getExceptionSupplier(
                         Hero.class,
                         heroCode,
-                        EntityNotFoundException::new));
+                        EntityNotFoundException::new, false));
     }
 
     public void vanquishHero(Hero hero) {

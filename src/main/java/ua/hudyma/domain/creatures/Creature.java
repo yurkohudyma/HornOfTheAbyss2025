@@ -25,7 +25,6 @@ public class Creature implements BaseEntity {
     private Long id;
     @Enumerated(EnumType.STRING)
     private Faction faction;
-
     @Enumerated(EnumType.STRING)
     private AttackType attackType;
     @Convert(converter = CreatureTypeConverter.class)
