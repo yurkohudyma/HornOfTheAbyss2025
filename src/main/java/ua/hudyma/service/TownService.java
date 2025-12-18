@@ -42,21 +42,29 @@ public class TownService {
     @Transactional
     public String build(BuildReqDto dto) {
         var player = playerService.getPlayer(dto.playerId());
+        var buildingLevel = dto.buildingLevel() == null ? 0 : dto.buildingLevel();
+        if (buildingLevel > 5){
+            throw new IllegalArgumentException
+                    ("Building LEVEL is limited by 5, while provided = " + buildingLevel);
+        }
         var town = getTown(dto.name());
         checkTownBelongsToPlayer(player, town);
         var buildingType = dto.buildingType();
         var constantProperties =
                 CommonBuildingTypeProperties.valueOf(buildingType.name());
+        var convertedType = CommonBuildingType.valueOf(buildingType.name());
+        var commonBuildingMap = town.getCommonBuildingMap();
+        if (commonBuildingMap == null){
+            commonBuildingMap = new EnumMap<>(CommonBuildingType.class);
+            town.setCommonBuildingMap(commonBuildingMap);
+        }
+        else if (commonBuildingMap.containsKey(convertedType)
+                && commonBuildingMap.get(convertedType) == 0){
+            throw new BuildingAlreadyExistsException(convertedType +
+                    " of Level " + commonBuildingMap.get(convertedType) + " already built in " + town.getName());
+        }
         checkTownDemands(town, player, constantProperties);
-        var commonBuildingList = town.getCommonBuildingList();
-        if (town.getCommonBuildingList() == null){
-            commonBuildingList = new ArrayList<>();
-            town.setCommonBuildingList(commonBuildingList);
-        }
-        else if (commonBuildingList.contains(buildingType.name())){
-            throw new BuildingAlreadyExistsException(buildingType + " already built in " + town.getName());
-        }
-        commonBuildingList.add(buildingType.name());
+        commonBuildingMap.put(convertedType, buildingLevel);
         var msg = String.format("%s has been erected in %s", buildingType, town.getName());
         log.info(msg);
         return msg;
@@ -71,27 +79,53 @@ public class TownService {
     private void checkTownDemands(
             Town town, Player player,
             CommonBuildingTypeProperties constantProperties) {
-        var buildingConfig = town.getBuildingConfig();
+        //var buildingConfig = town.getBuildingConfig();
         var availResources = player.getResourceMap();
         if (availResources == null) {
             throw new IllegalStateException("Available Resources Map is NULL");
         }
-        var demandedResources = constantProperties.getRequiredResourceMap();
-        checkResourcesDemandAndDecrement(availResources, demandedResources, player);
-        var demandedBuildings = constantProperties.getRequiredBuiltBuildings();
-        checkDemandedBuildings(buildingConfig, demandedBuildings);
+        var demandedResources = constantProperties
+                .getRequiredResourceMap();
+        checkResourcesDemandAndDecrement(availResources, demandedResources);
+        var demandedBuildings =
+                constantProperties.getRequiredBuiltBuildings();
+        if (!demandedBuildings.isEmpty()) {
+            checkDemandedBuildings(town, demandedBuildings);
+        }
     }
 
     private void checkDemandedBuildings(
-            AbstractBuildingConfig buildingConfig,
+            Town town,
             EnumMap<CommonBuildingType, Integer> demandedBuildings) {
-        //todo implem
+        var commonBuildingMap = town.getCommonBuildingMap();
+        //todo ideally you should receive single buildConfig where all info is stored
+        //todo otherwise every other kind of building is fetched and compared independently
+        var dwellingBuildingList = town.getDwellingTypeList(); //include validation
+        for (Map.Entry<CommonBuildingType, Integer> entry : demandedBuildings.entrySet()){
+            var demandedBuildingType = entry.getKey();
+            var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
+            boolean containsKey = commonBuildingMap.containsKey(demandedBuildingType);
+            Integer existingBuildingLevel = commonBuildingMap.get(demandedBuildingType) == null ? 0
+                    : commonBuildingMap.get(demandedBuildingType);
+            if (!containsKey /*|| existingBuildingLevel > 0 && existingBuildingLevel < demandedBuildingLevel*/){
+                throw getExceptionSupplier(ResourceType.class,
+                        String.format("Required building %s of Level: %d",
+                                entry.getKey(),
+                                demandedBuildingLevel),
+                        InsufficientResourcesException::new,
+                        true)
+                        .get();
+            }
+            else if (existingBuildingLevel >= demandedBuildingLevel ){
+                throw new BuildingAlreadyExistsException(demandedBuildingType +
+                        " of Level " + existingBuildingLevel + " already built in " + town.getName());
+            }
+        }
     }
 
     private void checkResourcesDemandAndDecrement(
             Map<ResourceType, Integer> availResources,
-            EnumMap<ResourceType, Integer> demandedResources,
-            Player player) {
+            EnumMap<ResourceType, Integer> demandedResources) {
         for (Map.Entry<ResourceType, Integer> res : demandedResources.entrySet()) {
             var availResQty = availResources.get(res.getKey());
             var demandedResQty = res.getValue();

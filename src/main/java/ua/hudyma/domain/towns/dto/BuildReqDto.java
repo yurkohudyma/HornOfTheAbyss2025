@@ -5,5 +5,6 @@ import ua.hudyma.domain.towns.enums.properties.CommonBuildingTypeProperties;
 public record BuildReqDto(
         Long playerId,
         String name,
-        CommonBuildingTypeProperties buildingType
+        CommonBuildingTypeProperties buildingType,
+        Integer buildingLevel
         ) {}

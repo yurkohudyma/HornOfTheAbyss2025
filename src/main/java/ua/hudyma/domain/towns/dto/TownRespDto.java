@@ -7,6 +7,7 @@ import ua.hudyma.enums.Faction;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public record TownRespDto(
@@ -18,7 +19,7 @@ public record TownRespDto(
         String garrisonHero,
         List<DwellingType> dwellingTypeList,
         List<CreatureSlot> garrisonArmy,
-        List<String> commonBuildingList,
+        Map<CommonBuildingType, Integer> commonBuildingMap,
         List<HordeBuildingType> hordeBuildingList,
         List<UniqueBuildingType> uniqueBuildingList,
         GrailBuildingType grailBuilding,

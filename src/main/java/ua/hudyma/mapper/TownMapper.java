@@ -45,7 +45,7 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
                 garrisonHero != null ? garrisonHero.getName() : "NA",
                 town.getDwellingTypeList(),
                 town.getGarrisonArmy(),
-                town.getCommonBuildingList(),
+                town.getCommonBuildingMap(),
                 townConfig.getHordeBuildingList(),
                 townConfig.getUniqueBuildingList(),
                 townConfig.getGrailBuilding(),

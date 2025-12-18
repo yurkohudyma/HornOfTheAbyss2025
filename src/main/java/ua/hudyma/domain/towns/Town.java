@@ -9,8 +9,10 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
+import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
@@ -20,10 +22,7 @@ import ua.hudyma.enums.Faction;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "towns")
@@ -54,11 +53,10 @@ public class Town implements BaseEntity {
     @ToString.Exclude
     private List<DwellingType> dwellingTypeList;
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "json", name = "common_building_list")
+    @Column(columnDefinition = "json", name = "common_building_map")
     @ToString.Exclude
-    private List<String> commonBuildingList =
-            new ArrayList<>(); //todo convert to MAP <BUILDING, LEVEL>
-                               // todo need to persist multiple level building info
+    private Map<CommonBuildingType, Integer> commonBuildingMap =
+            new EnumMap<>(CommonBuildingType.class);
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "garrison")
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
