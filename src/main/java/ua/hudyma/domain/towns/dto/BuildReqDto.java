@@ -1,10 +1,10 @@
 package ua.hudyma.domain.towns.dto;
 
-import ua.hudyma.domain.towns.enums.properties.CommonBuildingTypeProperties;
+import ua.hudyma.domain.towns.enums.CommonBuildingType;
 
 public record BuildReqDto(
         Long playerId,
         String name,
-        CommonBuildingTypeProperties buildingType,
+        CommonBuildingType buildingType,
         Integer buildingLevel
         ) {}

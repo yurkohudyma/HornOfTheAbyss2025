@@ -9,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
@@ -21,11 +20,11 @@ import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.resource.enums.ResourceType;
-import ua.hudyma.util.FixedSizeList;
 import ua.hudyma.util.MessageProcessor;
 
 import java.util.*;
 
+import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -50,24 +49,41 @@ public class TownService {
         var town = getTown(dto.name());
         checkTownBelongsToPlayer(player, town);
         var buildingType = dto.buildingType();
+        String modifiedPropertiesName = getModifiedPropertiesName(buildingType, buildingLevel);
         var constantProperties =
-                CommonBuildingTypeProperties.valueOf(buildingType.name());
-        var convertedType = CommonBuildingType.valueOf(buildingType.name());
+                CommonBuildingTypeProperties.valueOf(modifiedPropertiesName);
         var commonBuildingMap = town.getCommonBuildingMap();
         if (commonBuildingMap == null){
             commonBuildingMap = new EnumMap<>(CommonBuildingType.class);
             town.setCommonBuildingMap(commonBuildingMap);
         }
-        else if (commonBuildingMap.containsKey(convertedType)
-                && commonBuildingMap.get(convertedType) == 0){
-            throw new BuildingAlreadyExistsException(convertedType +
-                    " of Level " + commonBuildingMap.get(convertedType) + " already built in " + town.getName());
+        else {
+            var existingBuildLevel = commonBuildingMap.get(buildingType);
+            if (commonBuildingMap.containsKey(buildingType)){
+                String message = "";
+                    if (existingBuildLevel == buildingLevel) {
+                        message = String.format("%s of level %d already built in %s",
+                                buildingType, existingBuildLevel, town.getName());
+                        throw new BuildingAlreadyExistsException(message);
+                    }
+                    else if (existingBuildLevel == 0) {
+                        message = String.format("%s already built in %s",
+                                buildingType, town.getName());
+                        throw new BuildingAlreadyExistsException(message);
+                    }
+            }
         }
         checkTownDemands(town, player, constantProperties);
-        commonBuildingMap.put(convertedType, buildingLevel);
-        var msg = String.format("%s has been erected in %s", buildingType, town.getName());
+        commonBuildingMap.put(buildingType, buildingLevel);
+        var msg = String.format("%s Level %d has been erected in %s",
+                buildingType, buildingLevel, town.getName());
         log.info(msg);
         return msg;
+    }
+
+    private String getModifiedPropertiesName(CommonBuildingType buildingType, int buildingLevel) {
+        if (buildingType == MAGE_GUILD) return buildingType.name() + "_L" + buildingLevel;
+        return buildingType.name();
     }
 
     private static void checkTownBelongsToPlayer(Player player, Town town) {
@@ -79,7 +95,11 @@ public class TownService {
     private void checkTownDemands(
             Town town, Player player,
             CommonBuildingTypeProperties constantProperties) {
-        //var buildingConfig = town.getBuildingConfig();
+        var demandedBuildings =
+                constantProperties.getRequiredBuiltBuildings();
+        if (!demandedBuildings.isEmpty()) {
+            checkDemandedBuildings(town, demandedBuildings);
+        }
         var availResources = player.getResourceMap();
         if (availResources == null) {
             throw new IllegalStateException("Available Resources Map is NULL");
@@ -87,11 +107,6 @@ public class TownService {
         var demandedResources = constantProperties
                 .getRequiredResourceMap();
         checkResourcesDemandAndDecrement(availResources, demandedResources);
-        var demandedBuildings =
-                constantProperties.getRequiredBuiltBuildings();
-        if (!demandedBuildings.isEmpty()) {
-            checkDemandedBuildings(town, demandedBuildings);
-        }
     }
 
     private void checkDemandedBuildings(
@@ -105,21 +120,21 @@ public class TownService {
             var demandedBuildingType = entry.getKey();
             var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
             boolean containsKey = commonBuildingMap.containsKey(demandedBuildingType);
-            Integer existingBuildingLevel = commonBuildingMap.get(demandedBuildingType) == null ? 0
-                    : commonBuildingMap.get(demandedBuildingType);
-            if (!containsKey /*|| existingBuildingLevel > 0 && existingBuildingLevel < demandedBuildingLevel*/){
+            //var existingBuildingLevel = commonBuildingMap.get(demandedBuildingType) == null ? 0
+              //      : commonBuildingMap.get(demandedBuildingType);
+            if (!containsKey){
                 throw getExceptionSupplier(ResourceType.class,
-                        String.format("Required building %s of Level: %d",
+                        String.format("Required %s of Level %d",
                                 entry.getKey(),
                                 demandedBuildingLevel),
                         InsufficientResourcesException::new,
                         true)
                         .get();
             }
-            else if (existingBuildingLevel >= demandedBuildingLevel ){
+            /*else if (existingBuildingLevel >= demandedBuildingLevel ){
                 throw new BuildingAlreadyExistsException(demandedBuildingType +
                         " of Level " + existingBuildingLevel + " already built in " + town.getName());
-            }
+            }*/
         }
     }
 
