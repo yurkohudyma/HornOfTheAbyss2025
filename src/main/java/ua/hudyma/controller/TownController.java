@@ -39,11 +39,7 @@ public class TownController {
                 .swapHeroesInTown(townName));
     }
 
-    @PostMapping("/build")
-    public ResponseEntity<String> build (@RequestBody BuildReqDto dto){
-        return ResponseEntity.ok(townService
-                .build(dto));
-    }
+
     @GetMapping("/getResourceDemand")
     public ResponseEntity<ResourceDemandRespDto> getResourceDemand
             (@RequestParam String type){

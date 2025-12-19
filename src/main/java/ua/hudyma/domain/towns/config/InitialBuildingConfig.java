@@ -1,6 +1,9 @@
-package ua.hudyma.domain.towns.enums;
+package ua.hudyma.domain.towns.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import ua.hudyma.domain.towns.enums.FortificationType;
+import ua.hudyma.domain.towns.enums.HallType;
+import ua.hudyma.domain.towns.enums.Shipyard;
 
 import java.util.List;
 

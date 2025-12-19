@@ -9,14 +9,12 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
-import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
-import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
-import ua.hudyma.domain.towns.enums.DwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.util.FixedSize;
@@ -51,7 +49,7 @@ public class Town implements BaseEntity {
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(7)
     @ToString.Exclude
-    private List<DwellingType> dwellingTypeList;
+    private List<AbstractDwellingType> dwellingTypeList;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "common_building_map")
     @ToString.Exclude

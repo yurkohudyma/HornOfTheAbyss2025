@@ -1,4 +1,4 @@
-package ua.hudyma.domain.towns.enums;
+package ua.hudyma.domain.towns.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import static ua.hudyma.enums.Faction.*;
 
 @Getter
 @RequiredArgsConstructor
-public enum HordeBuildingType implements AbstractBuildingType{
+public enum HordeBuildingTypeProperties implements AbstractBuildingTypeProperties {
     BIRTHING_POOL (INFERNO),
     CAPTAINS_QUARTERS(FORTRESS),
     CAGES(INFERNO),

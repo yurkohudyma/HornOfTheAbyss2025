@@ -1,24 +1,24 @@
 package ua.hudyma.domain.towns.converter;
 
 import org.reflections.Reflections;
-import ua.hudyma.domain.towns.enums.DwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 
 import java.util.Arrays;
 import java.util.Set;
 
-public class DwellingTypeRegistry {
+public class AbstractDwellingTypeRegistry {
     private static final Reflections reflections;
-    private static final Set<Class<? extends DwellingType>> ENUM_TYPES;
+    private static final Set<Class<? extends AbstractDwellingType>> ENUM_TYPES;
 
-    private DwellingTypeRegistry (){}
+    private AbstractDwellingTypeRegistry(){}
 
     static {
-        reflections = new Reflections("ua.hudyma.domain.towns.enums");
-        ENUM_TYPES = reflections.getSubTypesOf(DwellingType.class);
+        reflections = new Reflections("ua.hudyma.domain.towns.enums.dwelling");
+        ENUM_TYPES = reflections.getSubTypesOf(AbstractDwellingType.class);
     }
 
-    public static DwellingType fromCode(String code) {
-        for (Class<? extends DwellingType> type : ENUM_TYPES) {
+    public static AbstractDwellingType fromCode(String code) {
+        for (Class<? extends AbstractDwellingType> type : ENUM_TYPES) {
             if (type.isEnum()) {
                 var result = enumFromCode(type, code);
                 if (result != null) return result;
@@ -28,8 +28,8 @@ public class DwellingTypeRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E> & DwellingType> DwellingType enumFromCode(
-            Class<? extends DwellingType> type, String code) {
+    private static <E extends Enum<E> & AbstractDwellingType> AbstractDwellingType enumFromCode(
+            Class<? extends AbstractDwellingType> type, String code) {
         Class<E> enumClass = (Class<E>) type;
         try {
             return Enum.valueOf(enumClass, code);
@@ -48,7 +48,7 @@ public class DwellingTypeRegistry {
      */
     @SuppressWarnings("unchecked")
     public static <B> Class<? extends Enum<?>> findEnumClassByChildName(
-            DwellingType type, Class<B> baseInterface) {
+            AbstractDwellingType type, Class<B> baseInterface) {
         Set<Class<? extends B>> subtypes = reflections
                 .getSubTypesOf(baseInterface);
         for (Class<? extends B> subtype : subtypes) {

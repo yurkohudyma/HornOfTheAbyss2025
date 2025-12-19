@@ -2,13 +2,12 @@ package ua.hudyma.domain.towns.dto;
 
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.towns.enums.*;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public record TownRespDto(
         String ownerName,
@@ -17,7 +16,7 @@ public record TownRespDto(
         Faction faction,
         String visitingHero,
         String garrisonHero,
-        List<DwellingType> dwellingTypeList,
+        List<AbstractDwellingType> dwellingTypeList,
         List<CreatureSlot> garrisonArmy,
         Map<CommonBuildingType, Integer> commonBuildingMap,
         List<HordeBuildingType> hordeBuildingList,
