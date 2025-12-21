@@ -3,49 +3,44 @@ package ua.hudyma.domain.towns.enums.properties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.towns.enums.AbstractBuildingType;
+import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.Map;
 
-import static ua.hudyma.resource.enums.ResourceType.GOLD;
-import static ua.hudyma.resource.enums.ResourceType.WOOD;
+import static ua.hudyma.resource.enums.ResourceType.*;
 
 @Getter
 @RequiredArgsConstructor
 public enum FortificationTypeProperties implements AbstractBuildingTypeProperties{
-    FORT (Map.of(),
+    FORT (EnumSet.noneOf(FortificationType.class),
             toResourceEnumMap(
                     Map.of(
                             WOOD, 20,
+                            ORE, 20,
                             GOLD, 5000))
             ),
-    CITADEL(Map.of(),
+    CITADEL(EnumSet.of(FortificationType.FORT),
             toResourceEnumMap(
                     Map.of(
-                            WOOD, 20,
-                            GOLD, 5000))
+                            ORE, 5,
+                            GOLD, 2500))
     ),
-    CASTLE(Map.of(),
+    CASTLE(EnumSet.of(FortificationType.CITADEL),
             toResourceEnumMap(
                     Map.of(
-                            WOOD, 20,
-                            GOLD, 5000))
-    );
+                            WOOD, 10,
+                            ORE, 10,
+                            GOLD, 5000)));
 
-    //todo fix data
-
-    private final Map<AbstractBuildingType, Integer> requiredBuildingMap;
+    private final EnumSet<FortificationType> requiredBuildingSet;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
     private static EnumMap<ResourceType, Integer> toResourceEnumMap(
             Map<ResourceType, Integer> resources) {
         var map = new EnumMap<ResourceType, Integer>(ResourceType.class);
         map.putAll((resources));
         return map;
-    }
-    private static Map<AbstractBuildingType, Integer> toMap(
-            Map<? extends AbstractBuildingType, Integer> source) {
-        return new HashMap<>(source);
     }
 }

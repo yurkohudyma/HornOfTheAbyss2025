@@ -11,14 +11,11 @@ import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
-import ua.hudyma.domain.towns.config.CastleBuildingConfig;
 import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.resource.enums.ResourceType;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 

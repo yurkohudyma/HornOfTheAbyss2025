@@ -10,7 +10,5 @@ public enum HallType implements AbstractBuildingType{
     TOWN_HALL (1000),
     CITY_HALL (2000),
     CAPITOL (4000);
-
     private final Integer income;
-
-    }
+}

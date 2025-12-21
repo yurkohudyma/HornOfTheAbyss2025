@@ -1,5 +1,6 @@
 package ua.hudyma.mapper;
 
+import org.springframework.stereotype.Component;
 import ua.hudyma.domain.creatures.BaseCreatureSkill;
 
 import java.util.Arrays;

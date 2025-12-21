@@ -114,13 +114,4 @@ public class AbstractBuildService {
         throw new IllegalArgumentException("No match for AbstractBuildingType propertyName: "
                 + type);
     }
-    /*private static <E extends Enum<E> & AbstractBuildingType>
-    boolean enumContainConstant(String buildingType, Class<E> clazz) {
-        try {
-            Enum.valueOf(clazz, buildingType);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
-    }*/
 }

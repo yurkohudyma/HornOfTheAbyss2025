@@ -12,8 +12,8 @@ import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
-import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
+import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.enums.Alignment;
@@ -21,7 +21,9 @@ import ua.hudyma.enums.Faction;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
 @Entity
 @Table(name = "towns")
@@ -64,4 +66,6 @@ public class Town implements BaseEntity {
     private List<CreatureSlot> garrisonArmy;
     @Enumerated(EnumType.STRING)
     private HallType hallType = HallType.VILLAGE_HALL;
+    @Enumerated(EnumType.STRING)
+    private FortificationType fortificationType;
 }
