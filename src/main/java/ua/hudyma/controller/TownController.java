@@ -3,7 +3,6 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.resource.ResourceDemandRespDto;

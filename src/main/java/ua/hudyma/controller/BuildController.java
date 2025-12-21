@@ -3,24 +3,26 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.hudyma.domain.towns.dto.BuildReqDto;
-import ua.hudyma.service.build.CommonBuildService;
+import ua.hudyma.domain.towns.dto.AbstractBuildReqDto;
+import ua.hudyma.service.build.AbstractBuildService;
 
 @RestController
 @RequestMapping("/build")
 @RequiredArgsConstructor
 public class BuildController {
-    private final CommonBuildService commonBuildService;
+    private final AbstractBuildService abstractBuildService;
 
     @GetMapping("/detect")
-    public ResponseEntity<String> detect(@RequestParam String type){
-        return ResponseEntity.ok(commonBuildService
+    public ResponseEntity<String> detect(
+            @RequestParam String type){
+        return ResponseEntity.ok(abstractBuildService
                 .resolveBuildingEnumType(type).getSimpleName());
     }
 
-    @PostMapping("/common")
-    public ResponseEntity<String> build(@RequestBody BuildReqDto dto){
-        return ResponseEntity.ok(commonBuildService
+    @PostMapping
+    public ResponseEntity<String> build(
+            @RequestBody AbstractBuildReqDto dto){
+        return ResponseEntity.ok(abstractBuildService
                 .build(dto));
     }
 }

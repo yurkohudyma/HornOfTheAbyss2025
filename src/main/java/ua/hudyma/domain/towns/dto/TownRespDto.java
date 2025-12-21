@@ -19,8 +19,8 @@ public record TownRespDto(
         List<AbstractDwellingType> dwellingTypeList,
         List<CreatureSlot> garrisonArmy,
         Map<CommonBuildingType, Integer> commonBuildingMap,
-        List<HordeBuildingType> hordeBuildingList,
-        List<UniqueBuildingType> uniqueBuildingList,
-        GrailBuildingType grailBuilding,
-        List<Enum<?>> initialConstantList)
+        HallType hallType)
+        //,List<HordeBuildingType> hordeBuildingList,
+        //List<UniqueBuildingType> uniqueBuildingList
+        //, GrailBuildingType grailBuilding
 {}

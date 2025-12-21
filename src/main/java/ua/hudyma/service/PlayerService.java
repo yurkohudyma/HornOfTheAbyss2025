@@ -20,6 +20,7 @@ import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
@@ -47,16 +48,15 @@ public class PlayerService {
         return String.format("%s's resources have been replenished", player.getName());
     }
 
-    @Transactional/*(readOnly = true)*/
+    @Transactional(readOnly = true)
     public Integer calcDailyIncome(Long playerId) {
         var player = getPlayer(playerId);
         return player
                 .getTownsList()
                 .stream()
-                .map(Town::getBuildingConfig)
-                .filter(CastleBuildingConfig.class::isInstance)
-                .map(CastleBuildingConfig.class::cast)
-                .mapToInt(cfg -> cfg.getHall().getIncome())
+                .map(Town::getHallType)
+                .filter(Objects::nonNull)
+                .mapToInt(HallType::getIncome)
                 .sum();
     }
 

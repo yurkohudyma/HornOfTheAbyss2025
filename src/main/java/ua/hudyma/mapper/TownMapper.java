@@ -31,7 +31,6 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
 
     @Override
     public TownRespDto toDto(Town town) {
-        var townConfig = town.getBuildingConfig();
         var visitingHero = town.getVisitingHero();
         var garrisonHero = town.getGarrisonHero();
         return new TownRespDto(
@@ -44,10 +43,7 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
                 town.getDwellingTypeList(),
                 town.getGarrisonArmy(),
                 town.getCommonBuildingMap(),
-                townConfig.getHordeBuildingList(),
-                townConfig.getUniqueBuildingList(),
-                townConfig.getGrailBuilding(),
-                ((InitialBuildingConfig) townConfig).getInitialConstantList()
+                town.getHallType()
         );
     }
 
@@ -62,16 +58,7 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
         town.setName(dto.name());
         town.setDwellingTypeList(dto.dwellingTypeList());
         town.setGarrisonArmy(dto.garrisonArmy());
-        town.setBuildingConfig(createConfigForFaction(dto.faction()));
         return town;
-    }
-
-    private static AbstractBuildingConfig createConfigForFaction(Faction f) {
-        return switch (f) {
-            case CASTLE -> new CastleBuildingConfig();
-            case INFERNO -> new InfernoBuildingConfig();
-            default -> throw new IllegalArgumentException("Unknown faction: " + f);
-        };
     }
 
     private static Alignment computeAlignment(Faction faction) {

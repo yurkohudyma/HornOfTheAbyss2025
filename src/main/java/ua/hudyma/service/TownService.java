@@ -7,24 +7,15 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
-import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.dto.TownReqDto;
-import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.properties.CommonBuildingTypeProperties;
-import ua.hudyma.exception.BuildingAlreadyExistsException;
-import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.resource.ResourceDemandRespDto;
-import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.MessageProcessor;
 
-import java.util.*;
-
-import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service

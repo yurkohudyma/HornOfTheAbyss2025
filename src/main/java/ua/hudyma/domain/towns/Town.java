@@ -14,6 +14,7 @@ import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.config.AbstractBuildingConfig;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
+import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
@@ -61,7 +62,6 @@ public class Town implements BaseEntity {
     @FixedSize(7)
     @ToString.Exclude
     private List<CreatureSlot> garrisonArmy;
-    @Type(JsonType.class)
-    @Column(columnDefinition = "json")
-    private AbstractBuildingConfig buildingConfig;
+    @Enumerated(EnumType.STRING)
+    private HallType hallType = HallType.VILLAGE_HALL;
 }
