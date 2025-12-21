@@ -3,7 +3,6 @@ package ua.hudyma.domain.towns.enums.properties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.towns.enums.*;
-import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.resource.enums.ResourceType;

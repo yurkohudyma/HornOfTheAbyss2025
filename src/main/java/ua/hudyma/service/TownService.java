@@ -74,7 +74,6 @@ public class TownService {
         town.setGarrisonArmy(upgradedGarrisonArmy);
     }
 
-
     private void swapHeroesAtTownGarrison(Hero incomingHero, Hero visitingHero, Town town) {
         town.setGarrisonHero(visitingHero);
         town.setVisitingHero(incomingHero);
@@ -105,11 +104,5 @@ public class TownService {
                         name,
                         EntityNotFoundException::new,
                         false));
-    }
-
-    public ResourceDemandRespDto getResourceDemand(String type) {
-        var constantProps =
-                CommonBuildingTypeProperties.valueOf(type);
-        return townMapper.mapToResourceDto(constantProps);
     }
 }

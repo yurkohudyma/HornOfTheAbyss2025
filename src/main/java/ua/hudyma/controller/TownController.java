@@ -5,14 +5,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.domain.towns.enums.AbstractBuildingType;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
+import ua.hudyma.service.build.AbstractBuildService;
 
 @RestController
 @RequestMapping("/towns")
 @RequiredArgsConstructor
 public class TownController {
     private final TownService townService;
+    private final AbstractBuildService abstractBuildService;
     @PostMapping
     public ResponseEntity<String> createTown (
             @RequestBody TownReqDto dto){
@@ -41,8 +44,8 @@ public class TownController {
 
     @GetMapping("/getResourceDemand")
     public ResponseEntity<ResourceDemandRespDto> getResourceDemand
-            (@RequestParam String type){
-        return ResponseEntity.ok(townService
-                .getResourceDemand(type));
+            (@RequestParam String type, @RequestParam Integer level){
+        return ResponseEntity.ok(abstractBuildService
+                .getResourceDemand(type, level));
     }
 }

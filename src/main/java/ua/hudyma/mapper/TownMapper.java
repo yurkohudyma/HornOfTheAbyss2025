@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.domain.towns.enums.properties.AbstractBuildingTypeProperties;
 import ua.hudyma.domain.towns.enums.properties.CommonBuildingTypeProperties;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
@@ -18,11 +19,12 @@ import ua.hudyma.service.PlayerService;
 public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
     private final PlayerService playerService;
 
-    public ResourceDemandRespDto mapToResourceDto(CommonBuildingTypeProperties constantProps) {
+    public ResourceDemandRespDto mapToResourceDto(
+            AbstractBuildingTypeProperties constantProps) {
         return new ResourceDemandRespDto(
-                constantProps.getRequiredBuiltBuildings(),
-                constantProps.getRequiredResourceMap(),
-                constantProps.getExcludedFactions());
+                ((CommonBuildingTypeProperties) constantProps).getRequiredBuiltBuildings(),
+                ((CommonBuildingTypeProperties) constantProps).getRequiredResourceMap(),
+                ((CommonBuildingTypeProperties) constantProps).getExcludedFactions());
     }
 
     @Override

@@ -11,6 +11,8 @@ import ua.hudyma.domain.towns.dto.AbstractBuildReqDto;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.domain.towns.enums.properties.*;
+import ua.hudyma.mapper.TownMapper;
+import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.PlayerService;
 import ua.hudyma.service.TownService;
 
@@ -25,6 +27,15 @@ public class AbstractBuildService {
     private final TownService townService;
     private final PlayerService playerService;
     private final CommonBuildService commonBuildService;
+    private final TownMapper townMapper;
+
+    public ResourceDemandRespDto getResourceDemand(String type, Integer level) {
+        var enumClass = resolveBuildingEnumType(type);
+        var modifiedType = getModifiedPropertiesName(type, level);
+        var constantProps =
+                getTypeSpecificConstantProperties(modifiedType, enumClass);
+        return townMapper.mapToResourceDto(constantProps);
+    }
 
     @Transactional
     public String build(AbstractBuildReqDto dto) {
@@ -57,7 +68,7 @@ public class AbstractBuildService {
             Town town,
             AbstractBuildingType buildingType,
             AbstractBuildingTypeProperties constantProperties) {
-        if (buildingType instanceof CommonBuildingType){
+        if (buildingType instanceof CommonBuildingType || buildingType instanceof HallType){
             commonBuildService.build(new BuildReqDto(
                     town,
                     buildingType,
@@ -65,8 +76,9 @@ public class AbstractBuildService {
                     player,
                     constantProperties));
         }
-        else if (buildingType instanceof HallType){
-            throw new IllegalArgumentException("Hall type not APPREHENDED");
+        else if (buildingType instanceof FortificationType){
+            throw new IllegalArgumentException("Fortification type not APPREHENDED");
+            //todo imple
         }
     }
 
@@ -79,6 +91,11 @@ public class AbstractBuildService {
     private String getModifiedPropertiesName(AbstractBuildingType buildingType, int buildingLevel) {
         if (buildingType == MAGE_GUILD) return buildingType + "_L" + buildingLevel;
         return buildingType.toString();
+    }
+
+    private String getModifiedPropertiesName(String buildingType, int buildingLevel) {
+        if (buildingType.equals(MAGE_GUILD.name())) return buildingType + "_L" + buildingLevel;
+        return buildingType;
     }
 
     AbstractBuildingTypeProperties getTypeSpecificConstantProperties(
