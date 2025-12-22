@@ -10,6 +10,7 @@ import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.domain.towns.enums.properties.*;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
+import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
@@ -92,7 +93,8 @@ public class CommonBuildService {
         checkResourcesDemandAndDecrement(availResources, demandedResources);
     }
     /** HallType and other one-field Enum properties method */
-     private void checkDemands (Town town, Player player, HallTypeProperties constantProperties){
+     private void checkDemands (Town town, Player player,
+                                HallTypeProperties constantProperties){
         var demandedBuildings = constantProperties.getRequiredBuildingMap();
         if (!demandedBuildings.isEmpty()) {
             checkDemandedBuildings(town, demandedBuildings);
@@ -131,26 +133,44 @@ public class CommonBuildService {
      * @param town
      * @param demandedBuildings
      */
-    private void checkDemandedBuildings (Town town, Map<String, Integer> demandedBuildings){
+    private void checkDemandedBuildings (Town town,
+                                         Map<String, Integer> demandedBuildings){
         var commonBuildingMap = town.getCommonBuildingMap();
-        var stringifiedBuildingMap = convertToStringKeyMap(commonBuildingMap);
+        var stringifiedExistingBuildingMap =
+                convertToStringKeyMap(commonBuildingMap);
+        if (town.getHallType() != null){
+            stringifiedExistingBuildingMap.put(town.getHallType().toString(), 0);
+        }
         for (Map.Entry<String, Integer> entry : demandedBuildings.entrySet()) {
             var demandedBuildingType = entry.getKey();
             var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
-            boolean containsKey = stringifiedBuildingMap.containsKey(demandedBuildingType);
-            if (!containsKey) {
-                throw getExceptionSupplier(ResourceType.class,
+            var demandedBuildingExistsInTown = stringifiedExistingBuildingMap
+                    .containsKey(demandedBuildingType);
+            var simpleBuildRequireMsg = String.format("Required %s",
+                    entry.getKey());
+            if (!demandedBuildingExistsInTown) {
+               throw getExceptionSupplier(simpleBuildRequireMsg,
+                        RequiredBuildingMissingException::new)
+                        .get();
+            }
+            var existingBuildingTypeLevel = stringifiedExistingBuildingMap
+                    .get(demandedBuildingType);
+            boolean buildingLevelMatchesOrHigher = existingBuildingTypeLevel >= demandedBuildingLevel;
+            if (!buildingLevelMatchesOrHigher) {
+                var msg = existingBuildingTypeLevel > 0 ?
                         String.format("Required %s of Level %d",
                                 entry.getKey(),
-                                demandedBuildingLevel),
-                        InsufficientResourcesException::new,
-                        true)
+                                demandedBuildingLevel) : simpleBuildRequireMsg;
+                throw getExceptionSupplier(
+                        msg,
+                        RequiredBuildingMissingException::new)
                         .get();
             }
         }
     }
 
-    private Map<String, Integer> convertToStringKeyMap(Map<CommonBuildingType, Integer> commonBuildingMap) {
+    private Map<String, Integer> convertToStringKeyMap(
+            Map<CommonBuildingType, Integer> commonBuildingMap) {
         return commonBuildingMap.entrySet().stream()
                 .collect(Collectors
                         .toMap(k -> k.getKey().toString(), Map.Entry::getValue));

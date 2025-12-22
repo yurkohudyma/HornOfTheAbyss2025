@@ -23,8 +23,7 @@ public class MessageProcessor {
         } else if (t instanceof List<?> && ((List<?>) t).size() > 0) {
             className = ((List<?>) t).get(0).getClass().getSimpleName();
             fieldValue = ((List<?>) t).size();
-        }
-        else {
+        } else {
             className = "NA";
             fieldValue = "NA";
         }
@@ -36,7 +35,7 @@ public class MessageProcessor {
     }
 
     private static boolean verifyFieldName(String fieldName) {
-      return fieldName != null && !fieldName.isEmpty();
+        return fieldName != null && !fieldName.isEmpty();
     }
 
     /*public static <E extends Exception> Supplier<E> getExceptionSupplier(
@@ -54,9 +53,16 @@ public class MessageProcessor {
             boolean resourceShortage) {
         return resourceShortage ?
                 () -> exceptionFactory
-                .apply(field.toString()) :
+                        .apply(field.toString()) :
                 () -> exceptionFactory
-                .apply(clazz.getSimpleName() + " " + field + " NOT found");
+                        .apply(clazz.getSimpleName() + " " + field + " NOT found");
+    }
+
+    public static <E extends Exception> Supplier<E> getExceptionSupplier(
+            Object field,
+            Function<String, E> exceptionFactory) {
+        return () -> exceptionFactory
+                        .apply(field.toString());
     }
 
 }
