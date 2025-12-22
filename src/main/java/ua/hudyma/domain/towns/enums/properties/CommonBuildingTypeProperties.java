@@ -69,7 +69,8 @@ public enum CommonBuildingTypeProperties implements AbstractBuildingTypeProperti
                     STRONGHOLD, FORTRESS)),
     MAGE_GUILD_L5(toEnumMap(CommonBuildingType.class,
             Map.of(MAGE_GUILD, 4)),
-            toEnumMap(ResourceType.class, Map.of(
+            toEnumMap(ResourceType.class,
+                    Map.of(
                     WOOD, 5,
                     ORE, 5,
                     MERCURY, 10,
@@ -87,14 +88,22 @@ public enum CommonBuildingTypeProperties implements AbstractBuildingTypeProperti
             emptyFactions()),
     RESOURCE_SILO(toEnumMap(CommonBuildingType.class,
             Map.of(CommonBuildingType.MARKETPLACE, 0)),
-            toEnumMap(ResourceType.class, Map.of(
+            toEnumMap(ResourceType.class,
+                    Map.of(
                     ORE, 5,
                     GOLD, 5000)),
             emptyFactions()),
     TAVERN(emptyMap(CommonBuildingType.class),
-            toEnumMap(ResourceType.class, Map.of(
+            toEnumMap(ResourceType.class,
+                    Map.of(
                     WOOD, 5,
                     GOLD, 500)),
+            emptyFactions()),
+    SHIPYARD(emptyMap(CommonBuildingType.class),
+            toEnumMap(ResourceType.class,
+                    Map.of(
+                    WOOD, 20,
+                    GOLD, 2000)),
             emptyFactions());
     private static <T extends Enum<T>> EnumMap<T, Integer> emptyMap(Class<T> enumClass) {
         return new EnumMap<>(enumClass);

@@ -13,11 +13,12 @@ import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.resource.enums.ResourceType;
 
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static ua.hudyma.domain.towns.enums.CommonBuildingType.MARKETPLACE;
+import static ua.hudyma.domain.towns.enums.CommonBuildingType.RESOURCE_SILO;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -37,23 +38,64 @@ public class CommonBuildService {
             town.setCommonBuildingMap(commonBuildingMap);
         } else {
             int existingBuildLevel;
+            var alreadyBuiltMsg = String.format("%s already built in %s",
+                    buildingType, town.getName());
+            var resourceMap = player.getResourceMap();
+            if (resourceMap == null) {
+                throw new IllegalStateException("Available Resources Map is NULL");
+            }
             if (buildingType instanceof CommonBuildingType) {
                 if (commonBuildingMap.containsKey(buildingType)) {
                     existingBuildLevel = commonBuildingMap.get(buildingType);
                     throwExceptionWhenLevelMatchesOrZero(town, buildingType,
                             buildingLevel, existingBuildLevel);
                 }
-                checkDemands(town, player,
-                        (CommonBuildingTypeProperties) constantProperties);
-                commonBuildingMap.put((CommonBuildingType) buildingType, buildingLevel);
+                checkDemands(town, resourceMap,
+                        (CommonBuildingTypeProperties)
+                                constantProperties);
+                if (buildingType == RESOURCE_SILO){
+                    commonBuildingMap.remove(MARKETPLACE);
+                    commonBuildingMap.put((CommonBuildingType) buildingType, 0);
+                }
+                else {
+                    commonBuildingMap.put((CommonBuildingType) buildingType, buildingLevel);
+                }
+
             } else if (buildingType instanceof HallType) {
                 if (town.getHallType().equals(buildingType)){
-                    var message = String.format("%s already built in %s",
-                            buildingType, town.getName());
-                    throw new BuildingAlreadyExistsException(message);
+                    throw getExceptionSupplier(alreadyBuiltMsg,
+                            BuildingAlreadyExistsException::new)
+                            .get();
                 }
-                checkDemands(town, player, (HallTypeProperties) constantProperties);
+                checkDemands(town, resourceMap, (HallTypeProperties)
+                        constantProperties);
                 town.setHallType((HallType) buildingType);
+
+            } else if (buildingType instanceof FortificationType) {
+                var fortificationType = town.getFortificationType();
+                if (fortificationType != null && fortificationType.equals(buildingType)){
+                    throw getExceptionSupplier(alreadyBuiltMsg,
+                            BuildingAlreadyExistsException::new)
+                            .get();
+                }
+                checkDemands(town, resourceMap,
+                        (FortificationTypeProperties)
+                        constantProperties);
+                town.setFortificationType((FortificationType) buildingType);
+            } else if (buildingType instanceof UniqueBuildingType) {
+                var uniqueBuildings = town.getUniqueBuildingSet();
+                if (uniqueBuildings != null &&
+                        uniqueBuildings.contains(((UniqueBuildingType) buildingType).name())){
+                    throw getExceptionSupplier(alreadyBuiltMsg,
+                            BuildingAlreadyExistsException::new)
+                            .get();
+                }
+                checkDemands(town, resourceMap,
+                        (UniqueBuildingTypeProperties)
+                        constantProperties);
+                if (uniqueBuildings == null) uniqueBuildings = new HashSet<>();
+                town.setUniqueBuildingSet(uniqueBuildings);
+                uniqueBuildings.add(((UniqueBuildingType) buildingType).name());
             } else {
                 throw new IllegalStateException("buildingType is of WRONG instance type = "
                         + buildingType.getClass().getName());
@@ -61,51 +103,53 @@ public class CommonBuildService {
         }
     }
 
-    private static void throwExceptionWhenLevelMatchesOrZero(
-            Town town, AbstractBuildingType buildingType,
-            int buildingLevel, int existingBuildLevel) {
-        String message;
-        if (existingBuildLevel == buildingLevel) {
-            message = String.format("%s of level %d already built in %s",
-                    buildingType, existingBuildLevel, town.getName());
-            throw new BuildingAlreadyExistsException(message);
-        } else if (existingBuildLevel == 0) {
-            message = String.format("%s already built in %s",
-                    buildingType, town.getName());
-            throw new BuildingAlreadyExistsException(message);
-        }
-    }
-
     private void checkDemands(
-            Town town, Player player,
+            Town town,  Map<ResourceType, Integer> availResources,
             CommonBuildingTypeProperties constantProperties) {
         var demandedBuildings =
                 constantProperties.getRequiredBuiltBuildings();
         if (!demandedBuildings.isEmpty()) {
             checkDemandedBuildings(town, demandedBuildings);
         }
-        var availResources = player.getResourceMap();
-        if (availResources == null) {
-            throw new IllegalStateException("Available Resources Map is NULL");
-        }
+
         var demandedResources = constantProperties
                 .getRequiredResourceMap();
         checkResourcesDemandAndDecrement(availResources, demandedResources);
     }
-    /** HallType and other one-field Enum properties method */
-     private void checkDemands (Town town, Player player,
+
+    /** HallType */
+     private void checkDemands (Town town, Map<ResourceType, Integer> availResources,
                                 HallTypeProperties constantProperties){
         var demandedBuildings = constantProperties.getRequiredBuildingMap();
         if (!demandedBuildings.isEmpty()) {
             checkDemandedBuildings(town, demandedBuildings);
         }
-        var availResources = player.getResourceMap();
-        if (availResources == null) {
-            throw new IllegalStateException("Available Resources Map is NULL");
+        var demandedResources = constantProperties
+                .getRequiredResourceMap();
+        checkResourcesDemandAndDecrement(availResources, demandedResources);
+    }
+    /** FortificationType */
+    private void checkDemands (Town town, Map<ResourceType, Integer> availResources,
+                               FortificationTypeProperties constantProperties){
+        var demandedBuildings = constantProperties.getRequiredBuildingSet();
+        if (!demandedBuildings.isEmpty()) {
+            checkDemandedBuildings(town, demandedBuildings);
         }
         var demandedResources = constantProperties
                 .getRequiredResourceMap();
         checkResourcesDemandAndDecrement(availResources, demandedResources);
+    }
+    /** UniqueType */
+    private void checkDemands (Town town, Map<ResourceType, Integer> availResources,
+                               UniqueBuildingTypeProperties constantProperties){
+        var demandedBuildings = constantProperties.getRequiredBuildingSet();
+        if (!demandedBuildings.isEmpty()) {
+            checkDemandedBuildings(town, demandedBuildings);
+        }
+        var demandedResources = constantProperties
+                .getRequiredResourceMap();
+        checkResourcesDemandAndDecrement(availResources, demandedResources);
+
     }
 
     private void checkDemandedBuildings(
@@ -127,12 +171,53 @@ public class CommonBuildService {
             }
         }
     }
+    /** UniqueType */
+    private void checkDemandedBuildings(Town town,
+                                        Set<String> demandedBuildings){
+        var commonBuildingMap = town
+                .getCommonBuildingMap();
+        var stringifiedExistingBuildingMap =
+                convertToStringKeyMap(commonBuildingMap);
+        if (town.getUniqueBuildingSet() != null){
+            stringifiedExistingBuildingMap.putAll(toMap(
+                    town.getUniqueBuildingSet()));
+        }
+        for (String demanded: demandedBuildings){
+            if (!stringifiedExistingBuildingMap.containsKey(demanded)){
+                throw getExceptionSupplier(
+                        String.format("Required %s", demanded),
+                        RequiredBuildingMissingException::new)
+                        .get();
+            }
+        }
+    }
 
-    /**
-     * HallType and other one-field Enum properties method
-     * @param town
-     * @param demandedBuildings
-     */
+    private static Map<String, Integer> toMap(Set<String> demandedBuildings) {
+        return demandedBuildings.stream()
+                .collect(Collectors.toMap(Function.identity(), b -> 0));
+    }
+
+        /** FortificationType */
+    private void checkDemandedBuildings(Town town,
+                                        EnumSet<FortificationType> demandedBuildings) {
+        var commonBuildingMap = town
+                .getCommonBuildingMap();
+        var stringifiedExistingBuildingMap =
+                convertToStringKeyMap(commonBuildingMap);
+        if (town.getFortificationType() != null){
+            stringifiedExistingBuildingMap.put(town.getFortificationType().toString(), 0);
+        }
+        for (FortificationType demanded : demandedBuildings){
+            if (!stringifiedExistingBuildingMap.containsKey(demanded.name())){
+                throw getExceptionSupplier(
+                        String.format("Required %s", demanded.name()),
+                        RequiredBuildingMissingException::new)
+                        .get();
+            }
+        }
+    }
+
+    /** HallType */
     private void checkDemandedBuildings (Town town,
                                          Map<String, Integer> demandedBuildings){
         var commonBuildingMap = town.getCommonBuildingMap();
@@ -155,7 +240,8 @@ public class CommonBuildService {
             }
             var existingBuildingTypeLevel = stringifiedExistingBuildingMap
                     .get(demandedBuildingType);
-            boolean buildingLevelMatchesOrHigher = existingBuildingTypeLevel >= demandedBuildingLevel;
+            boolean buildingLevelMatchesOrHigher = existingBuildingTypeLevel
+                    >= demandedBuildingLevel;
             if (!buildingLevelMatchesOrHigher) {
                 var msg = existingBuildingTypeLevel > 0 ?
                         String.format("Required %s of Level %d",
@@ -167,13 +253,6 @@ public class CommonBuildService {
                         .get();
             }
         }
-    }
-
-    private Map<String, Integer> convertToStringKeyMap(
-            Map<CommonBuildingType, Integer> commonBuildingMap) {
-        return commonBuildingMap.entrySet().stream()
-                .collect(Collectors
-                        .toMap(k -> k.getKey().toString(), Map.Entry::getValue));
     }
 
     private void checkResourcesDemandAndDecrement(
@@ -200,5 +279,27 @@ public class CommonBuildService {
                     demandedResQty,
                     difference);
         }
+    }
+
+    private static void throwExceptionWhenLevelMatchesOrZero(
+            Town town, AbstractBuildingType buildingType,
+            int buildingLevel, int existingBuildLevel) {
+        String message;
+        if (existingBuildLevel == buildingLevel) {
+            message = String.format("%s of level %d already built in %s",
+                    buildingType, existingBuildLevel, town.getName());
+            throw new BuildingAlreadyExistsException(message);
+        } else if (existingBuildLevel == 0) {
+            message = String.format("%s already built in %s",
+                    buildingType, town.getName());
+            throw new BuildingAlreadyExistsException(message);
+        }
+    }
+
+    private Map<String, Integer> convertToStringKeyMap(
+            Map<CommonBuildingType, Integer> commonBuildingMap) {
+        return commonBuildingMap.entrySet().stream()
+                .collect(Collectors
+                        .toMap(k -> k.getKey().toString(), Map.Entry::getValue));
     }
 }

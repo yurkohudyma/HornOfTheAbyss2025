@@ -56,8 +56,10 @@ public class AbstractBuildService {
                         modifiedPropertiesName, enumTypeClass);
         resolveBuildingTypeAndInvokeSpecificFactoryService
                 (player, buildingLevel, town, buildingType, constantProperties);
-        var msg = String.format("%s Level %d has been erected in %s",
-                buildingType, buildingLevel, town.getName());
+        var msg = buildingLevel > 0 ? String.format("%s Level %d has been erected in %s",
+                buildingType, buildingLevel, town.getName()) :
+                String.format("%s has been erected in %s",
+                        buildingType, town.getName());
         log.info(msg);
         return msg;
     }
@@ -68,7 +70,10 @@ public class AbstractBuildService {
             Town town,
             AbstractBuildingType buildingType,
             AbstractBuildingTypeProperties constantProperties) {
-        if (buildingType instanceof CommonBuildingType || buildingType instanceof HallType){
+        if (    buildingType instanceof CommonBuildingType ||
+                buildingType instanceof HallType ||
+                buildingType instanceof FortificationType ||
+                buildingType instanceof UniqueBuildingType){ //todo imple
             commonBuildService.build(new BuildReqDto(
                     town,
                     buildingType,
@@ -76,9 +81,11 @@ public class AbstractBuildService {
                     player,
                     constantProperties));
         }
-        else if (buildingType instanceof FortificationType){
-            throw new IllegalArgumentException("Fortification type not APPREHENDED");
-            //todo imple
+        else if (buildingType instanceof HordeBuildingType){
+            throw new IllegalArgumentException("HordeBuildingType not APPREHENDED");
+        }
+        else if (buildingType instanceof GrailBuildingType){
+            throw new IllegalArgumentException("GrailBuildingType not APPREHENDED");
         }
     }
 

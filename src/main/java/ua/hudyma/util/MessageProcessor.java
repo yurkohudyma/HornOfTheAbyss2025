@@ -38,14 +38,6 @@ public class MessageProcessor {
         return fieldName != null && !fieldName.isEmpty();
     }
 
-    /*public static <E extends Exception> Supplier<E> getExceptionSupplier(
-            Class<?> clazz,
-            Object field,
-            Function<String, E> exceptionFactory) {
-        return () -> exceptionFactory
-                .apply(clazz.getSimpleName() + " " + field + " NOT found");
-    }*/
-
     public static <E extends Exception> Supplier<E> getExceptionSupplier(
             Class<?> clazz,
             Object field,

@@ -8,7 +8,7 @@ import static ua.hudyma.enums.Faction.*;
 
 @Getter
 @RequiredArgsConstructor
-public enum GrailBuildingType {
+public enum GrailBuildingType implements AbstractBuildingType {
     AURORA_BOREALIS (CONFLUX),
     CARNIVOROUS_PLANT (FORTRESS),
     COLOSSUS (CASTLE),

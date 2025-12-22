@@ -15,15 +15,14 @@ import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HallType;
+import ua.hudyma.domain.towns.enums.UniqueBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 @Table(name = "towns")
@@ -68,4 +67,8 @@ public class Town implements BaseEntity {
     private HallType hallType = HallType.VILLAGE_HALL;
     @Enumerated(EnumType.STRING)
     private FortificationType fortificationType;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "unique_buildings")
+    private Set<String> uniqueBuildingSet =
+            new HashSet<>();
 }

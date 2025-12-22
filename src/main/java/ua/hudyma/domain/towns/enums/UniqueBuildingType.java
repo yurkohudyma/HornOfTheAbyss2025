@@ -11,6 +11,7 @@ import static ua.hudyma.enums.Faction.*;
 public enum UniqueBuildingType implements AbstractBuildingType{
 
     //castle
+    BROTHERHOOD_OF_THE_SWORD(CASTLE),
     LIGHTHOUSE (CASTLE),
     STABLES (CASTLE),
 

@@ -5,6 +5,7 @@ public enum CommonBuildingType implements AbstractBuildingType {
     MAGE_GUILD,
     MARKETPLACE,
     RESOURCE_SILO,
-    TAVERN
+    TAVERN,
+    SHIPYARD
 
 }
