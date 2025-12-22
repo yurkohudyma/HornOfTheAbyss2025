@@ -9,8 +9,11 @@ import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.BuildingTypeResolver;
 import ua.hudyma.domain.towns.dto.AbstractBuildReqDto;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
+import ua.hudyma.domain.towns.dto.DwellReqDto;
 import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
+import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.domain.towns.enums.properties.*;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.resource.ResourceDemandRespDto;
@@ -19,6 +22,8 @@ import ua.hudyma.service.TownService;
 
 import java.util.Arrays;
 
+import static ua.hudyma.domain.towns.converter.BuildingTypeResolver.resolve;
+import static ua.hudyma.domain.towns.converter.BuildingTypeResolver.resolveDwellingType;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 
 @Service
@@ -29,6 +34,7 @@ public class AbstractBuildService {
     private final PlayerService playerService;
     private final CommonBuildService commonBuildService;
     private final TownMapper townMapper;
+    private final DwellingBuildService dwellingBuildService;
 
     public ResourceDemandRespDto getResourceDemand(String type, Integer level) {
         var enumClass = resolveBuildingEnumType(type);
@@ -48,7 +54,7 @@ public class AbstractBuildService {
         }
         var town = townService.getTown(dto.name());
         checkTownBelongsToPlayer(player, town);
-        var buildingType = BuildingTypeResolver.resolve(dto.buildingType());
+        var buildingType = resolve(dto.buildingType());
         var modifiedPropertiesName = getModifiedPropertiesName(buildingType, buildingLevel);
         var enumTypeClass = resolveBuildingEnumType(
                 buildingType.toString());
@@ -63,6 +69,99 @@ public class AbstractBuildService {
                         buildingType, town.getName());
         log.info(msg);
         return msg;
+    }
+
+    @Transactional
+    public String buildDwelling (AbstractBuildReqDto dto){
+        var player = playerService.getPlayer(dto.playerId());
+        var buildingLevel = dto.buildingLevel();
+        if (buildingLevel > 5) {
+            throw new IllegalArgumentException
+                    ("Building LEVEL is limited by 5, while provided = " + buildingLevel);
+        }
+        var town = townService.getTown(dto.name());
+        checkTownBelongsToPlayer(player, town);
+        var buildingType = resolveDwellingType(dto.buildingType());
+        var enumTypeClass = resolveDwellingEnumType
+                (buildingType.toString());
+        var constantProperties =
+                getTypeSpecificDwellConstantProperties(
+                        buildingType.toString(), enumTypeClass);
+        resolveDwellingTypeAndInvokeSpecificFactoryService
+                (player, buildingLevel, town, buildingType, constantProperties);
+        return "";
+    }
+
+    AbstractDwellingTypeProperties getTypeSpecificDwellConstantProperties(
+            String propertyName, Class<? extends AbstractDwellingType> enumTypeClass) {
+        if (enumTypeClass.equals(CastleDwellingType.class)) {
+            return CastleDwellingTypeProperties.valueOf(propertyName);
+        }
+        else throw new IllegalArgumentException("Unknown AbstractBuildingType propertyName: "
+                    + propertyName);
+    }
+
+    AbstractBuildingTypeProperties getTypeSpecificConstantProperties(
+            String propertyName, Class<? extends AbstractBuildingType> enumTypeClass) {
+        if (enumTypeClass.equals(CommonBuildingType.class)) {
+            return CommonBuildingTypeProperties.valueOf(propertyName);
+        }
+        else if (enumTypeClass.equals(FortificationType.class)) {
+            return FortificationTypeProperties.valueOf(propertyName);
+        }
+        else if (enumTypeClass.equals(HallType.class)){
+            return HallTypeProperties.valueOf(propertyName);
+        }
+        else if (enumTypeClass.equals(HordeBuildingType.class)){
+            return HordeBuildingTypeProperties.valueOf(propertyName);
+        }
+        else if (enumTypeClass.equals(UniqueBuildingType.class)){
+            return UniqueBuildingTypeProperties.valueOf(propertyName);
+        }
+        else throw new IllegalArgumentException("Unknown AbstractBuildingType propertyName: "
+                    + propertyName);
+    }
+
+    public Class<? extends AbstractBuildingType> resolveBuildingEnumType(String type) {
+        var buildingType = resolve(type);
+        for (Class<? extends AbstractBuildingType> ttype : BuildingTypeResolver.ENUM_TYPES) {
+            var enumConstants = ttype.getEnumConstants();
+            var typeList = Arrays.asList(enumConstants);
+            if (typeList.contains(buildingType)) {
+                return ttype;
+            }
+        }
+        throw new IllegalArgumentException("No match for AbstractBuildingType propertyName: "
+                + type);
+    }
+
+    public Class<? extends AbstractDwellingType> resolveDwellingEnumType(String type) {
+        var buildingType = resolveDwellingType(type);
+        for (Class<? extends AbstractDwellingType> ttype : BuildingTypeResolver.ENUM_DWELL_TYPES) {
+            var enumConstants = ttype.getEnumConstants();
+            var typeList = Arrays.asList(enumConstants);
+            if (typeList.contains(buildingType)) {
+                return ttype;
+            }
+        }
+        throw new IllegalArgumentException("No match for AbstractDwellingType propertyName: "
+                + type);
+    }
+
+    private void resolveDwellingTypeAndInvokeSpecificFactoryService(
+            Player player,
+            int buildingLevel,
+            Town town,
+            AbstractDwellingType buildingType,
+            AbstractDwellingTypeProperties constantProperties) {
+        if (buildingType instanceof CastleDwellingType) {
+            dwellingBuildService.build(new DwellReqDto(
+                    town,
+                    buildingType,
+                    buildingLevel,
+                    player,
+                    constantProperties));
+        }
     }
 
     private void resolveBuildingTypeAndInvokeSpecificFactoryService(
@@ -105,39 +204,5 @@ public class AbstractBuildService {
     private String getModifiedPropertiesName(String buildingType, int buildingLevel) {
         if (buildingType.equals(MAGE_GUILD.name())) return buildingType + "_L" + buildingLevel;
         return buildingType;
-    }
-
-    AbstractBuildingTypeProperties getTypeSpecificConstantProperties(
-            String propertyName, Class<? extends AbstractBuildingType> enumTypeClass) {
-        if (enumTypeClass.equals(CommonBuildingType.class)) {
-            return CommonBuildingTypeProperties.valueOf(propertyName);
-        }
-        else if (enumTypeClass.equals(FortificationType.class)) {
-            return FortificationTypeProperties.valueOf(propertyName);
-        }
-        else if (enumTypeClass.equals(HallType.class)){
-            return HallTypeProperties.valueOf(propertyName);
-        }
-        else if (enumTypeClass.equals(HordeBuildingType.class)){
-            return HordeBuildingTypeProperties.valueOf(propertyName);
-        }
-        else if (enumTypeClass.equals(UniqueBuildingType.class)){
-            return UniqueBuildingTypeProperties.valueOf(propertyName);
-        }
-        else throw new IllegalArgumentException("Unknown AbstractBuildingType propertyName: "
-                    + propertyName);
-    }
-
-    public Class<? extends AbstractBuildingType> resolveBuildingEnumType(String type) {
-        var buildingType = BuildingTypeResolver.resolve(type);
-        for (Class<? extends AbstractBuildingType> ttype : BuildingTypeResolver.ENUM_TYPES) {
-            var enumConstants = ttype.getEnumConstants();
-            var typeList = Arrays.asList(enumConstants);
-            if (typeList.contains(buildingType)) {
-                return ttype;
-            }
-        }
-        throw new IllegalArgumentException("No match for AbstractBuildingType propertyName: "
-                + type);
     }
 }

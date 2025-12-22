@@ -54,6 +54,11 @@ public class Town implements BaseEntity {
     @ToString.Exclude
     private Map<CommonBuildingType, Integer> commonBuildingMap =
             new EnumMap<>(CommonBuildingType.class);
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "dwelling_map")
+    @ToString.Exclude
+    private Map<String, Integer> dwellingMap = new HashMap<>();
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "garrison")
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
