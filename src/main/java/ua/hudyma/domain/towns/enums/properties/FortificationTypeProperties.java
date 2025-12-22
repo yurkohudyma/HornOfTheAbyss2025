@@ -2,7 +2,6 @@ package ua.hudyma.domain.towns.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.domain.towns.enums.AbstractBuildingType;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.resource.enums.ResourceType;
 

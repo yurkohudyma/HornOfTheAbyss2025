@@ -2,20 +2,18 @@ package ua.hudyma.domain.towns.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.domain.towns.enums.*;
+import ua.hudyma.domain.towns.enums.CommonBuildingType;
+import ua.hudyma.domain.towns.enums.FortificationType;
+import ua.hudyma.domain.towns.enums.UniqueBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
-import ua.hudyma.enums.Faction;
 import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import static ua.hudyma.enums.Faction.CASTLE;
-import static ua.hudyma.enums.Faction.INFERNO;
 import static ua.hudyma.resource.enums.ResourceType.*;
-
 
 @Getter
 @RequiredArgsConstructor
@@ -87,19 +85,5 @@ public enum CastleDwellingTypeProperties implements AbstractDwellingTypeProperti
     }
     private static Map<String, Integer> toStringMap (Map<String, Integer> source){
         return new HashMap<>(source);
-    }
-
-    @Getter
-    @RequiredArgsConstructor
-    public enum UniqueBuildingTypeProperties implements AbstractBuildingType{
-
-        //castle
-        LIGHTHOUSE (CASTLE),
-        STABLES (CASTLE),
-
-        //inferno
-        CASTLE_GATE (INFERNO),
-        ORDER_OF_FIRE(INFERNO);
-        private final Faction faction;
     }
 }

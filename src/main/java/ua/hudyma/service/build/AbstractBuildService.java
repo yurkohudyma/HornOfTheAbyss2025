@@ -10,6 +10,7 @@ import ua.hudyma.domain.towns.converter.BuildingTypeResolver;
 import ua.hudyma.domain.towns.dto.AbstractBuildReqDto;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.enums.*;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.properties.*;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.resource.ResourceDemandRespDto;
@@ -73,7 +74,8 @@ public class AbstractBuildService {
         if (    buildingType instanceof CommonBuildingType ||
                 buildingType instanceof HallType ||
                 buildingType instanceof FortificationType ||
-                buildingType instanceof UniqueBuildingType){ //todo imple
+                buildingType instanceof UniqueBuildingType ||
+                buildingType instanceof HordeBuildingType){
             commonBuildService.build(new BuildReqDto(
                     town,
                     buildingType,
@@ -81,8 +83,8 @@ public class AbstractBuildService {
                     player,
                     constantProperties));
         }
-        else if (buildingType instanceof HordeBuildingType){
-            throw new IllegalArgumentException("HordeBuildingType not APPREHENDED");
+        else if (buildingType instanceof AbstractDwellingType){
+            throw new IllegalArgumentException("AbstractDwellingType not APPREHENDED");
         }
         else if (buildingType instanceof GrailBuildingType){
             throw new IllegalArgumentException("GrailBuildingType not APPREHENDED");

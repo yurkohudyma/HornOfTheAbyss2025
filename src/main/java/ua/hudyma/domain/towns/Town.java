@@ -12,10 +12,7 @@ import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
-import ua.hudyma.domain.towns.enums.CommonBuildingType;
-import ua.hudyma.domain.towns.enums.FortificationType;
-import ua.hudyma.domain.towns.enums.HallType;
-import ua.hudyma.domain.towns.enums.UniqueBuildingType;
+import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
@@ -71,4 +68,7 @@ public class Town implements BaseEntity {
     @Column(columnDefinition = "json", name = "unique_buildings")
     private Set<String> uniqueBuildingSet =
             new HashSet<>();
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "horde_buildings")
+    private Set<String> hordeBuilding = new HashSet<>();
 }

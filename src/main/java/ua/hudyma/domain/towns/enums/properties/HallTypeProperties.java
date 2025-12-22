@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.*;

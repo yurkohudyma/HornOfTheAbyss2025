@@ -82,6 +82,7 @@ public class CommonBuildService {
                         (FortificationTypeProperties)
                         constantProperties);
                 town.setFortificationType((FortificationType) buildingType);
+
             } else if (buildingType instanceof UniqueBuildingType) {
                 var uniqueBuildings = town.getUniqueBuildingSet();
                 if (uniqueBuildings != null &&
@@ -96,6 +97,22 @@ public class CommonBuildService {
                 if (uniqueBuildings == null) uniqueBuildings = new HashSet<>();
                 town.setUniqueBuildingSet(uniqueBuildings);
                 uniqueBuildings.add(((UniqueBuildingType) buildingType).name());
+
+            } else if (buildingType instanceof HordeBuildingType) {
+                var hordeBuildings = town.getUniqueBuildingSet();
+                if (hordeBuildings != null &&
+                        hordeBuildings.contains(((HordeBuildingType) buildingType).name())){
+                    throw getExceptionSupplier(alreadyBuiltMsg,
+                            BuildingAlreadyExistsException::new)
+                            .get();
+                }
+                checkDemands(town, resourceMap,
+                        (HordeBuildingTypeProperties)
+                                constantProperties);
+                if (hordeBuildings == null) hordeBuildings = new HashSet<>();
+                town.setUniqueBuildingSet(hordeBuildings);
+                hordeBuildings.add(((HordeBuildingType) buildingType).name());
+
             } else {
                 throw new IllegalStateException("buildingType is of WRONG instance type = "
                         + buildingType.getClass().getName());
@@ -103,6 +120,7 @@ public class CommonBuildService {
         }
     }
 
+    /** CommonBuildingType */
     private void checkDemands(
             Town town,  Map<ResourceType, Integer> availResources,
             CommonBuildingTypeProperties constantProperties) {
@@ -149,9 +167,20 @@ public class CommonBuildService {
         var demandedResources = constantProperties
                 .getRequiredResourceMap();
         checkResourcesDemandAndDecrement(availResources, demandedResources);
-
+    }
+    /** HordeType */
+    private void checkDemands (Town town, Map<ResourceType, Integer> availResources,
+                               HordeBuildingTypeProperties constantProperties){
+        var demandedBuildings = constantProperties.getRequiredBuildingSet();
+        if (!demandedBuildings.isEmpty()) {
+            checkHordeDemandedBuildings(town, demandedBuildings);
+        }
+        var demandedResources = constantProperties
+                .getRequiredResourceMap();
+        checkResourcesDemandAndDecrement(availResources, demandedResources);
     }
 
+    /** CommonBuildingType */
     private void checkDemandedBuildings(
             Town town,
             EnumMap<CommonBuildingType, Integer> demandedBuildings) {
@@ -171,6 +200,28 @@ public class CommonBuildService {
             }
         }
     }
+    /** HordeType */
+    private void checkHordeDemandedBuildings (Town town,
+                                              Set<String> demandedBuildings){
+        var commonBuildingMap = town
+                .getCommonBuildingMap();
+        var stringifiedExistingBuildingMap =
+                convertToStringKeyMap(commonBuildingMap);
+        if (town.getHordeBuilding() != null){
+            stringifiedExistingBuildingMap.putAll(toMap(
+                    town.getHordeBuilding()));
+        }
+        for (String demanded: demandedBuildings){
+            if (!stringifiedExistingBuildingMap.containsKey(demanded)){
+                throw getExceptionSupplier(
+                        String.format("Required %s", demanded),
+                        RequiredBuildingMissingException::new)
+                        .get();
+            }
+        }
+
+    }
+
     /** UniqueType */
     private void checkDemandedBuildings(Town town,
                                         Set<String> demandedBuildings){
@@ -190,11 +241,6 @@ public class CommonBuildService {
                         .get();
             }
         }
-    }
-
-    private static Map<String, Integer> toMap(Set<String> demandedBuildings) {
-        return demandedBuildings.stream()
-                .collect(Collectors.toMap(Function.identity(), b -> 0));
     }
 
         /** FortificationType */
@@ -225,6 +271,9 @@ public class CommonBuildService {
                 convertToStringKeyMap(commonBuildingMap);
         if (town.getHallType() != null){
             stringifiedExistingBuildingMap.put(town.getHallType().toString(), 0);
+        }
+        if (town.getFortificationType() != null){
+            stringifiedExistingBuildingMap.put(town.getFortificationType().name(), 0);
         }
         for (Map.Entry<String, Integer> entry : demandedBuildings.entrySet()) {
             var demandedBuildingType = entry.getKey();
@@ -300,6 +349,14 @@ public class CommonBuildService {
             Map<CommonBuildingType, Integer> commonBuildingMap) {
         return commonBuildingMap.entrySet().stream()
                 .collect(Collectors
-                        .toMap(k -> k.getKey().toString(), Map.Entry::getValue));
+                        .toMap(k -> k.getKey().toString(),
+                                Map.Entry::getValue));
+    }
+
+    private static Map<String, Integer> toMap(Set<String> demandedBuildings) {
+        return demandedBuildings.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        v -> 0));
     }
 }
