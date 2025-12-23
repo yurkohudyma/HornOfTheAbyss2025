@@ -110,7 +110,7 @@ public class CommonBuildService {
                         (HordeBuildingTypeProperties)
                                 constantProperties);
                 if (hordeBuildings == null) hordeBuildings = new HashSet<>();
-                town.setUniqueBuildingSet(hordeBuildings);
+                town.setHordeBuilding(hordeBuildings);
                 hordeBuildings.add(((HordeBuildingType) buildingType).name());
 
             } else {
@@ -211,6 +211,9 @@ public class CommonBuildService {
             stringifiedExistingBuildingMap.putAll(toMap(
                     town.getHordeBuilding()));
         }
+        if (town.getDwellingMap() != null)
+            stringifiedExistingBuildingMap
+                    .putAll(toStringMap(town.getDwellingMap()));
         for (String demanded: demandedBuildings){
             if (!stringifiedExistingBuildingMap.containsKey(demanded)){
                 throw getExceptionSupplier(
@@ -233,6 +236,9 @@ public class CommonBuildService {
             stringifiedExistingBuildingMap.putAll(toMap(
                     town.getUniqueBuildingSet()));
         }
+        if (town.getDwellingMap() != null)
+            stringifiedExistingBuildingMap
+                    .putAll(toStringMap(town.getDwellingMap()));
         for (String demanded: demandedBuildings){
             if (!stringifiedExistingBuildingMap.containsKey(demanded)){
                 throw getExceptionSupplier(
@@ -358,5 +364,12 @@ public class CommonBuildService {
                 .collect(Collectors.toMap(
                         Function.identity(),
                         v -> 0));
+    }
+
+    private static <T> Map<String, Integer> toStringMap(Map<T, Integer> map) {
+        return map.entrySet().stream().collect(Collectors.toMap(
+                entry -> entry.getKey().toString(),
+                Map.Entry::getValue
+        ));
     }
 }

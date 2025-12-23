@@ -5,11 +5,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.DwellReqDto;
-import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.domain.towns.enums.properties.CastleDwellingTypeProperties;
-import ua.hudyma.domain.towns.enums.properties.CommonBuildingTypeProperties;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.resource.enums.ResourceType;
@@ -17,7 +15,11 @@ import ua.hudyma.resource.enums.ResourceType;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static ua.hudyma.domain.towns.enums.FortificationType.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -37,8 +39,6 @@ public class DwellingBuildService {
             town.setDwellingMap(dwellingBuildingMap);
         } else {
             int existingBuildLevel;
-            var alreadyBuiltMsg = String.format("%s already built in %s",
-                    buildingType, town.getName());
             var resourceMap = player.getResourceMap();
             if (resourceMap == null) {
                 throw new IllegalStateException("Available Resources Map is NULL");
@@ -50,7 +50,7 @@ public class DwellingBuildService {
                             buildingLevel, existingBuildLevel);
                 }
                 checkDemands(town, resourceMap,
-                        (CastleDwellingTypeProperties)                                constantProperties);
+                        (CastleDwellingTypeProperties) constantProperties);
                 dwellingBuildingMap.put(buildingType.getCode(), buildingLevel);
             } else {
                 throw new IllegalStateException("buildingType is of WRONG instance type = "
@@ -59,9 +59,11 @@ public class DwellingBuildService {
         }
     }
 
-    /** CastleDwellingType */
+    /**
+     * CastleDwellingType
+     */
     private void checkDemands(
-            Town town,  Map<ResourceType, Integer> availResources,
+            Town town, Map<ResourceType, Integer> availResources,
             CastleDwellingTypeProperties constantProperties) {
         var demandedBuildings =
                 constantProperties.getRequiredBuildingMap();
@@ -92,7 +94,7 @@ public class DwellingBuildService {
                         .get();
             }
             availResources.replace(res.getKey(), difference);
-            log.info("{} has been decremented by {} and now = {}",
+            log.info(" :::: {} has been decremented by {} and now = {}",
                     res.getKey(),
                     demandedResQty,
                     difference);
@@ -102,21 +104,57 @@ public class DwellingBuildService {
     private void checkDemandedBuildings(
             Town town,
             Map<String, Integer> demandedBuildings) {
-        var dwellingMap = town.getDwellingMap();
+        Map<String, Integer> allMap = getAllTownBuildingsMap(town);
         for (Map.Entry<String, Integer> entry : demandedBuildings.entrySet()) {
             var demandedBuildingType = entry.getKey();
             var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
-            boolean containsKey = dwellingMap.containsKey(demandedBuildingType);
-            if (!containsKey) {
+            boolean containsKey = allMap.containsKey(demandedBuildingType);
+            if (demandedBuildingType.equals(FORT.name()) &&
+                    (allMap.containsKey(CITADEL.name()) ||
+                     allMap.containsKey(CASTLE.name()))){
+                log.info(":: FORT is demanded, while CITADEL or CASTLE has been erected");
+            }
+            else if (!containsKey) {
+                var msg = demandedBuildingLevel > 0 ? String.format
+                        ("Required %s of Level %d",
+                        entry.getKey(),
+                        demandedBuildingLevel) : String.format("Required %s",
+                        entry.getKey());
                 throw getExceptionSupplier(ResourceType.class,
-                        String.format("Required %s of Level %d",
-                                entry.getKey(),
-                                demandedBuildingLevel),
+                        msg,
                         InsufficientResourcesException::new,
                         true)
                         .get();
             }
         }
+    }
+
+    private static Map<String, Integer> getAllTownBuildingsMap(Town town) {
+        var map = new HashMap<String, Integer>();
+        var horde = town.getHordeBuilding();
+        var unique = town.getUniqueBuildingSet();
+        var dwellingMap = town.getDwellingMap();
+        var commonBuldingMap = town.getCommonBuildingMap();
+        var hall = town.getHallType();
+        var fortification = town.getFortificationType();
+
+        if (dwellingMap != null) {
+            map.putAll(dwellingMap);
+        }
+        if (commonBuldingMap != null) {
+            map.putAll(toStringMap(commonBuldingMap));
+        }
+        if (fortification != null) {
+            map.put(fortification.name(), 0);
+        }
+        if (hall != null) {
+            map.put(hall.name(), 0);
+        }
+        if (horde != null)
+            map.putAll(toMap(horde));
+        if (unique != null)
+            map.putAll(toMap(unique));
+        return map;
     }
 
     private void throwExceptionWhenLevelMatchesOrZero(
@@ -132,5 +170,19 @@ public class DwellingBuildService {
                     buildingType, town.getName());
             throw new BuildingAlreadyExistsException(message);
         }
+    }
+
+    private static Map<String, Integer> toMap(Set<String> set) {
+        return set.stream()
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        v -> 0));
+    }
+
+    private static <T> Map<String, Integer> toStringMap(Map<T, Integer> map) {
+        return map.entrySet().stream().collect(Collectors.toMap(
+                entry -> entry.getKey().toString(),
+                Map.Entry::getValue
+        ));
     }
 }

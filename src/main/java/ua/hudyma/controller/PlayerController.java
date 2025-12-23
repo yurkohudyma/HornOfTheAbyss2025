@@ -25,7 +25,8 @@ public class PlayerController {
                 .createPlayer(dto));
     }
     @GetMapping("/resources")
-    public ResponseEntity<Map<ResourceType, Integer>> fetchResources (
+    public ResponseEntity<Map<ResourceType, Integer>>
+    fetchResources (
             @RequestParam Long playerId){
         return ResponseEntity.ok(playerService
                 .fetchResource(playerId));

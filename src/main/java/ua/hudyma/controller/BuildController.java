@@ -25,4 +25,10 @@ public class BuildController {
         return ResponseEntity.ok(abstractBuildService
                 .build(dto));
     }
+    @PostMapping("/dwell")
+    public ResponseEntity<String> buildDwell(
+            @RequestBody AbstractBuildReqDto dto){
+        return ResponseEntity.ok(abstractBuildService
+                .buildDwelling(dto));
+    }
 }

@@ -22,8 +22,7 @@ import ua.hudyma.service.TownService;
 
 import java.util.Arrays;
 
-import static ua.hudyma.domain.towns.converter.BuildingTypeResolver.resolve;
-import static ua.hudyma.domain.towns.converter.BuildingTypeResolver.resolveDwellingType;
+import static ua.hudyma.domain.towns.converter.BuildingTypeResolver.*;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 
 @Service
@@ -40,7 +39,9 @@ public class AbstractBuildService {
         var enumClass = resolveBuildingEnumType(type);
         var modifiedType = getModifiedPropertiesName(type, level);
         var constantProps =
-                getTypeSpecificConstantProperties(modifiedType, enumClass);
+                getTypeSpecificConstantProperties(
+                        modifiedType,
+                        enumClass);
         return townMapper.mapToResourceDto(constantProps);
     }
 
@@ -55,7 +56,8 @@ public class AbstractBuildService {
         var town = townService.getTown(dto.name());
         checkTownBelongsToPlayer(player, town);
         var buildingType = resolve(dto.buildingType());
-        var modifiedPropertiesName = getModifiedPropertiesName(buildingType, buildingLevel);
+        var modifiedPropertiesName = getModifiedPropertiesName(
+                buildingType, buildingLevel);
         var enumTypeClass = resolveBuildingEnumType(
                 buildingType.toString());
         var constantProperties =
@@ -63,7 +65,8 @@ public class AbstractBuildService {
                         modifiedPropertiesName, enumTypeClass);
         resolveBuildingTypeAndInvokeSpecificFactoryService
                 (player, buildingLevel, town, buildingType, constantProperties);
-        var msg = buildingLevel > 0 ? String.format("%s Level %d has been erected in %s",
+        var msg = buildingLevel > 0 ? String.format
+                ("%s Level %d has been erected in %s",
                 buildingType, buildingLevel, town.getName()) :
                 String.format("%s has been erected in %s",
                         buildingType, town.getName());
@@ -89,7 +92,13 @@ public class AbstractBuildService {
                         buildingType.toString(), enumTypeClass);
         resolveDwellingTypeAndInvokeSpecificFactoryService
                 (player, buildingLevel, town, buildingType, constantProperties);
-        return "";
+        var msg = buildingLevel > 0 ? String.format(
+                "%s Level %d has been erected in %s",
+                buildingType, buildingLevel, town.getName()) :
+                String.format("%s has been erected in %s",
+                        buildingType, town.getName());
+        log.info(msg);
+        return msg;
     }
 
     AbstractDwellingTypeProperties getTypeSpecificDwellConstantProperties(
@@ -124,7 +133,7 @@ public class AbstractBuildService {
 
     public Class<? extends AbstractBuildingType> resolveBuildingEnumType(String type) {
         var buildingType = resolve(type);
-        for (Class<? extends AbstractBuildingType> ttype : BuildingTypeResolver.ENUM_TYPES) {
+        for (Class<? extends AbstractBuildingType> ttype : ENUM_TYPES) {
             var enumConstants = ttype.getEnumConstants();
             var typeList = Arrays.asList(enumConstants);
             if (typeList.contains(buildingType)) {
@@ -137,7 +146,7 @@ public class AbstractBuildService {
 
     public Class<? extends AbstractDwellingType> resolveDwellingEnumType(String type) {
         var buildingType = resolveDwellingType(type);
-        for (Class<? extends AbstractDwellingType> ttype : BuildingTypeResolver.ENUM_DWELL_TYPES) {
+        for (Class<? extends AbstractDwellingType> ttype : ENUM_DWELL_TYPES) {
             var enumConstants = ttype.getEnumConstants();
             var typeList = Arrays.asList(enumConstants);
             if (typeList.contains(buildingType)) {
@@ -190,19 +199,25 @@ public class AbstractBuildService {
         }
     }
 
-    private static void checkTownBelongsToPlayer(Player player, Town town) {
+    private static void checkTownBelongsToPlayer(
+            Player player, Town town) {
         if (!player.getTownsList().contains(town)) {
-            throw new IllegalStateException(town.getName() + " does NOT belong to " + player.getName());
+            throw new IllegalStateException(town.getName() + " " +
+                    "does NOT belong to " + player.getName());
         }
     }
 
-    private String getModifiedPropertiesName(AbstractBuildingType buildingType, int buildingLevel) {
+    private String getModifiedPropertiesName(AbstractBuildingType buildingType,
+                                             int buildingLevel) {
         if (buildingType == MAGE_GUILD) return buildingType + "_L" + buildingLevel;
         return buildingType.toString();
     }
 
-    private String getModifiedPropertiesName(String buildingType, int buildingLevel) {
-        if (buildingType.equals(MAGE_GUILD.name())) return buildingType + "_L" + buildingLevel;
+    private String getModifiedPropertiesName(
+            String buildingType,
+                      int buildingLevel) {
+        if (buildingType.equals(MAGE_GUILD.name()))
+            return buildingType + "_L" + buildingLevel;
         return buildingType;
     }
 }

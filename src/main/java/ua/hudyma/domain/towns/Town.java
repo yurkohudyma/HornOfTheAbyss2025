@@ -43,12 +43,12 @@ public class Town implements BaseEntity {
     private Alignment alignment;
     @Enumerated(EnumType.STRING)
     private Faction faction;
-    @Type(JsonType.class)
+    /*@Type(JsonType.class)
     @Column(columnDefinition = "json")
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(7)
     @ToString.Exclude
-    private List<AbstractDwellingType> dwellingTypeList;
+    private List<AbstractDwellingType> dwellingTypeList;*/
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "common_building_map")
     @ToString.Exclude

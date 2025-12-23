@@ -16,7 +16,7 @@ public record TownRespDto(
         Faction faction,
         String visitingHero,
         String garrisonHero,
-        List<AbstractDwellingType> dwellingTypeList,
+        Map<String, Integer> dwellingMap,
         List<CreatureSlot> garrisonArmy,
         Map<CommonBuildingType, Integer> commonBuildingMap,
         HallType hallType)

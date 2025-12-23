@@ -68,8 +68,8 @@ public enum CastleDwellingTypeProperties implements AbstractDwellingTypeProperti
                     Map.of(
                             MERCURY, 10,
                             CRYSTAL, 10,
-                            SULFUR, 2,
-                            GEMS, 2,
+                            SULFUR, 10,
+                            GEMS, 10,
                             GOLD, 20000)));
     private final Map<String, Integer> requiredBuildingMap;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;

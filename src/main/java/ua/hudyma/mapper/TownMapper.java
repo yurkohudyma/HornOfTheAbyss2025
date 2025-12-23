@@ -38,7 +38,7 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
                 town.getFaction(),
                 visitingHero != null ? visitingHero.getName() : "NA",
                 garrisonHero != null ? garrisonHero.getName() : "NA",
-                town.getDwellingTypeList(),
+                town.getDwellingMap(),
                 town.getGarrisonArmy(),
                 town.getCommonBuildingMap(),
                 town.getHallType()
@@ -54,7 +54,7 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
         town.setAlignment(computeAlignment(dto.faction()));
         town.setFaction(dto.faction());
         town.setName(dto.name());
-        town.setDwellingTypeList(dto.dwellingTypeList());
+        town.setDwellingMap(dto.dwellingMap());
         town.setGarrisonArmy(dto.garrisonArmy());
         return town;
     }
