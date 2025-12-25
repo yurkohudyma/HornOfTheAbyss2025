@@ -3,7 +3,6 @@ package ua.hudyma.service.build;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.enums.*;
@@ -110,7 +109,7 @@ public class CommonBuildService {
                         (HordeBuildingTypeProperties)
                                 constantProperties);
                 if (hordeBuildings == null) hordeBuildings = new HashSet<>();
-                town.setHordeBuilding(hordeBuildings);
+                town.setHordeBuildingSet(hordeBuildings);
                 hordeBuildings.add(((HordeBuildingType) buildingType).name());
 
             } else {
@@ -207,9 +206,9 @@ public class CommonBuildService {
                 .getCommonBuildingMap();
         var stringifiedExistingBuildingMap =
                 convertToStringKeyMap(commonBuildingMap);
-        if (town.getHordeBuilding() != null){
+        if (town.getHordeBuildingSet() != null){
             stringifiedExistingBuildingMap.putAll(toMap(
-                    town.getHordeBuilding()));
+                    town.getHordeBuildingSet()));
         }
         if (town.getDwellingMap() != null)
             stringifiedExistingBuildingMap

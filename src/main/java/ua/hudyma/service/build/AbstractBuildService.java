@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.domain.towns.converter.BuildingTypeResolver;
 import ua.hudyma.domain.towns.dto.AbstractBuildReqDto;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.dto.DwellReqDto;
@@ -15,12 +14,14 @@ import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.domain.towns.enums.properties.*;
+import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.PlayerService;
 import ua.hudyma.service.TownService;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static ua.hudyma.domain.towns.converter.BuildingTypeResolver.*;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
@@ -34,9 +35,55 @@ public class AbstractBuildService {
     private final CommonBuildService commonBuildService;
     private final TownMapper townMapper;
     private final DwellingBuildService dwellingBuildService;
+    private static final Map<Class<?>, String> TOWN_BLD_CONTAINERS = Map.of(
+            CommonBuildingType.class, "commonBuildingMap",
+            CastleDwellingType.class, "dwellingMap",
+            UniqueBuildingType.class, "uniqueBuildingSet",
+            HordeBuildingType.class, "hordeBuildingSet",
+            FortificationType.class, "fortificationType",
+            HallType.class, "hallType"
+    );
+
+    @Transactional
+    public String destroyBuilding(String type, String townName) {
+        var town = townService.getTown(townName);
+        Class<?> clazz;
+        try {
+            clazz = resolveBuildingEnumType(type);
+        } catch (Exception e) {
+            clazz = resolveDwellingEnumType(type);
+        }
+        var container = resolveTownBuidlingContainerByType(type, clazz);
+        resolveContainerEntityByStringAndExecuteDeletion(container, type, town);
+        return String.format("Building %s has been demolished in %s", type, town.getName());
+    }
+
+    private void resolveContainerEntityByStringAndExecuteDeletion(
+            String container, String type, Town town) {
+        switch (container){
+            case "commonBuildingMap" ->
+                town.getCommonBuildingMap().remove(CommonBuildingType.valueOf(type));
+            case "dwellingMap" -> town.getDwellingMap().remove(type);
+            case "uniqueBuildingSet" -> town.getUniqueBuildingSet().remove(type);
+            case "hordeBuildingSet" -> town.getHordeBuildingSet().remove(type);
+            case "fortificationType" -> town.setFortificationType(null);
+            case "hallType" -> town.setHallType(HallType.VILLAGE_HALL);
+        }
+    }
+
+    private String resolveTownBuidlingContainerByType(
+            String type, Class<?> clazz) {
+        var container = TOWN_BLD_CONTAINERS.get(clazz);
+        if (container == null) {
+            throw new RequiredBuildingMissingException(
+                    "Building type " + type + " COULD not be resolved");
+        }
+        return container;
+    }
 
     public ResourceDemandRespDto getResourceDemand(String type, Integer level) {
-        var enumClass = resolveBuildingEnumType(type);
+        var enumClass =
+                resolveBuildingEnumType(type);
         var modifiedType = getModifiedPropertiesName(type, level);
         var constantProps =
                 getTypeSpecificConstantProperties(

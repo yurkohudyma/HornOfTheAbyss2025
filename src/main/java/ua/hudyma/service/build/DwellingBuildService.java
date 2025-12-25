@@ -131,7 +131,7 @@ public class DwellingBuildService {
 
     private static Map<String, Integer> getAllTownBuildingsMap(Town town) {
         var map = new HashMap<String, Integer>();
-        var horde = town.getHordeBuilding();
+        var horde = town.getHordeBuildingSet();
         var unique = town.getUniqueBuildingSet();
         var dwellingMap = town.getDwellingMap();
         var commonBuldingMap = town.getCommonBuildingMap();
