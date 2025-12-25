@@ -283,6 +283,10 @@ public class CommonBuildService {
         for (Map.Entry<String, Integer> entry : demandedBuildings.entrySet()) {
             var demandedBuildingType = entry.getKey();
             var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
+            if (entry.getKey().equals(MARKETPLACE.name()) &&
+                    stringifiedExistingBuildingMap.containsKey(RESOURCE_SILO.name())){
+                continue;
+            }
             var demandedBuildingExistsInTown = stringifiedExistingBuildingMap
                     .containsKey(demandedBuildingType);
             var simpleBuildRequireMsg = String.format("Required %s",
