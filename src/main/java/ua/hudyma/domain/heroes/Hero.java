@@ -10,16 +10,14 @@ import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.Artifact;
 import ua.hudyma.domain.heroes.enums.*;
+import ua.hudyma.domain.spells.enums.SpellSchool;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
 
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Entity
 @Table(name = "heroes")
@@ -78,4 +76,9 @@ public class Hero implements BaseEntity {
     @OneToOne(mappedBy = "garrisonHero")
     @ToString.Exclude
     private Town garrisonTown;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "spell_book_map")
+    @ToString.Exclude
+    private Map<Integer, Set<String>> spellBook =
+            new HashMap<>();
 }

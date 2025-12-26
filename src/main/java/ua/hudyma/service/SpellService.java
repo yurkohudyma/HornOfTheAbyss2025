@@ -1,0 +1,149 @@
+package ua.hudyma.service;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.heroes.enums.SecondarySkill;
+import ua.hudyma.domain.heroes.enums.SkillLevel;
+import ua.hudyma.domain.spells.AbstractSpellSchool;
+import ua.hudyma.domain.spells.enums.AirSpellSchool;
+import ua.hudyma.domain.spells.enums.EarthSpellSchool;
+import ua.hudyma.domain.spells.enums.FireSpellSchool;
+import ua.hudyma.domain.spells.enums.WaterSpellSchool;
+import ua.hudyma.domain.towns.Town;
+import ua.hudyma.exception.RequiredBuildingMissingException;
+import ua.hudyma.exception.TownSpellBookSetAlreadyGeneratedException;
+
+import java.security.SecureRandom;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
+
+@Service
+@RequiredArgsConstructor
+@Log4j2
+public class SpellService {
+    private final TownService townService;
+    private final HeroService heroService;
+    private final SecureRandom random = new SecureRandom();
+    private static final Map<Integer, Integer> SPELL_QTY_PER_LEVEL = Map.of(
+            1, 5,
+            2, 4,
+            3, 3,
+            4, 2,
+            5, 1
+    );
+
+    public Map<Integer, Set<String>> getHeroSpellbook(String heroId) {
+        return heroService.getHero(heroId).getSpellBook();
+    }
+
+    public Map<Integer, Set<String>> getTownSpells(String townName) {
+        return townService.getTown(townName).getMagicGuildSpellMap();
+    }
+
+    @Transactional
+    public String learnHeroNewSpells(String heroId, String townName) {
+        var hero = heroService.getHero(heroId);
+        var town = townService.getTown(townName);
+        if (hero.getSpellBook() == null){
+            hero.setSpellBook(new HashMap<>());
+        }
+        var heroSecondarySkillMap = hero.getSecondarySkillMap();
+        if (heroSecondarySkillMap == null || heroSecondarySkillMap.isEmpty()){
+            throw new IllegalArgumentException("Hero secondary skill MAP is NULL or Empty");
+        }
+        var heroMaxSpellLevel = heroSecondarySkillMap
+                .containsKey(SecondarySkill.WISDOM) ?
+                getMaxSpellLevel(heroSecondarySkillMap.get(SecondarySkill.WISDOM)) : 2;
+        var townSpells = town.getMagicGuildSpellMap();
+        if (townSpells == null || townSpells.isEmpty()){
+            throw new IllegalArgumentException("Town spell Book is NULL or empty");
+        }
+        var allowedSpells = townSpells.get(heroMaxSpellLevel);
+        //todo need to introduce decrementary cycle to learn current and lower level spells
+        //todo otherwise hero does not learn spells of level prior to the current
+        hero.getSpellBook().put(heroMaxSpellLevel, allowedSpells);
+        return "Hero has succ learnt town spells";
+    }
+
+    private int getMaxSpellLevel(SkillLevel skillLevel) {
+        return switch (skillLevel){
+            case BASIC -> 3;
+            case ADVANCED -> 4;
+            case EXPERT -> 5;
+        };
+    }
+
+    @Transactional
+    public Set<String> randomiseSpellSet(String townName, int mageGuildLevel) {
+        validateMageGuildLevel(mageGuildLevel);
+        var town = townService.getTown(townName);
+        validateMageGuildExists(town, mageGuildLevel);
+        var spellMap = initOrValidateSpellMap(town, mageGuildLevel);
+        var allLevelSpells = resolveAllLevelSpells(mageGuildLevel);
+        int spellQty = SPELL_QTY_PER_LEVEL.get(mageGuildLevel);
+        if (spellQty > allLevelSpells.size()) {
+            throw new IllegalStateException(
+                    "Not enough spells for Mage Guild level " + mageGuildLevel);
+        }
+        var generatedSpells = generateRandomSpells(allLevelSpells, spellQty);
+        spellMap.put(mageGuildLevel, generatedSpells);
+        return Set.copyOf(generatedSpells);
+    }
+
+    private void validateMageGuildLevel(int level) {
+        if (level < 1 || level > 5) {
+            throw new IllegalArgumentException("Unsupported Mage Guild level: " + level);
+        }
+    }
+
+    private void validateMageGuildExists(Town town, int level) {
+        var buildings = town.getCommonBuildingMap();
+        if (!buildings.containsKey(MAGE_GUILD) || buildings.get(MAGE_GUILD) < level) {
+            throw new RequiredBuildingMissingException(
+                    "Magic Guild of level " + level + " has NOT been built");
+        }
+    }
+
+    private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
+        if (town.getMagicGuildSpellMap() == null) {
+            town.setMagicGuildSpellMap(new HashMap<>());
+        }
+        var spellMap = town.getMagicGuildSpellMap();
+        if (spellMap.containsKey(level) && !spellMap.get(level).isEmpty()) {
+            throw new TownSpellBookSetAlreadyGeneratedException(
+                    "Spells for level " + level + " in " + town.getName() + " already generated");
+        }
+        return spellMap;
+    }
+
+    private Set<String> generateRandomSpells(List<String> spells, int qty) {
+        Set<Integer> indexes = new HashSet<>();
+        while (indexes.size() < qty) {
+            indexes.add(random.nextInt(spells.size()));
+        }
+        return indexes.stream()
+                .map(spells::get)
+                .collect(Collectors.toSet());
+    }
+
+    private static List<String> resolveAllLevelSpells(int level) {
+        var spells = new ArrayList<String>();
+        spells.addAll(filterByLevel(EarthSpellSchool.values(), level));
+        spells.addAll(filterByLevel(AirSpellSchool.values(), level));
+        spells.addAll(filterByLevel(FireSpellSchool.values(), level));
+        spells.addAll(filterByLevel(WaterSpellSchool.values(), level));
+        return spells;
+    }
+
+    private static <T extends AbstractSpellSchool> List<String> filterByLevel(
+            T[] spells, int level) {
+        return Arrays.stream(spells)
+                .filter(spell -> spell.getSpellLevel() == level)
+                .map(String::valueOf)
+                .toList();
+    }
+}

@@ -49,6 +49,10 @@ public class Town implements BaseEntity {
     @ToString.Exclude
     private List<CreatureSlot> garrisonArmy;
     @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "magic_guild_spell_map")
+    @ToString.Exclude
+    private Map<Integer, Set<String>> magicGuildSpellMap;
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "common_building_map")
     @ToString.Exclude
     private Map<CommonBuildingType, Integer> commonBuildingMap =
