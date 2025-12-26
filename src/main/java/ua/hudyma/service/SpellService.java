@@ -45,7 +45,7 @@ public class SpellService {
     }
 
     @Transactional
-    public String learnHeroNewSpells(String heroId, String townName) {
+    public Map<Integer, Set<String>> learnHeroNewSpells(String heroId, String townName) {
         var hero = heroService.getHero(heroId);
         var town = townService.getTown(townName);
         if (hero.getSpellBook() == null){
@@ -62,11 +62,11 @@ public class SpellService {
         if (townSpells == null || townSpells.isEmpty()){
             throw new IllegalArgumentException("Town spell Book is NULL or empty");
         }
-        var allowedSpells = townSpells.get(heroMaxSpellLevel);
-        //todo need to introduce decrementary cycle to learn current and lower level spells
-        //todo otherwise hero does not learn spells of level prior to the current
-        hero.getSpellBook().put(heroMaxSpellLevel, allowedSpells);
-        return "Hero has succ learnt town spells";
+        while (heroMaxSpellLevel > 0) {
+            var allowedSpells = townSpells.get(heroMaxSpellLevel);
+            hero.getSpellBook().put(heroMaxSpellLevel--, allowedSpells);
+        }
+        return hero.getSpellBook();
     }
 
     private int getMaxSpellLevel(SkillLevel skillLevel) {

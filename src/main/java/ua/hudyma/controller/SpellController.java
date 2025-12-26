@@ -28,7 +28,7 @@ public class SpellController {
                 .getTownSpells(townName));
     }
     @PatchMapping("/hero")
-    private ResponseEntity<String> learnHeroNewSpells(
+    private ResponseEntity<Map<Integer, Set<String>>> learnHeroNewSpells(
             @RequestParam String heroId, @RequestParam String townName){
         return ResponseEntity.ok(spellService
                 .learnHeroNewSpells(heroId, townName));
