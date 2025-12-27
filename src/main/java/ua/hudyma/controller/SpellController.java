@@ -11,7 +11,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/spells")
 @RequiredArgsConstructor
-public class SpellController {
+class SpellController {
     private final SpellService spellService;
 
     @GetMapping

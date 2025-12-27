@@ -1,6 +1,6 @@
 package ua.hudyma.domain.heroes.dto;
 
-import ua.hudyma.domain.artifacts.enums.Artifact;
+import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.heroes.enums.*;
 
 import java.util.List;
@@ -13,7 +13,7 @@ public record HeroReqDto(
         HeroSubfaction subfaction,
         Map<PrimarySkill, Integer> primarySkillMap,
         Map<SecondarySkill, SkillLevel> secondarySkillMap,
-        Map<ArtifactSlot, List<Artifact>> bodyInventoryMap,
-        Map<ArtifactSlot, Artifact> miscInventoryMap,
-        List<Artifact> backpackInventoryList
+        Map<ArtifactSlot, List<ArtifactSlotDisposition>> bodyInventoryMap,
+        Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap,
+        List<ArtifactSlotDisposition> backpackInventoryList
 ) {}

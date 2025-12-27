@@ -8,11 +8,9 @@ import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.players.Player;
-import ua.hudyma.domain.artifacts.enums.Artifact;
+import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.heroes.enums.*;
-import ua.hudyma.domain.spells.enums.SpellSchool;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
@@ -48,19 +46,19 @@ public class Hero implements BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "body_inventory_map")
     @ToString.Exclude
-    private Map<ArtifactSlot, List<Artifact>> bodyInventoryMap =
+    private Map<ArtifactSlot, List<ArtifactSlotDisposition>> bodyInventoryMap =
             new EnumMap<>(ArtifactSlot.class);
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "misc_inventory_map")
     @ToString.Exclude
-    private Map<ArtifactSlot, Artifact> miscInventoryMap =
+    private Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap =
             new FixedSizeMap<>(new HashMap<>(), 5);
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(64)
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "backpack_inventory_list")
     @ToString.Exclude
-    private List<Artifact> backpackInventoryList;
+    private List<ArtifactSlotDisposition> backpackInventoryList;
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(7)
     @JdbcTypeCode(SqlTypes.JSON)

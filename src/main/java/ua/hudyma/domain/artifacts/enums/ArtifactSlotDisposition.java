@@ -8,7 +8,7 @@ import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 
 @Getter
 @RequiredArgsConstructor
-public enum Artifact {
+public enum ArtifactSlotDisposition {
     PENDANT_OF_COURAGE(NECKLACE, null),
     SANDALS_OF_THE_SAINT(FEET, null),
     ADMIRAL_HAT(HELMET, null),

@@ -5,8 +5,10 @@ public enum CreatureProperty {
     HATES,
     IMMUNE,
     SPELL,
-    MORAL,
+    MORALE,
     LUCK,
     NO_RETALIATION,
-    ATTACKS_TWICE
+    ATTACKS_TWICE,
+    LAND_MOVEMENT,
+    SEA_MOVEMENT;
 }
