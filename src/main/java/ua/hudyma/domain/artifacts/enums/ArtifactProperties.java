@@ -26,6 +26,12 @@ public enum ArtifactProperties {
             Map.of(
                     ATTACK.name(), -3,
                     DEFENSE.name(), 12)),
+    LION_SHIELD_OF_COURAGE(BOOST,
+    Map.of(
+            ATTACK.name(), 6,
+            DEFENSE.name(), 6,
+            POWER.name(), 6,
+            KNOWLEDGE.name(), 6)),
     TITAN_CUIRASS(BOOST, Map.of(
             POWER.name(), 10,
             KNOWLEDGE.name(), -2)),

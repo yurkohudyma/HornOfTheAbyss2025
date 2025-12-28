@@ -5,10 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
-import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.service.HeroService;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/heroes")
@@ -26,5 +23,31 @@ public class HeroController {
             @RequestParam String heroCode){
         return ResponseEntity.ok(heroService
                 .fetchHero(heroCode));
+    }
+    @PatchMapping("/attachArtifact")
+    public ResponseEntity<HeroRespDto>
+    syncHeroSkillsUponArtifactAttachment(
+            @RequestParam String heroId,
+            @RequestParam String artifact){
+        return ResponseEntity.ok(heroService
+                .syncHeroSkillsUponArtifactAttachment
+                        (heroId, artifact));
+    }
+
+    @PatchMapping("/detachArtifact")
+    public ResponseEntity<HeroRespDto>
+    syncHeroSkillsUponArtifactDetachment(
+            @RequestParam String heroId,
+            @RequestParam String artifact){
+        return ResponseEntity.ok(heroService
+                .syncHeroSkillsUponArtifactDetachment
+                        (heroId, artifact));
+    }
+    @PatchMapping("/defaultPrimarySkills")
+    public ResponseEntity<HeroRespDto> defaultPrimarySkills (
+            @RequestParam String heroId){
+        return ResponseEntity.ok(heroService
+                .defaultPrimarySkillsAndEmptyBodyInvMap
+                        (heroId));
     }
 }

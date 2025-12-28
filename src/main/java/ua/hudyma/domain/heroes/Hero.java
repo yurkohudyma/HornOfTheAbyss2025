@@ -46,7 +46,7 @@ public class Hero implements BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "body_inventory_map")
     @ToString.Exclude
-    private Map<ArtifactSlot, List<ArtifactSlotDisposition>> bodyInventoryMap =
+    private Map<ArtifactSlot, ArtifactSlotDisposition> bodyInventoryMap =
             new EnumMap<>(ArtifactSlot.class);
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "misc_inventory_map")

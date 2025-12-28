@@ -6,7 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
+import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
+import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.service.ArmyService;
 

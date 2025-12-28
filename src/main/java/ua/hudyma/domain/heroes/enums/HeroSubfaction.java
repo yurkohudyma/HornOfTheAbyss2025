@@ -18,6 +18,8 @@ public enum HeroSubfaction {
     BEASTMASTER,
     WITCH,
     PLANESWALKER,
-    ELEMENTALIST
+    ELEMENTALIST,
+    CAPTAIN,
+    NAVIGATOR
 }
 

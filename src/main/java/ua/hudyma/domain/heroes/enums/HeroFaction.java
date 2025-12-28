@@ -21,7 +21,8 @@ public enum HeroFaction {
     DUNGEON_HERO (DUNGEON, of(OVERLORD, WARLOCK)),
     STRONGHOLD_HERO (STRONGHOLD, of(BARBARIAN, BATTLE_MAGE)),
     FORTRESS_HERO (FORTRESS, of(BEASTMASTER, WITCH)),
-    CONFLUX_HERO (CONFLUX, of(PLANESWALKER, ELEMENTALIST));
+    CONFLUX_HERO (CONFLUX, of(PLANESWALKER, ELEMENTALIST)),
+    COVE_HERO (COVE, of(CAPTAIN, NAVIGATOR));
     private final Faction faction;
     private final EnumSet<HeroSubfaction> subfactions;
 }

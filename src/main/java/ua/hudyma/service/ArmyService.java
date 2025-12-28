@@ -138,7 +138,7 @@ public class ArmyService {
         var currentArmyList = hero.getArmyList();
         var reqArmyList = dto.armyList();
         var requestedArmyList =
-                upgradeArmySkillToHero(reqArmyList, hero);
+                syncArmySkillsWithHero(reqArmyList, hero);
         if (currentArmyList == null) {
             hero.setArmyList(requestedArmyList);
         } else {
@@ -304,7 +304,7 @@ public class ArmyService {
         return armyMapper.toDtoList(viewArmy(heroId));
     }
 
-    public List<CreatureSlot> upgradeArmySkillToHero(
+    public List<CreatureSlot> syncArmySkillsWithHero(
             List<CreatureSlot> armyList,
             Hero hero) {
         armyList.forEach(armyslot -> {

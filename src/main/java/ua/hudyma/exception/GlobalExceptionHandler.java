@@ -12,6 +12,17 @@ import static java.time.LocalDateTime.now;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(ArtifactAlreadyAttachedException.class)
+    public ResponseEntity<ErrorResponse> artifactAlreadyAttachedException(
+            ArtifactAlreadyAttachedException ex) {
+        var error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                now()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(RequiredBuildingMissingException.class)
     public ResponseEntity<ErrorResponse> requiredBuildingMissingException(
             RequiredBuildingMissingException ex) {

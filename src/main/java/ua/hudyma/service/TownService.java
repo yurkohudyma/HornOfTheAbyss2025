@@ -9,11 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.TownReqDto;
-import ua.hudyma.domain.towns.enums.properties.CommonBuildingTypeProperties;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
-import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.util.MessageProcessor;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -70,7 +68,7 @@ public class TownService {
 
     private void upgradeGarnisonSkillsByHero(Town town, Hero hero) {
         var upgradedGarrisonArmy = armyService
-                .upgradeArmySkillToHero(town.getGarrisonArmy(), hero);
+                .syncArmySkillsWithHero(town.getGarrisonArmy(), hero);
         town.setGarrisonArmy(upgradedGarrisonArmy);
     }
 

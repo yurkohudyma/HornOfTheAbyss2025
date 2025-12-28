@@ -13,7 +13,7 @@ public record HeroReqDto(
         HeroSubfaction subfaction,
         Map<PrimarySkill, Integer> primarySkillMap,
         Map<SecondarySkill, SkillLevel> secondarySkillMap,
-        Map<ArtifactSlot, List<ArtifactSlotDisposition>> bodyInventoryMap,
+        Map<ArtifactSlot, ArtifactSlotDisposition> bodyInventoryMap,
         Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap,
         List<ArtifactSlotDisposition> backpackInventoryList
 ) {}

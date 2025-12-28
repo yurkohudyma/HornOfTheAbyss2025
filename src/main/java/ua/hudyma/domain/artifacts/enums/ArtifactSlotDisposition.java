@@ -13,6 +13,7 @@ public enum ArtifactSlotDisposition {
     SANDALS_OF_THE_SAINT(FEET, null),
     ADMIRAL_HAT(HELMET, null),
     SENTINEL_SHIELD(HAND_SHIELD, null),
+    LION_SHIELD_OF_COURAGE(HAND_SHIELD, null),
     TITAN_CUIRASS(TORSO, null),
     ANGEL_WINGS(CAPE, null),
     EQUESTRIAN_GLOVES(RING_ANY, RING_LEFT),
@@ -29,9 +30,6 @@ public enum ArtifactSlotDisposition {
     //backpack_inventory:
     SLEEPKEEPER(INVENTORY, null),
     HORN_OF_THE_ABYSS(INVENTORY, null);
-
-
     private final ArtifactSlot artifactSlot;
     private final ArtifactSlot specificArtifactSlot;
-
 }
