@@ -14,7 +14,7 @@ public record HeroRespDto(
         HeroFaction faction,
         HeroSubfaction subfaction,
         Map<PrimarySkill, Integer> primarySkillMap,
-        Map<SecondarySkill, SkillLevel> secondarySkillMap,
+        Map<ua.hudyma.domain.heroes.HeroParams, Integer> parametersMap, Map<SecondarySkill, SkillLevel> secondarySkillMap,
         Map<ArtifactSlot, ArtifactSlotDisposition> bodyInventoryMap,
         Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap,
         List<ArtifactSlotDisposition> backpackInventoryList,

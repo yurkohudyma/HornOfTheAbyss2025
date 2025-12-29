@@ -39,6 +39,11 @@ public class Hero implements BaseEntity {
     private Map<PrimarySkill, Integer> primarySkillMap =
             new FixedSizeMap<>(new HashMap<>(),4);
     @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "parameters_map")
+    @ToString.Exclude
+    private Map<HeroParams, Integer> parametersMap =
+            new FixedSizeMap<>(new HashMap<>(),4);
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "secondary_skill_map")
     @ToString.Exclude
     private Map<SecondarySkill, SkillLevel> secondarySkillMap =

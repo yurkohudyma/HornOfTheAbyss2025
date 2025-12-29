@@ -9,9 +9,9 @@ import static ua.hudyma.domain.heroes.enums.EntityField.*;
 @RequiredArgsConstructor
 public enum ArtifactSlot {
     AMMO (PROPRIETORY),
-    CAPE(PROPRIETORY),
+    CAPE(BODY),
     CATAPULT(PROPRIETORY),
-    FEET(PROPRIETORY),
+    FEET(BODY),
     FIRST_AID(PROPRIETORY),
     HAND_SHIELD(BODY),
     HAND_WEAPON(BODY),

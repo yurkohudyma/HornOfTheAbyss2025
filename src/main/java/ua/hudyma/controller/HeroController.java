@@ -47,7 +47,7 @@ public class HeroController {
     public ResponseEntity<HeroRespDto> defaultPrimarySkills (
             @RequestParam String heroId){
         return ResponseEntity.ok(heroService
-                .defaultPrimarySkillsAndEmptyBodyInvMap
+                .defPriSkillsEmptyBodyInvMapAndParamMap
                         (heroId));
     }
 }

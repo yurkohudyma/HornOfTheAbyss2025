@@ -29,6 +29,4 @@ public enum SecondarySkill {
     TACTICS,
     WATER_MAGIC,
     WISDOM
-
-
     }

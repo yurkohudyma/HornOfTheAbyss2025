@@ -23,6 +23,7 @@ public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
                 hero.getFaction(),
                 hero.getSubfaction(),
                 hero.getPrimarySkillMap(),
+                hero.getParametersMap(),
                 hero.getSecondarySkillMap(),
                 hero.getBodyInventoryMap(),
                 hero.getMiscInventoryMap(),
@@ -40,6 +41,7 @@ public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
                 .faction(dto.faction())
                 .subfaction(dto.subfaction())
                 .primarySkillMap(dto.primarySkillMap())
+                .parametersMap(dto.parametersMap())
                 .secondarySkillMap(dto.secondarySkillMap())
                 .bodyInventoryMap(dto.bodyInventoryMap())
                 .miscInventoryMap(dto.miscInventoryMap())

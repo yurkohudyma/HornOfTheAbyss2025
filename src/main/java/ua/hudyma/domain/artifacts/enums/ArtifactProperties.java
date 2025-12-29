@@ -13,7 +13,7 @@ import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;
 @Getter
 @RequiredArgsConstructor
 public enum ArtifactProperties {
-    PENDANT_OF_COURAGE(BOOST, Map.of(
+    PENDANT_OF_COURAGE(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 3,
             MORALE.name(), 3)),
     SANDALS_OF_THE_SAINT(BOOST, Map.of(
@@ -39,7 +39,7 @@ public enum ArtifactProperties {
             Map.of(MOVEMENT.name(), FLYING)),
     EQUESTRIAN_GLOVES(BOOST, Map.of(
             LAND_MOVEMENT.name(), 200)),
-    STILL_EYE_OF_THE_DRAGON(BOOST, Map.of(
+    STILL_EYE_OF_THE_DRAGON(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 1,
             MORALE.name(), 1)),
     TITAN_GLADIUS(BOOST,
@@ -48,7 +48,7 @@ public enum ArtifactProperties {
                     DEFENSE.name(), -3)),
     //misc
     ORB_OF_VULNERABILITY(COMPLEX, Map.of()), //Negate natural magic resistance, magic immunity and chances to resist spells of all creatures on the battlefield. Does not affect the limitations on applicability stated in spell descriptions as well as the immunities given by artifacts.
-    SHAMAN_PUPPET(ENEMY_BOOST, Map.of(LUCK.name(), -2)),
+    SHAMAN_PUPPET(ENEMY_DEBOOST, Map.of(LUCK.name(), -2)),
     SPECULUM(BOOST, Map.of(VISIBILITY.name(), 1)),
     GOLDEN_BOW(COMPLEX, Map.of()), //No range penalty. No obstacle penalty.
     SHACKLES_OF_WAR(COMPLEX, Map.of()), //Neither hero may retreat or surrender in combat.

@@ -6,10 +6,10 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.hudyma.domain.artifacts.enums.ArtifactAction;
 import ua.hudyma.domain.artifacts.enums.ArtifactProperties;
 import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
@@ -17,9 +17,14 @@ import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.repository.HeroRepository;
+import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
 
+import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
+import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
+import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
+import static ua.hudyma.domain.heroes.enums.SecondarySkill.INTELLIGENCE;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -43,13 +48,14 @@ public class HeroService {
     }
 
     @Transactional
-    public HeroRespDto defaultPrimarySkillsAndEmptyBodyInvMap(String heroId) {
+    public HeroRespDto defPriSkillsEmptyBodyInvMapAndParamMap(String heroId) {
         var hero = getHero(heroId);
         var skillMap = hero.getPrimarySkillMap();
         for (Map.Entry<PrimarySkill, Integer> entry : skillMap.entrySet()) {
             entry.setValue(0);
         }
         hero.setBodyInventoryMap(Map.of());
+        hero.setParametersMap(Map.of());
         return heroMapper.toDto(hero);
     }
 
@@ -76,38 +82,124 @@ public class HeroService {
         var hero = getHero(heroId);
         var artifact = ArtifactProperties.valueOf(artifactName);
         var artifactAction = artifact.getArtifactAction();
-        resolveNotApplicableArtifactAction(artifactAction); //temporary solution for missing bizlog
-        var primarySkillsMap = hero.getPrimarySkillMap();
         var actionData = artifact.getActionData();
-        for (Map.Entry<String, Object> entry : actionData.entrySet()) {
-            var skillName = entry.getKey();
-            if (skillName != null && !skillName.isEmpty()) {
-                var primarySkillEnum = PrimarySkill.valueOf(skillName);
-                var boostableValue = entry.getValue();
-                primarySkillsMap.computeIfPresent(primarySkillEnum,
-                        (k, v) -> v + (Integer) boostableValue);
+        Map<PrimarySkill, Integer> primarySkillsMap;
+        Map<HeroParams, Integer> parametersMap;
+        switch (artifactAction){
+            case BOOST -> {
+                primarySkillsMap = hero.getPrimarySkillMap();
+                for (Map.Entry<String, Object> entry : actionData.entrySet()) {
+                    var skillName = entry.getKey();
+                    if (skillName != null && !skillName.isEmpty()) {
+                        var primarySkillEnum = PrimarySkill.valueOf(skillName);
+                        var boostableValue = entry.getValue();
+                        primarySkillsMap.computeIfPresent(primarySkillEnum,
+                                (k, v) -> v + (Integer) boostableValue);
+                    }
+                }
             }
+            case BOOST_OTH_PARAM -> {
+                parametersMap = getOrCreateParamMap(hero);
+                hero.setParametersMap(parametersMap);
+                for (Map.Entry<String, Object> entry : actionData.entrySet()) {
+                    var skillName = entry.getKey();
+                    if (skillName != null && !skillName.isEmpty()) {
+                        var boostableValue = entry.getValue();
+                        var parameterEnum = HeroParams.valueOf(entry.getKey());
+                        if (!parametersMap.containsKey(parameterEnum)) {
+                            parametersMap.compute(parameterEnum,
+                                    (k, v) -> (Integer) boostableValue);
+                        }
+                        else {
+                            parametersMap.computeIfPresent(parameterEnum, (k,v)
+                                    -> v + (Integer) boostableValue);
+                        }
+                    }
+                }
+                syncSpellPointsValues(hero);
+            }
+            case COMPLEX, MODIFIER, ENEMY_DEBOOST -> throw new IllegalArgumentException
+                    ("COMPLEX/ENEMY_BOOST/MODIFIER/VISIBILITY " +
+                            "action in ARTIFACTS not supported");
         }
+
         attachArtifactToHero(artifactName, hero);
         //armyService.syncArmySkillsWithHero(hero.getArmyList(), hero); <-- deactivated for testing
         return heroMapper.toDto(hero);
     }
 
+    private Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {
+        return hero.getParametersMap() == null ?
+                new FixedSizeMap<>(new HashMap<>(), 4) :
+                hero.getParametersMap();
+    }
+
     @Transactional
     public HeroRespDto syncHeroSkillsUponArtifactDetachment(String heroId, String artifactName) {
         var hero = getHero(heroId);
-        var artifactPropMap = ArtifactProperties.valueOf(artifactName).getActionData();
-        var heroSkillMap = hero.getPrimarySkillMap();
-        for (Map.Entry<String, Object> entry : artifactPropMap.entrySet()) {
-            var primarySkillEnum = PrimarySkill.valueOf(entry.getKey());
-            heroSkillMap.computeIfPresent(primarySkillEnum, (k, v) -> {
-                if (v <= 0) return v + Math.abs((Integer) entry.getValue());
-                else return (Integer) entry.getValue() - v;
-            });
+        var artifactProperties = ArtifactProperties.valueOf(artifactName);
+        var artifactPropMap = artifactProperties.getActionData();
+        Map<PrimarySkill, Integer> heroSkillMap;
+        Map<HeroParams, Integer> parametersMap;
+        switch (artifactProperties.getArtifactAction()){
+            case BOOST -> {
+                heroSkillMap = hero.getPrimarySkillMap();
+                for (Map.Entry<String, Object> entry : artifactPropMap.entrySet()) {
+                    var primarySkillEnum = PrimarySkill.valueOf(entry.getKey());
+                    heroSkillMap.computeIfPresent(primarySkillEnum, (k, v) -> {
+                        if (v <= 0) return v + Math.abs((Integer) entry.getValue());
+                        else return (Integer) entry.getValue() - v;
+                    });
+                }
+            }
+            case BOOST_OTH_PARAM -> {
+                parametersMap = hero.getParametersMap();
+                if (parametersMap == null) throw new IllegalStateException("Param Map is NULL, cannot retrieve data");
+                for (Map.Entry<String, Object> entry : artifactPropMap.entrySet()) {
+                    var parameterEnum = HeroParams.valueOf(entry.getKey());
+                    parametersMap.computeIfPresent(parameterEnum, (k, v) -> {
+                        if (v <= 0) return v + Math.abs((Integer) entry.getValue());
+                        else return (Integer) entry.getValue() - v;
+                    });
+                }
+                //syncSpellPointsValues(hero);
+            }
+            case COMPLEX, MODIFIER, ENEMY_DEBOOST -> throw new IllegalArgumentException
+                    ("COMPLEX/ENEMY_BOOST/MODIFIER/VISIBILITY " +
+                            "action in ARTIFACTS not supported");
         }
         detachArtifact(artifactName, hero);
         //armyService.syncArmySkillsWithHero(hero.getArmyList(), hero); <-- deactivated for testing
         return heroMapper.toDto(hero);
+    }
+
+    private void syncSpellPointsValues (Hero hero){
+        var paramMap = hero.getParametersMap();
+        if (paramMap == null){
+            paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
+        }
+        var intelligenceLevel = getIntelligenceLevel(hero);
+        var knowledgeLevel = getKnowledgeLevel(hero);
+        paramMap.put(MAX_SPELL_POINTS, (int) (knowledgeLevel * 10 * intelligenceLevel));
+        if (!paramMap.containsKey(CUR_SPELL_POINTS)) {
+            paramMap.put(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
+        }
+    }
+
+    private static int getKnowledgeLevel(Hero hero) {
+        var knowledgeLevel = hero.getPrimarySkillMap().get(KNOWLEDGE);
+        return knowledgeLevel == 0 ? 1 : knowledgeLevel;
+    }
+
+    private static float getIntelligenceLevel(Hero hero) {
+        var secondarySkillMap = hero.getSecondarySkillMap();
+        var intel = secondarySkillMap.get(INTELLIGENCE);
+        if (intel == null) return 1;
+        return switch (intel){
+            case BASIC -> 1.2f;
+            case ADVANCED -> 1.35f;
+            case EXPERT -> 1.5f;
+        };
     }
 
     private static void detachArtifact(String artifactName, Hero hero) {
@@ -119,13 +211,15 @@ public class HeroService {
                 var deleted = bodyMap.remove(artifactSlot);
                 if (deleted == null) {
                     throw new IllegalStateException("Artifact " + artifactName + " has not been DETACHED, " +
-                            "entity Field of type = " + entityField + " did not contain it");
+                            "entity Field of type [" + entityField + "] did not contain it");
                 }
             }
-            case PROPRIETORY -> {
-            }
-            case MISC -> {
-            }
+            case PROPRIETORY ->
+                throw new IllegalArgumentException("Proprietory NOT implemented");
+            case MISC ->
+                throw new IllegalArgumentException("Misc NOT implemented");
+            case BACKPACK ->
+                    throw new IllegalArgumentException("Backpack NOT implemented");
         }
     }
 
@@ -153,22 +247,24 @@ public class HeroService {
                 }
                 bodyInvMap.put(newArtifactSlot, newArtifactSlotDisposition);
             }
-            case PROPRIETORY -> {
-            }
-            case MISC -> {
-            }
+            case PROPRIETORY ->
+                    throw new IllegalArgumentException("Proprietory NOT implemented");
+            case MISC ->
+                    throw new IllegalArgumentException("Misc NOT implemented");
+            case BACKPACK ->
+                    throw new IllegalArgumentException("Backpack NOT implemented");
         }
     }
 
-    private static void resolveNotApplicableArtifactAction(
+   /* private static void resolveNotApplicableArtifactAction(
             ArtifactAction artifactAction) {
         switch (artifactAction) {
-            case COMPLEX, ENEMY_BOOST, MODIFIER -> throw new IllegalArgumentException
-                    ("COMPLEX/ENEMY_BOOST/MODIFIER action in ARTIFACTS not supported");
-            case BOOST -> {
+            case COMPLEX, ENEMY_DEBOOST, MODIFIER, VISIBILITY ->
+
+            case BOOST, BOOST_OTH_PARAM -> {
             }
         }
-    }
+    }*/
 
     public void vanquishHero(Hero hero) {
         heroRepository.delete(hero);
