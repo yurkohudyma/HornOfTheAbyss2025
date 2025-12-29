@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
+import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.AirSpellSchool;
 import ua.hudyma.domain.spells.enums.EarthSpellSchool;
 import ua.hudyma.domain.spells.enums.FireSpellSchool;
@@ -35,6 +36,17 @@ public class SpellService {
             4, 2,
             5, 1
     );
+    public String castSpell(String heroId, String spellName) {
+        var hero = heroService.getHero(heroId);
+        var enumSchool = SpellRegistry.fromCode(spellName);
+        var spellAction = enumSchool.getSpellAction();
+        var enumProperty = SpellRegistry.fromCodeProperty(spellName);
+        var skillModifierMap = enumProperty.getSkillModifierMap();
+        var targetCreatureSet = enumProperty.getTargetCreatureSet();
+        //todo implement
+
+        return "Spell " + spellName + " HAS been succ cast";
+    }
 
     public Map<Integer, Set<String>> getHeroSpellbook(String heroId) {
         return heroService.getHero(heroId).getSpellBook();

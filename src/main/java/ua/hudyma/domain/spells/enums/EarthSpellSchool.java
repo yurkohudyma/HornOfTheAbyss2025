@@ -28,7 +28,11 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
     TOWN_PORTAL(4, ADVENTURE),
     VIEW_EARTH(1,ADVENTURE),
     VISIONS(2, ADVENTURE);
-    private final int SpellLevel;
+    private final int spellLevel;
     private final SpellAction spellAction;
 
+    @Override
+    public String getName() {
+        return name();
+    }
 }

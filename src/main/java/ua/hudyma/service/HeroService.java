@@ -95,6 +95,9 @@ public class HeroService {
                         var boostableValue = entry.getValue();
                         primarySkillsMap.computeIfPresent(primarySkillEnum,
                                 (k, v) -> v + (Integer) boostableValue);
+                        if (primarySkillEnum == KNOWLEDGE){
+                            syncSpellPointsValues(hero);
+                        }
                     }
                 }
             }
@@ -150,6 +153,9 @@ public class HeroService {
                         if (v <= 0) return v + Math.abs((Integer) entry.getValue());
                         else return (Integer) entry.getValue() - v;
                     });
+                    if (primarySkillEnum == KNOWLEDGE){
+                        syncSpellPointsValues(hero);
+                    }
                 }
             }
             case BOOST_OTH_PARAM -> {
@@ -173,7 +179,7 @@ public class HeroService {
         return heroMapper.toDto(hero);
     }
 
-    private void syncSpellPointsValues (Hero hero){
+    private static void syncSpellPointsValues (Hero hero){
         var paramMap = hero.getParametersMap();
         if (paramMap == null){
             paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
@@ -188,7 +194,7 @@ public class HeroService {
 
     private static int getKnowledgeLevel(Hero hero) {
         var knowledgeLevel = hero.getPrimarySkillMap().get(KNOWLEDGE);
-        return knowledgeLevel == 0 ? 1 : knowledgeLevel;
+        return knowledgeLevel <= 0 ? 1 : knowledgeLevel;
     }
 
     private static float getIntelligenceLevel(Hero hero) {

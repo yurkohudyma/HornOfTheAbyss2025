@@ -17,13 +17,13 @@ import static ua.hudyma.resource.enums.ResourceType.*;
 @Getter
 @RequiredArgsConstructor
 public enum CommonBuildingTypeProperties implements AbstractBuildingTypeProperties {
-    BLACKSMITH(emptyMap(CommonBuildingType.class),
+    BLACKSMITH(emptyMap(),
     toEnumMap(ResourceType.class,
             Map.of(
                     WOOD, 5,
                     GOLD, 1000)),
             emptyFactions()),
-    MAGE_GUILD_L1(emptyMap(CommonBuildingType.class),
+    MAGE_GUILD_L1(emptyMap(),
             toEnumMap(ResourceType.class,
             Map.of(
                     WOOD, 5,
@@ -80,7 +80,7 @@ public enum CommonBuildingTypeProperties implements AbstractBuildingTypeProperti
                     GOLD, 1000)),
             EnumSet.of(
             STRONGHOLD, FORTRESS, COVE, CASTLE)),
-    MARKETPLACE(emptyMap(CommonBuildingType.class),
+    MARKETPLACE(emptyMap(),
             toEnumMap(ResourceType.class,
                     Map.of(
                             WOOD, 5,
@@ -93,20 +93,20 @@ public enum CommonBuildingTypeProperties implements AbstractBuildingTypeProperti
                     ORE, 5,
                     GOLD, 5000)),
             emptyFactions()),
-    TAVERN(emptyMap(CommonBuildingType.class),
+    TAVERN(emptyMap(),
             toEnumMap(ResourceType.class,
                     Map.of(
                     WOOD, 5,
                     GOLD, 500)),
             emptyFactions()),
-    SHIPYARD(emptyMap(CommonBuildingType.class),
+    SHIPYARD(emptyMap(),
             toEnumMap(ResourceType.class,
                     Map.of(
                     WOOD, 20,
                     GOLD, 2000)),
             emptyFactions());
-    private static <T extends Enum<T>> EnumMap<T, Integer> emptyMap(Class<T> enumClass) {
-        return new EnumMap<>(enumClass);
+    private static <T extends Enum<T>> EnumMap<T, Integer> emptyMap() {
+        return new EnumMap<>((Class<T>) CommonBuildingType.class);
     }
     private final EnumMap<CommonBuildingType, Integer> requiredBuiltBuildings;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;

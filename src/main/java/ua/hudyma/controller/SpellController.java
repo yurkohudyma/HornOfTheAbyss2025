@@ -28,17 +28,23 @@ class SpellController {
                 .getTownSpells(townName));
     }
     @PatchMapping("/hero")
-    private ResponseEntity<Map<Integer, Set<String>>> learnHeroNewSpells(
+    public ResponseEntity<Map<Integer, Set<String>>> learnHeroNewSpells(
             @RequestParam String heroId, @RequestParam String townName){
         return ResponseEntity.ok(spellService
                 .learnHeroNewSpells(heroId, townName));
     }
 
     @GetMapping("/hero")
-    private ResponseEntity<Map<Integer, Set<String>>> getHeroSpellBook(
+    public ResponseEntity<Map<Integer, Set<String>>> getHeroSpellBook(
             @RequestParam String heroId){
         return ResponseEntity.ok(spellService
                 .getHeroSpellbook(heroId));
 
+    }
+    @GetMapping("/cast")
+    public ResponseEntity<String> castSpell (
+            @RequestParam String heroId, @RequestParam String spellName){
+        return ResponseEntity.ok(spellService
+                .castSpell(heroId, spellName));
     }
 }

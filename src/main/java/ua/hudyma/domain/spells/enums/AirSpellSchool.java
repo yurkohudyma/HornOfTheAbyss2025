@@ -20,4 +20,9 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     public int getSpellLevel() {
         return spellLevel;
     }
+
+    @Override
+    public String getName() {
+        return name();
+    }
 }

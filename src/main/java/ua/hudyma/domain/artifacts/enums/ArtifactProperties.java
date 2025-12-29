@@ -13,6 +13,9 @@ import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;
 @Getter
 @RequiredArgsConstructor
 public enum ArtifactProperties {
+    THUNDER_HELMET(BOOST, Map.of(
+            POWER.name(), -2,
+            KNOWLEDGE.name(), 10)),
     PENDANT_OF_COURAGE(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 3,
             MORALE.name(), 3)),

@@ -15,7 +15,7 @@ public enum ArtifactSlot {
     FIRST_AID(PROPRIETORY),
     HAND_SHIELD(BODY),
     HAND_WEAPON(BODY),
-    HELMET(PROPRIETORY),
+    HELMET(BODY),
     INVENTORY(BACKPACK),
     MISC_A(MISC),
     MISC_B(MISC),
@@ -28,7 +28,7 @@ public enum ArtifactSlot {
     RING_RIGHT(BODY),
     RING_ANY(BODY),
     SPELLBOOK(PROPRIETORY),
-    TORSO(PROPRIETORY),
+    TORSO(BODY),
     WARMACHINE(PROPRIETORY); // BALLISTA CANNON
     private final EntityField entityField;
 }
