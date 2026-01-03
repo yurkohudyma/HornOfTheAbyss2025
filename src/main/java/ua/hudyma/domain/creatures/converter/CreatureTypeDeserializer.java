@@ -10,7 +10,8 @@ import java.io.IOException;
 public class CreatureTypeDeserializer extends JsonDeserializer<CreatureType> {
 
     @Override
-    public CreatureType deserialize(JsonParser p, DeserializationContext ctxt)
+    public CreatureType deserialize(JsonParser p,
+                                    DeserializationContext ctxt)
             throws IOException {
         String code = p.getValueAsString();
         return CreatureTypeRegistry.fromCode(code);

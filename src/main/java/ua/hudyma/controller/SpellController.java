@@ -3,6 +3,8 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.spells.AbstractSpellSchool;
+import ua.hudyma.domain.spells.enums.SpellSchool;
 import ua.hudyma.service.SpellService;
 
 import java.util.Map;
@@ -50,5 +52,12 @@ class SpellController {
             @RequestParam String spell){
         return ResponseEntity.ok(spellService
                 .castSpell(heroId, spell));
+    }
+
+    @GetMapping("/allBySchool")
+    public ResponseEntity<Set<String>> getAllSchoolSpells (
+            @RequestParam String spellSchool){
+        return ResponseEntity.ok(spellService
+                .getAllSchoolSpells(spellSchool));
     }
 }

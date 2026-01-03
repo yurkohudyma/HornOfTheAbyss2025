@@ -66,17 +66,36 @@ public class SpellService {
         return "Spell " + spellName + " HAS been succ cast";
     }
 
+    public Set<String> getAllSchoolSpells(String spellSchool) {
+        /*var enumClass = SpellRegistry
+                .findEnumClassByChildName(spellSchool, AbstractSpellSchool.class);*/
+        var enumClass = resolveEnumClass(spellSchool);
+        return Arrays
+                .stream(enumClass.getEnumConstants())
+                .map(Enum::name)
+                .collect(Collectors.toSet());
+    }
+
+    private Class<? extends Enum> resolveEnumClass(String spellSchool) {
+        return switch (spellSchool){
+            case "AIR" -> AirSpellSchool.class;
+            case "EARTH" -> EarthSpellSchool.class;
+            case "WATER" -> WaterSpellSchool.class;
+            case "FIRE" -> FireSpellSchool.class;
+            default -> throw new IllegalArgumentException("Unknown spell school " + spellSchool);
+        };
+    }
+
     private int getSecondarySkillManaCostModifier(
             int spellLevel,
             Map<SecondarySkill, SkillLevel> secondarySkillMap,
             SpellSchool spellSchool) {
-        int manaModifier = 0;
         var secondarySkillName = convertSpellSchoolToSecondarySkill
                 (spellSchool);
         if (secondarySkillMap.containsKey(secondarySkillName)){
-            return ++manaModifier * spellLevel;
+            return spellLevel;
         }
-        return manaModifier;
+        return 0;
     }
 
     private static SecondarySkill convertSpellSchoolToSecondarySkill(
@@ -111,7 +130,8 @@ public class SpellService {
     }
 
     @Transactional
-    public Map<Integer, Set<String>> learnHeroNewSpells(String heroId, String townName) {
+    public Map<Integer, Set<String>> learnHeroNewSpells(
+            String heroId, String townName) {
         var hero = heroService.getHero(heroId);
         var town = townService.getTown(townName);
         if (hero.getSpellBook() == null){

@@ -1,9 +1,11 @@
 package ua.hudyma.domain.spells.converter;
 
 import org.reflections.Reflections;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.enums.properties.AbstractSpellProperty;
 
+import java.util.Arrays;
 import java.util.Set;
 
 public class SpellRegistry {
@@ -30,7 +32,7 @@ public class SpellRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E> & AbstractSpellSchool>
+    public static <E extends Enum<E> & AbstractSpellSchool>
     AbstractSpellSchool enumFromCode(Class<? extends AbstractSpellSchool> type,
                                      String code) {
         Class<E> enumClass = (Class<E>) type;
@@ -59,5 +61,26 @@ public class SpellRegistry {
         } catch (IllegalArgumentException ex) {
             return null;
         }
+    }
+
+    /**
+     * Пошук enum-класу серед усіх підтипів базового інтерфейсу/класу.
+     *
+     * @param type          частина назви enum-класу для пошуку
+     * @param baseInterface інтерфейс або базовий клас, який реалізує enum
+     * @param <B>           тип базового інтерфейсу
+     * @return enum-клас, який реалізує B
+     */
+    @SuppressWarnings("unchecked")
+    public static <B> Class<? extends Enum<?>> findEnumClassByChildName(
+            AbstractSpellSchool spellSchool, Class<B> baseInterface) {
+        for (Class<? extends AbstractSpellSchool> subtype : SCHOOL_ENUMS) {
+            if (subtype.isEnum() && Arrays.asList(subtype.getEnumConstants())
+                    .contains(spellSchool)) {
+                return (Class<? extends Enum<?>>) subtype;
+            }
+        }
+        throw new IllegalArgumentException("No enum class matches name: " + spellSchool + " for "
+                + baseInterface.getSimpleName());
     }
 }
