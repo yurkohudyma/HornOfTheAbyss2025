@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
@@ -14,12 +15,15 @@ import ua.hudyma.domain.spells.enums.FireSpellSchool;
 import ua.hudyma.domain.spells.enums.WaterSpellSchool;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.exception.RequiredBuildingMissingException;
+import ua.hudyma.exception.SpellCastException;
+import ua.hudyma.exception.SpellPointsShortageException;
 import ua.hudyma.exception.TownSpellBookSetAlreadyGeneratedException;
 
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 
 @Service
@@ -36,16 +40,44 @@ public class SpellService {
             4, 2,
             5, 1
     );
+    @Transactional
     public String castSpell(String heroId, String spellName) {
         var hero = heroService.getHero(heroId);
+        var spellBook = hero.getSpellBook();
         var enumSchool = SpellRegistry.fromCode(spellName);
-        var spellAction = enumSchool.getSpellAction();
+        checkSpellBookContainsSpell(spellName, spellBook, hero.getName());
+        var manaCost = enumSchool.getManaCost();
         var enumProperty = SpellRegistry.fromCodeProperty(spellName);
         var skillModifierMap = enumProperty.getSkillModifierMap();
+        var parametersMap = hero.getParametersMap();
+        var currentSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
+        int spellPointsLeft = currentSpellPoints - manaCost;
+        if (spellPointsLeft < 0) throw new SpellPointsShortageException
+                (hero.getName() + "'s spell points = " + currentSpellPoints + ", while spell cost = " + manaCost);
+        parametersMap.put(CUR_SPELL_POINTS, spellPointsLeft);
+
+
+        //spell influence mechanics
         var targetCreatureSet = enumProperty.getTargetCreatureSet();
+        var spellAction = enumSchool.getSpellAction();
+        //introduce spell points for spells
+        //fetch account schoolmagic secondary Skill levels to
         //todo implement
 
         return "Spell " + spellName + " HAS been succ cast";
+    }
+
+    private static void checkSpellBookContainsSpell(
+            String spellName,
+            Map<Integer, Set<String>> spellBook,
+            String heroName) {
+        for (Map.Entry<Integer, Set<String>> entry : spellBook.entrySet()){
+            var spellSet = entry.getValue();
+            for (String spell : spellSet) {
+                if (spellSet.contains(spell)) return;
+            }
+            throw new SpellCastException(spellName + " HAS not been learnt by " + heroName + " yet");
+        }
     }
 
     public Map<Integer, Set<String>> getHeroSpellbook(String heroId) {

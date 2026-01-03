@@ -6,4 +6,5 @@ public interface AbstractSpellSchool {
     int getSpellLevel();
     String getName();
     SpellAction getSpellAction();
+    Integer getManaCost();
 }

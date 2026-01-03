@@ -28,14 +28,17 @@ class SpellController {
                 .getTownSpells(townName));
     }
     @PatchMapping("/hero")
-    public ResponseEntity<Map<Integer, Set<String>>> learnHeroNewSpells(
-            @RequestParam String heroId, @RequestParam String townName){
+    public ResponseEntity<Map<Integer, Set<String>>>
+    learnHeroNewSpells(
+            @RequestParam String heroId,
+            @RequestParam String townName){
         return ResponseEntity.ok(spellService
                 .learnHeroNewSpells(heroId, townName));
     }
 
     @GetMapping("/hero")
-    public ResponseEntity<Map<Integer, Set<String>>> getHeroSpellBook(
+    public ResponseEntity<Map<Integer, Set<String>>>
+    getHeroSpellBook(
             @RequestParam String heroId){
         return ResponseEntity.ok(spellService
                 .getHeroSpellbook(heroId));
@@ -43,8 +46,9 @@ class SpellController {
     }
     @GetMapping("/cast")
     public ResponseEntity<String> castSpell (
-            @RequestParam String heroId, @RequestParam String spellName){
+            @RequestParam String heroId,
+            @RequestParam String spell){
         return ResponseEntity.ok(spellService
-                .castSpell(heroId, spellName));
+                .castSpell(heroId, spell));
     }
 }

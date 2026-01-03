@@ -7,12 +7,13 @@ import ua.hudyma.domain.spells.enums.properties.AbstractSpellProperty;
 import java.util.Set;
 
 public class SpellRegistry {
+    private SpellRegistry() {}
     private static final Reflections reflections;
     private static final Set<Class<? extends AbstractSpellSchool>> SCHOOL_ENUMS;
     private static final Set<Class<? extends AbstractSpellProperty>> PROP_ENUMS;
 
     static {
-        reflections = new Reflections("ua.hudyma.domain.spell.enums");
+        reflections = new Reflections("ua.hudyma.domain.spells.enums");
         SCHOOL_ENUMS = reflections.getSubTypesOf(AbstractSpellSchool.class);
         PROP_ENUMS = reflections.getSubTypesOf(AbstractSpellProperty.class);
     }
@@ -24,12 +25,14 @@ public class SpellRegistry {
                 if (result != null) return result;
             }
         }
-        throw new IllegalArgumentException("Unknown CreatureType code: " + code);
+        throw new IllegalArgumentException(
+                "Unknown AbstractSpellSchool code: " + code);
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E> & AbstractSpellSchool> AbstractSpellSchool enumFromCode(
-            Class<? extends AbstractSpellSchool> type, String code) {
+    private static <E extends Enum<E> & AbstractSpellSchool>
+    AbstractSpellSchool enumFromCode(Class<? extends AbstractSpellSchool> type,
+                                     String code) {
         Class<E> enumClass = (Class<E>) type;
         try {
             return Enum.valueOf(enumClass, code);
@@ -44,7 +47,7 @@ public class SpellRegistry {
                 if (result != null) return result;
             }
         }
-        throw new IllegalArgumentException("Unknown CreatureType code: " + code);
+        throw new IllegalArgumentException("Unknown AbstractSpellProperty code: " + code);
     }
 
     @SuppressWarnings("unchecked")

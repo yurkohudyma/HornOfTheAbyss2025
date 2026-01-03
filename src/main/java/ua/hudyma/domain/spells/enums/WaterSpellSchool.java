@@ -11,6 +11,7 @@ public enum WaterSpellSchool implements AbstractSpellSchool {
 
     private final Integer spellLevel;
     private final SpellAction spellAction;
+    private final Integer manaCost;
 
     @Override
     public int getSpellLevel() {
@@ -25,5 +26,10 @@ public enum WaterSpellSchool implements AbstractSpellSchool {
     @Override
     public SpellAction getSpellAction() {
         return spellAction;
+    }
+
+    @Override
+    public Integer getManaCost() {
+        return manaCost;
     }
 }

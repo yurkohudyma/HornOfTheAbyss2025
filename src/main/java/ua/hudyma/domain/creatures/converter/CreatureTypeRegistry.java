@@ -41,7 +41,7 @@ public class CreatureTypeRegistry {
     /**
      * Пошук enum-класу серед усіх підтипів базового інтерфейсу/класу.
      *
-     * @param name          частина назви enum-класу для пошуку
+     * @param type          частина назви enum-класу для пошуку
      * @param baseInterface інтерфейс або базовий клас, який реалізує enum
      * @param <B>           тип базового інтерфейсу
      * @return enum-клас, який реалізує B
