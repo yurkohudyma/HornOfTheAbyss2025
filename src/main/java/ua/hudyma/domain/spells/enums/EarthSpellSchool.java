@@ -14,7 +14,7 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
     DEATH_RIPPLE(2,DAMAGE, 0),
     EARTHQUAKE(3, MISC, 0),
     FORCE_FIELD(3,MISC, 0),
-    IMPLOSION(5, DAMAGE, 0),
+    IMPLOSION(5, DAMAGE, 30),
     MAGIC_ARROW(1, DAMAGE, 0),
     METEOR_SHOWER(4,DAMAGE, 0),
     PROTECTION_FROM_EARTH(3, BUF, 0),

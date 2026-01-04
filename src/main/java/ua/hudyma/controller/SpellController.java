@@ -3,8 +3,6 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.hudyma.domain.spells.AbstractSpellSchool;
-import ua.hudyma.domain.spells.enums.SpellSchool;
 import ua.hudyma.service.SpellService;
 
 import java.util.Map;

@@ -13,6 +13,10 @@ import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;
 @Getter
 @RequiredArgsConstructor
 public enum ArtifactProperties {
+    TOME_OF_EARTH_MAGIC(ALL_EARTH_SPELLS, Map.of()),
+    TOME_OF_FIRE_MAGIC(ALL_FIRE_SPELLS, Map.of()),
+    TOME_OF_WATER_MAGIC(ALL_WATER_SPELLS, Map.of()),
+    TOME_OF_AIR_MAGIC(ALL_AIR_SPELLS, Map.of()),
     THUNDER_HELMET(BOOST, Map.of(
             POWER.name(), -2,
             KNOWLEDGE.name(), 10)),

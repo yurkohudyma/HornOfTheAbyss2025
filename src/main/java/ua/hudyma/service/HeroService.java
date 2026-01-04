@@ -84,7 +84,7 @@ public class HeroService {
         var artifactAction = artifact.getArtifactAction();
         var actionData = artifact.getActionData();
         Map<PrimarySkill, Integer> primarySkillsMap;
-        Map<HeroParams, Integer> parametersMap;
+        Map<HeroParams, Integer> parametersMap = getOrCreateParamMap(hero);
         switch (artifactAction){
             case BOOST -> {
                 primarySkillsMap = hero.getPrimarySkillMap();
@@ -102,7 +102,6 @@ public class HeroService {
                 }
             }
             case BOOST_OTH_PARAM -> {
-                parametersMap = getOrCreateParamMap(hero);
                 hero.setParametersMap(parametersMap);
                 for (Map.Entry<String, Object> entry : actionData.entrySet()) {
                     var skillName = entry.getKey();
@@ -124,6 +123,8 @@ public class HeroService {
             case COMPLEX, MODIFIER, ENEMY_DEBOOST -> throw new IllegalArgumentException
                     ("COMPLEX/ENEMY_BOOST/MODIFIER/VISIBILITY " +
                             "action in ARTIFACTS not supported");
+            case ALL_AIR_SPELLS, ALL_EARTH_SPELLS, ALL_FIRE_SPELLS, ALL_WATER_SPELLS
+                    -> log.info(" ::: attaching Tome of Magic");
         }
 
         attachArtifactToHero(artifactName, hero);
@@ -131,7 +132,7 @@ public class HeroService {
         return heroMapper.toDto(hero);
     }
 
-    private Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {
+    private static Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {
         return hero.getParametersMap() == null ?
                 new FixedSizeMap<>(new HashMap<>(), 4) :
                 hero.getParametersMap();
@@ -173,13 +174,15 @@ public class HeroService {
             case COMPLEX, MODIFIER, ENEMY_DEBOOST -> throw new IllegalArgumentException
                     ("COMPLEX/ENEMY_BOOST/MODIFIER/VISIBILITY " +
                             "action in ARTIFACTS not supported");
+            case ALL_AIR_SPELLS, ALL_EARTH_SPELLS, ALL_FIRE_SPELLS, ALL_WATER_SPELLS
+                    -> log.info(" ::: detaching Tome of Magic");
         }
         detachArtifact(artifactName, hero);
         //armyService.syncArmySkillsWithHero(hero.getArmyList(), hero); <-- deactivated for testing
         return heroMapper.toDto(hero);
     }
 
-    private static void syncSpellPointsValues (Hero hero){
+    public static void syncSpellPointsValues (Hero hero){
         var paramMap = hero.getParametersMap();
         if (paramMap == null){
             paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
@@ -192,12 +195,12 @@ public class HeroService {
         }
     }
 
-    private static int getKnowledgeLevel(Hero hero) {
+    static int getKnowledgeLevel(Hero hero) {
         var knowledgeLevel = hero.getPrimarySkillMap().get(KNOWLEDGE);
         return knowledgeLevel <= 0 ? 1 : knowledgeLevel;
     }
 
-    private static float getIntelligenceLevel(Hero hero) {
+    static float getIntelligenceLevel(Hero hero) {
         var secondarySkillMap = hero.getSecondarySkillMap();
         var intel = secondarySkillMap.get(INTELLIGENCE);
         if (intel == null) return 1;
@@ -257,20 +260,12 @@ public class HeroService {
                     throw new IllegalArgumentException("Proprietory NOT implemented");
             case MISC ->
                     throw new IllegalArgumentException("Misc NOT implemented");
+
+            // todo напиши логіку додавання артефакта MISC
             case BACKPACK ->
                     throw new IllegalArgumentException("Backpack NOT implemented");
         }
     }
-
-   /* private static void resolveNotApplicableArtifactAction(
-            ArtifactAction artifactAction) {
-        switch (artifactAction) {
-            case COMPLEX, ENEMY_DEBOOST, MODIFIER, VISIBILITY ->
-
-            case BOOST, BOOST_OTH_PARAM -> {
-            }
-        }
-    }*/
 
     public void vanquishHero(Hero hero) {
         heroRepository.delete(hero);

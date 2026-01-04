@@ -4,6 +4,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.artifacts.enums.ArtifactProperties;
+import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
+import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.HeroParams;
+import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
@@ -14,14 +19,19 @@ import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.exception.SpellCastException;
 import ua.hudyma.exception.SpellPointsShortageException;
 import ua.hudyma.exception.TownSpellBookSetAlreadyGeneratedException;
+import ua.hudyma.util.FixedSizeMap;
 
 import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ua.hudyma.domain.artifacts.enums.ArtifactProperties.*;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
+import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
+import static ua.hudyma.service.HeroService.getIntelligenceLevel;
+import static ua.hudyma.service.HeroService.getKnowledgeLevel;
 
 @Service
 @RequiredArgsConstructor
@@ -37,19 +47,25 @@ public class SpellService {
             4, 2,
             5, 1
     );
+
     @Transactional
     public String castSpell(String heroId, String spellName) {
         var hero = heroService.getHero(heroId);
         var spellBook = hero.getSpellBook();
         var enumSchool = SpellRegistry.fromCode(spellName);
-        checkSpellBookContainsSpell(spellName, spellBook, hero.getName());
-        var manaCost = enumSchool.getManaCost();
         var enumProperty = SpellRegistry.fromCodeProperty(spellName);
-        var parametersMap = hero.getParametersMap();
-        if (parametersMap == null) throw new IllegalStateException("Parameters_map is NULL");
+        checkSpellBookContainsSpell(
+                spellName,
+                enumProperty.getSpellSchool(),
+                spellBook,
+                hero.getName(),
+                hero.getMiscInventoryMap());
+        var manaCost = enumSchool.getManaCost();
+        var parametersMap = getOrCreateParamMap(hero);
+        syncSpellPointsValues(parametersMap, hero);
         var currentSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
         var manaCostModifier = getSecondarySkillManaCostModifier
-                (       enumSchool.getSpellLevel(),
+                (enumSchool.getSpellLevel(),
                         hero.getSecondarySkillMap(),
                         enumProperty.getSpellSchool());
         int spellPointsLeft = currentSpellPoints - manaCost - manaCostModifier;
@@ -57,27 +73,45 @@ public class SpellService {
                 (hero.getName() + "'s spell points = " + currentSpellPoints + ", " +
                         "while spell cost = " + manaCost);
         parametersMap.put(CUR_SPELL_POINTS, spellPointsLeft);
-
-
         //var skillModifierMap = enumProperty.getSkillModifierMap(); //todo if spell modifies hero Primary Skills
         //var targetCreatureSet = enumProperty.getTargetCreatureSet(); //todo implem these to provide creatures impact
         //var spellAction = enumSchool.getSpellAction(); //todo differentiate spell activity scope
-
         return "Spell " + spellName + " HAS been succ cast";
     }
 
+    //todo написати метод вивчення конкретного заклинання (нехай імплозії)
+
+    static void syncSpellPointsValues(Map<HeroParams, Integer> paramMap, Hero hero) {
+        var intelligenceLevel = getIntelligenceLevel(hero);
+        var knowledgeLevel = getKnowledgeLevel(hero);
+        paramMap.put(MAX_SPELL_POINTS, (int) (knowledgeLevel * 10 * intelligenceLevel));
+        if (!paramMap.containsKey(CUR_SPELL_POINTS)) {
+            paramMap.put(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
+        }
+    }
+
+    private static Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {
+        if (hero.getParametersMap() == null) {
+            var newMap = new FixedSizeMap<HeroParams, Integer>
+                    (new HashMap<>(), 4);
+            hero.setParametersMap(newMap);
+            return hero.getParametersMap();
+        }
+        return hero.getParametersMap();
+    }
+
     public Set<String> getAllSchoolSpells(String spellSchool) {
-        /*var enumClass = SpellRegistry
-                .findEnumClassByChildName(spellSchool, AbstractSpellSchool.class);*/
-        var enumClass = resolveEnumClass(spellSchool);
+        var enumClass =
+                resolveEnumClass(spellSchool);
         return Arrays
                 .stream(enumClass.getEnumConstants())
                 .map(Enum::name)
                 .collect(Collectors.toSet());
     }
 
-    private Class<? extends Enum> resolveEnumClass(String spellSchool) {
-        return switch (spellSchool){
+    private static Class<? extends Enum<? extends AbstractSpellSchool>>
+    resolveEnumClass(String spellSchool) {
+        return switch (spellSchool) {
             case "AIR" -> AirSpellSchool.class;
             case "EARTH" -> EarthSpellSchool.class;
             case "WATER" -> WaterSpellSchool.class;
@@ -92,7 +126,7 @@ public class SpellService {
             SpellSchool spellSchool) {
         var secondarySkillName = convertSpellSchoolToSecondarySkill
                 (spellSchool);
-        if (secondarySkillMap.containsKey(secondarySkillName)){
+        if (secondarySkillMap.containsKey(secondarySkillName)) {
             return spellLevel;
         }
         return 0;
@@ -100,7 +134,7 @@ public class SpellService {
 
     private static SecondarySkill convertSpellSchoolToSecondarySkill(
             SpellSchool spellSchool) {
-        return switch (spellSchool){
+        return switch (spellSchool) {
             case AIR -> AIR_MAGIC;
             case FIRE -> FIRE_MAGIC;
             case EARTH -> EARTH_MAGIC;
@@ -108,17 +142,39 @@ public class SpellService {
         };
     }
 
-    private static void checkSpellBookContainsSpell(
-            String spellName,
-            Map<Integer, Set<String>> spellBook,
-            String heroName) {
-        for (Map.Entry<Integer, Set<String>> entry : spellBook.entrySet()){
+    private static void checkSpellBookContainsSpell(String spellName,
+                                                    SpellSchool spellSchool,
+                                                    Map<Integer, Set<String>> spellBook,
+                                                    String heroName, Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap) {
+        var specificTomeOfMagic = resolveTomeOfMagic(spellSchool);
+        if (miscInventoryContainsSpecificTomeOfMagicBook(miscInventoryMap, specificTomeOfMagic)) return;
+        for (Map.Entry<Integer, Set<String>> entry : spellBook.entrySet()) {
             var spellSet = entry.getValue();
             for (String spell : spellSet) {
-                if (spellSet.contains(spell)) return;
+                if (spellSet.contains(spellName)) return;
             }
-            throw new SpellCastException(spellName + " HAS not been learnt by " + heroName + " yet");
         }
+        throw new SpellCastException(spellName + " HAS not been learnt by " + heroName + " yet");
+    }
+
+    private static boolean miscInventoryContainsSpecificTomeOfMagicBook(
+            Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap,
+            ArtifactProperties specificTomeOfMagic) {
+        for (Map.Entry<ArtifactSlot, ArtifactSlotDisposition> entry : miscInventoryMap.entrySet()) {
+            if (entry.getValue().name().equals(specificTomeOfMagic.name())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static ArtifactProperties resolveTomeOfMagic(SpellSchool spellSchool) {
+        return switch (spellSchool) {
+            case EARTH -> TOME_OF_EARTH_MAGIC;
+            case FIRE -> TOME_OF_FIRE_MAGIC;
+            case WATER -> TOME_OF_WATER_MAGIC;
+            case AIR -> TOME_OF_AIR_MAGIC;
+        };
     }
 
     public Map<Integer, Set<String>> getHeroSpellbook(String heroId) {
@@ -134,18 +190,18 @@ public class SpellService {
             String heroId, String townName) {
         var hero = heroService.getHero(heroId);
         var town = townService.getTown(townName);
-        if (hero.getSpellBook() == null){
+        if (hero.getSpellBook() == null) {
             hero.setSpellBook(new HashMap<>());
         }
         var heroSecondarySkillMap = hero.getSecondarySkillMap();
-        if (heroSecondarySkillMap == null || heroSecondarySkillMap.isEmpty()){
+        if (heroSecondarySkillMap == null || heroSecondarySkillMap.isEmpty()) {
             throw new IllegalArgumentException("Hero secondary skill MAP is NULL or Empty");
         }
         var heroMaxSpellLevel = heroSecondarySkillMap
                 .containsKey(SecondarySkill.WISDOM) ?
                 getMaxSpellLevel(heroSecondarySkillMap.get(SecondarySkill.WISDOM)) : 2;
         var townSpells = town.getMagicGuildSpellMap();
-        if (townSpells == null || townSpells.isEmpty()){
+        if (townSpells == null || townSpells.isEmpty()) {
             throw new IllegalArgumentException("Town spell Book is NULL or empty");
         }
         while (heroMaxSpellLevel > 0) {
@@ -156,7 +212,7 @@ public class SpellService {
     }
 
     private int getMaxSpellLevel(SkillLevel skillLevel) {
-        return switch (skillLevel){
+        return switch (skillLevel) {
             case BASIC -> 3;
             case ADVANCED -> 4;
             case EXPERT -> 5;
