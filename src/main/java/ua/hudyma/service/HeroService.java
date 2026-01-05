@@ -287,7 +287,7 @@ public class HeroService {
         else return set.iterator().next();
     }
 
-    private static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateMiscInvMap(Hero hero) {
+    static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateMiscInvMap(Hero hero) {
         var miscInvMap = hero.getMiscInventoryMap();
         if (miscInvMap == null) {
             miscInvMap = new FixedSizeMap<>(new HashMap<>(), MISC_INV_MAP_SIZE);

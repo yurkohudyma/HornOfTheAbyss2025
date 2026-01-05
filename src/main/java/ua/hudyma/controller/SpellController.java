@@ -29,11 +29,19 @@ class SpellController {
     }
     @PatchMapping("/hero")
     public ResponseEntity<Map<Integer, Set<String>>>
-    learnHeroNewSpells(
+    learnTownSpells(
             @RequestParam String heroId,
             @RequestParam String townName){
         return ResponseEntity.ok(spellService
-                .learnHeroNewSpells(heroId, townName));
+                .learnTownSpells(heroId, townName));
+    }
+    @PatchMapping("/learn")
+    public ResponseEntity<Map<Integer, Set<String>>>
+    learnSpell(
+            @RequestParam String heroId,
+            @RequestParam String spell){
+        return ResponseEntity.ok(spellService
+                .learnSpell(heroId, spell));
     }
 
     @GetMapping("/hero")

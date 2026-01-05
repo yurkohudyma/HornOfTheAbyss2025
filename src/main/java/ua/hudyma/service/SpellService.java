@@ -54,12 +54,13 @@ public class SpellService {
         var spellBook = hero.getSpellBook();
         var enumSchool = SpellRegistry.fromCode(spellName);
         var enumProperty = SpellRegistry.fromCodeProperty(spellName);
+        var miscInvMap = HeroService.getOrCreateMiscInvMap(hero);
         checkSpellBookContainsSpell(
                 spellName,
                 enumProperty.getSpellSchool(),
                 spellBook,
                 hero.getName(),
-                hero.getMiscInventoryMap());
+                miscInvMap);
         var manaCost = enumSchool.getManaCost();
         var parametersMap = getOrCreateParamMap(hero);
         syncSpellPointsValues(parametersMap, hero);
@@ -119,6 +120,30 @@ public class SpellService {
             case "FIRE" -> FireSpellSchool.class;
             default -> throw new IllegalArgumentException("Unknown spell school " + spellSchool);
         };
+    }
+
+    /**
+     * This method concerns learning single spell from town or any other source that demands
+     * wisdom secondary skill
+     * @param heroId - String hero code
+     * @param spell - UPPERCASED spell name
+     * @return spellBook
+     */
+    @Transactional
+    public Map<Integer, Set<String>> learnSpell(String heroId, String spell) {
+        var hero = heroService.getHero(heroId);
+        var enumSchool = SpellRegistry.fromCode(spell);
+        var spellLevel = enumSchool.getSpellLevel();
+        var heroWisdomlevel = getHeroMaxSpellLevel(hero
+                .getSecondarySkillMap());
+        if (spellLevel > heroWisdomlevel) throw new SpellCastException
+                (hero.getName() + " is not wise enough to learn " + spell
+                + " spell's is " + spellLevel + ", while hero's " + heroWisdomlevel);
+        var heroSpellBook = hero.getSpellBook();
+        var spellSet = heroSpellBook.get(spellLevel);
+        spellSet.add(spell);
+        heroSpellBook.put(spellLevel, spellSet);
+        return heroSpellBook;
     }
 
     private int getSecondarySkillManaCostModifier(
@@ -187,7 +212,7 @@ public class SpellService {
     }
 
     @Transactional
-    public Map<Integer, Set<String>> learnHeroNewSpells(
+    public Map<Integer, Set<String>> learnTownSpells(
             String heroId, String townName) {
         var hero = heroService.getHero(heroId);
         var town = townService.getTown(townName);
@@ -198,9 +223,7 @@ public class SpellService {
         if (heroSecondarySkillMap == null || heroSecondarySkillMap.isEmpty()) {
             throw new IllegalArgumentException("Hero secondary skill MAP is NULL or Empty");
         }
-        var heroMaxSpellLevel = heroSecondarySkillMap
-                .containsKey(SecondarySkill.WISDOM) ?
-                getMaxSpellLevel(heroSecondarySkillMap.get(SecondarySkill.WISDOM)) : 2;
+        var heroMaxSpellLevel = getHeroMaxSpellLevel(heroSecondarySkillMap);
         var townSpells = town.getMagicGuildSpellMap();
         if (townSpells == null || townSpells.isEmpty()) {
             throw new IllegalArgumentException("Town spell Book is NULL or empty");
@@ -210,6 +233,12 @@ public class SpellService {
             hero.getSpellBook().put(heroMaxSpellLevel--, allowedSpells);
         }
         return hero.getSpellBook();
+    }
+
+    private int getHeroMaxSpellLevel(Map<SecondarySkill, SkillLevel> heroSecondarySkillMap) {
+        return heroSecondarySkillMap
+                .containsKey(SecondarySkill.WISDOM) ?
+                getMaxSpellLevel(heroSecondarySkillMap.get(SecondarySkill.WISDOM)) : 2;
     }
 
     private int getMaxSpellLevel(SkillLevel skillLevel) {

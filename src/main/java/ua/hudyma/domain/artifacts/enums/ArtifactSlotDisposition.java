@@ -10,6 +10,9 @@ import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 @RequiredArgsConstructor
 public enum ArtifactSlotDisposition {
     TOME_OF_EARTH_MAGIC (MISC_ANY,null),
+    TOME_OF_AIR_MAGIC (MISC_ANY,null),
+    TOME_OF_WATER_MAGIC (MISC_ANY,null),
+    TOME_OF_FIRE_MAGIC (MISC_ANY,null),
     THUNDER_HELMET(HELMET, null),
     PENDANT_OF_COURAGE(NECKLACE, null),
     SANDALS_OF_THE_SAINT(FEET, null),

@@ -66,7 +66,7 @@ public class SpellRegistry {
     /**
      * Пошук enum-класу серед усіх підтипів базового інтерфейсу/класу.
      *
-     * @param type          частина назви enum-класу для пошуку
+     * @param spellSchool          частина назви enum-класу для пошуку
      * @param baseInterface інтерфейс або базовий клас, який реалізує enum
      * @param <B>           тип базового інтерфейсу
      * @return enum-клас, який реалізує B
