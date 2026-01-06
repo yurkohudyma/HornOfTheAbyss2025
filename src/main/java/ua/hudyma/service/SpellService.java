@@ -80,8 +80,6 @@ public class SpellService {
         return "Spell " + spellName + " HAS been succ cast";
     }
 
-    //todo написати метод вивчення конкретного заклинання (нехай імплозії)
-
     static void syncSpellPointsValues(Map<HeroParams, Integer> paramMap, Hero hero) {
         var intelligenceLevel = getIntelligenceLevel(hero);
         var knowledgeLevel = getKnowledgeLevel(hero);

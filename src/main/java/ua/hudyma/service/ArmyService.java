@@ -34,7 +34,7 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 public class ArmyService {
     private final HeroService heroService;
     private final ArmyMapper armyMapper;
-    private final CreatureService creatureService;
+    private final ArmyHeroService armyHeroService;
     private static final Integer ARMY_SLOT_MAX_QTY = 7;
 
     @Transactional
@@ -138,7 +138,7 @@ public class ArmyService {
         var currentArmyList = hero.getArmyList();
         var reqArmyList = dto.armyList();
         var requestedArmyList =
-                syncArmySkillsWithHero(reqArmyList, hero);
+                armyHeroService.syncArmySkillsWithHero(reqArmyList, hero);
         if (currentArmyList == null) {
             hero.setArmyList(requestedArmyList);
         } else {
@@ -304,39 +304,11 @@ public class ArmyService {
         return armyMapper.toDtoList(viewArmy(heroId));
     }
 
-    public List<CreatureSlot> syncArmySkillsWithHero(
-            List<CreatureSlot> armyList,
-            Hero hero) {
-        armyList.forEach(armyslot -> {
-                    var modifiableMap = new EnumMap<ModifiableSkill, ModifiableData>
-                            (ModifiableSkill.class);
-                    var skillEnums = ModifiableSkill.values();
-                    var regularCreatureSkillMap =
-                            creatureService.fetchCreatureByType(armyslot.getType())
-                                    .getCreatureSkillMap();
-                    for (ModifiableSkill skill : skillEnums) {
-                        var regularSkillValue = regularCreatureSkillMap
-                                .get(EnumMapper
-                                        .map(skill, CreatureSkill.class)
-                                        .orElseThrow(() -> new EnumMappingErrorException
-                                                ("Error mapping to " +
-                                                        CreatureSkill.class.getSimpleName())))
-                                .get(0);
-                        modifiableMap.put(skill, new ModifiableData(
-                                        regularSkillValue.value(),
-                                        getModifiedValue(hero, skill, regularSkillValue)
-                                )
-                        );
-                    }
-                    armyslot.setModifiableDataMap(modifiableMap);
-                }
-        );
-        return armyList;
-    }
 
-    private static int getModifiedValue(Hero hero,
-                                        ModifiableSkill skill,
-                                        CreatureSkillValue regularSkillValue) {
+
+    public int getModifiedValue(Hero hero,
+                                ModifiableSkill skill,
+                                CreatureSkillValue regularSkillValue) {
         var heroPrimarySkill = getPrimarySkill(skill);
         var modifiedValue = heroPrimarySkill.isPresent() ? hero.getPrimarySkillMap()
                 .get(heroPrimarySkill.get()) : 0;

@@ -39,7 +39,7 @@ public class HeroService {
     private final HeroMapper heroMapper;
     private final HeroRepository heroRepository;
     private final PlayerService playerService;
-    //private final ArmyService armyService; invokes circular dependency exception
+    private final ArmyHeroService armyHeroService;
 
     @SneakyThrows
     @Transactional
@@ -131,7 +131,7 @@ public class HeroService {
         }
 
         attachArtifactToHero(artifactName, hero);
-        //armyService.syncArmySkillsWithHero(hero.getArmyList(), hero); <-- deactivated for testing
+        armyHeroService.syncArmySkillsWithHero(hero.getArmyList(), hero);
         return heroMapper.toDto(hero);
     }
 
@@ -172,17 +172,13 @@ public class HeroService {
                         else return (Integer) entry.getValue() - v;
                     });
                 }
-                //syncSpellPointsValues(hero);
             }
             case COMPLEX, MODIFIER, ENEMY_DEBOOST, VISIBILITY -> log.info(" :::: do NOTHING");
             case ALL_AIR_SPELLS, ALL_EARTH_SPELLS, ALL_FIRE_SPELLS, ALL_WATER_SPELLS ->
                     log.info(" ::: detaching Tome of Magic");
         }
         detachArtifact(artifactName, hero);
-
-        //todo <-- deactivated for testing -->
-        //armyService.syncArmySkillsWithHero(hero.getArmyList(), hero);
-
+        armyHeroService.syncArmySkillsWithHero(hero.getArmyList(), hero);
         return heroMapper.toDto(hero);
     }
 
@@ -239,11 +235,8 @@ public class HeroService {
                     log.info(" ::: " + artifactName + " detached from " + key + " slot");
                     return;
                 }
-                /*var deleted = miscInvMap.remove(artifactSlot);
-                if (deleted == null) {*/
                 throw new IllegalStateException("Artifact " + artifactName + " has not been DETACHED, " +
                         "entity Field of type [" + entityField + "] did not contain it");
-                //}
             }
             case BACKPACK -> throw new IllegalArgumentException("Backpack NOT implemented");
         }

@@ -316,26 +316,30 @@ public class CommonBuildService {
     private void checkResourcesDemandAndDecrement(
             Map<ResourceType, Integer> availResources,
             EnumMap<ResourceType, Integer> demandedResources) {
+        var insufficientResoucesMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
         for (Map.Entry<ResourceType, Integer> res : demandedResources.entrySet()) {
             var availResQty = availResources.get(res.getKey());
             var demandedResQty = res.getValue();
             var difference = availResQty - demandedResQty;
-            if (difference < 0) { //todo do not throw exc immediately, collect all not conforming
-                // todo units and finalise after all checks have been provided
-                throw getExceptionSupplier(ResourceType.class,
-                        String.format("%s: avail: %d, required: %d",
-                                res.getKey(),
-                                availResQty,
-                                demandedResQty),
+            if (difference < 0) {
+                insufficientResoucesMap.put(res.getKey(), demandedResQty);
+            }
+            else {
+                availResources.replace(res.getKey(), difference);
+                log.info("{} has been decremented by {} and now = {}",
+                        res.getKey(),
+                        demandedResQty,
+                        difference);
+            }
+        }
+        if (!insufficientResoucesMap.isEmpty()){
+            var insuffResString = "Resources DEMANDS: " + insufficientResoucesMap
+                    + ", while AVAIL = " + availResources;
+            throw getExceptionSupplier(ResourceType.class,
+                        insuffResString,
                         InsufficientResourcesException::new,
                         true)
                         .get();
-            }
-            availResources.replace(res.getKey(), difference);
-            log.info("{} has been decremented by {} and now = {}",
-                    res.getKey(),
-                    demandedResQty,
-                    difference);
         }
     }
 

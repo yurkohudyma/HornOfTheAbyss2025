@@ -25,6 +25,7 @@ public class TownService {
     private final HeroService heroService;
     private final CombatService combatService;
     private final ArmyService armyService;
+    private final ArmyHeroService armyHeroService;
 
     @SneakyThrows
     public String createTown(TownReqDto dto) {
@@ -54,8 +55,8 @@ public class TownService {
                     incomingHero.getName(), town.getName());
         } else if (visitingHero != null) {
             swapHeroesAtTownGarrison(incomingHero, visitingHero, town);
-            if (town.getGarrisonArmy() != null) { //todo in reality visiting incomingHero
-                // todo does not upscale creature until garrison army has been transferred to him
+            if (town.getGarrisonArmy() != null) { //in reality visiting incomingHero
+                // does not upscale creature until garrison army has been transferred to him
                 upgradeGarnisonSkillsByHero(town, incomingHero);
             }
             return String.format("Hero %s is now garnisoned in %s, while %s is Visitor",
@@ -67,7 +68,7 @@ public class TownService {
     }
 
     private void upgradeGarnisonSkillsByHero(Town town, Hero hero) {
-        var upgradedGarrisonArmy = armyService
+        var upgradedGarrisonArmy = armyHeroService
                 .syncArmySkillsWithHero(town.getGarrisonArmy(), hero);
         town.setGarrisonArmy(upgradedGarrisonArmy);
     }
