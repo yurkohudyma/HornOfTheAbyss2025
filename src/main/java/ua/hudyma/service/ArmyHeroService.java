@@ -19,7 +19,7 @@ import java.util.List;
 @Log4j2
 public class ArmyHeroService {
     private final CreatureService creatureService;
-    private final ArmyService armyService;
+    //private final ArmyService armyService;
 
     public List<CreatureSlot> syncArmySkillsWithHero(
             List<CreatureSlot> armyList,
@@ -41,14 +41,17 @@ public class ArmyHeroService {
                                 .get(0);
                         modifiableMap.put(skill, new ModifiableData(
                                         regularSkillValue.value(),
-                                        armyService.getModifiedValue(hero, skill, regularSkillValue)
+                                        ArmyService.getModifiedValue(hero, skill, regularSkillValue)
                                 )
                         );
                     }
                     armyslot.setModifiableDataMap(modifiableMap);
                 }
-                //todo detach Artifact provides false data when de-syncing armies
         );
         return armyList;
+    }
+
+    public List<CreatureSlot> syncArmySkillsWithHero (Hero hero){
+        return syncArmySkillsWithHero(hero.getArmyList(), hero);
     }
 }

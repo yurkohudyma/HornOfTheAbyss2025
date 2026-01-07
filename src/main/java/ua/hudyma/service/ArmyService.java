@@ -306,7 +306,7 @@ public class ArmyService {
 
 
 
-    public int getModifiedValue(Hero hero,
+    public static int getModifiedValue(Hero hero,
                                 ModifiableSkill skill,
                                 CreatureSkillValue regularSkillValue) {
         var heroPrimarySkill = getPrimarySkill(skill);

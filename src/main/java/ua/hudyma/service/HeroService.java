@@ -178,7 +178,7 @@ public class HeroService {
                     log.info(" ::: detaching Tome of Magic");
         }
         detachArtifact(artifactName, hero);
-        armyHeroService.syncArmySkillsWithHero(hero.getArmyList(), hero);
+        hero.setArmyList(armyHeroService.syncArmySkillsWithHero(hero));
         return heroMapper.toDto(hero);
     }
 
