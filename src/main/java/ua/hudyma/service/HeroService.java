@@ -190,9 +190,10 @@ public class HeroService {
         var intelligenceLevel = getIntelligenceLevel(hero);
         var knowledgeLevel = getKnowledgeLevel(hero);
         paramMap.put(MAX_SPELL_POINTS, (int) (knowledgeLevel * 10 * intelligenceLevel));
-        if (!paramMap.containsKey(CUR_SPELL_POINTS)) {
+        /*if (!paramMap.containsKey(CUR_SPELL_POINTS)) {
             paramMap.put(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
-        }
+        }*/
+        paramMap.putIfAbsent(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
     }
 
     static int getKnowledgeLevel(Hero hero) {
