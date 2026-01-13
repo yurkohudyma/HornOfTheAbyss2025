@@ -53,6 +53,7 @@ public class CombatService {
         var attackResultDtoList = new ArrayList<AttackResultDto>();
         while (!defenderArmy.isEmpty() || !attackerArmy.isEmpty()) {
             var attackerSlot = resolveStrongestSlot(attackerArmy);
+            if (defender.getArmyList().isEmpty()) break;
             var defenderSlot = defender.getArmyList().get(0);
             var shootingCreatureList = detectShootingCreatures
                     (defender.getArmyList());
@@ -71,7 +72,6 @@ public class CombatService {
             Thread.sleep(2000);
         }
         log.info(attackResultDtoList);
-
         return new BattleResultDto(
                 defenderArmy.isEmpty(),
                 attackerArmy.isEmpty(),
@@ -90,77 +90,88 @@ public class CombatService {
     private AttackResultDto attackSlot(CreatureSlot attackerSlot, CreatureSlot defenderSlot) {
         var attackerDamage = attackerSlot
                 .getModifiableDataMap()
-                .get(DAMAGE)
-                .getCurrentValue() * attackerSlot.getQuantity();
-
+                .get(DAMAGE).getCurrentValue(); //todo attack/defense skills NOT accounted (use nullable modified values)
+        var attackerCount = attackerSlot.getQuantity();
+        var defenderCount = defenderSlot.getQuantity();
+        var attackerOverallDamage = attackerDamage * attackerCount;
         log.info("::: {} attacks {} :::",
                 attackerSlot.getType(),
                 defenderSlot.getType());
         var defenderHealth = defenderSlot
                 .getModifiableDataMap()
                 .get(HEALTH).getCurrentValue();
-        var defenderOverallHealth = defenderHealth * attackerSlot.getQuantity();
+        var defenderOverallHealth = defenderHealth * attackerCount;
         var attackerSlotId = attackerSlot.getSlotId();
         var defenderSlotId = defenderSlot.getSlotId();
         var attackerCreature = attackerSlot.getType().getCode();
         var defenderCreature = defenderSlot.getType().getCode();
-        if (attackerDamage >= defenderHealth) {
+        if (attackerOverallDamage >= defenderOverallHealth) {
             return new AttackResultDto(
                     attackerSlotId,
                     defenderSlotId,
                     attackerCreature,
                     defenderCreature,
-                    attackerDamage,
-                    defenderHealth,
+                    attackerCount,
+                    defenderCount,
+                    attackerCount,
+                    0,
+                    0,
+                    defenderCount,
+                    attackerOverallDamage,
+                    defenderOverallHealth,
                     Boolean.FALSE,
-                    null,
-                    null,
-                    null,
+                    0,
+                    Boolean.FALSE,
                     null,
                     null,
                     null
             );
         } else {
-            defenderSlot.setQuantity((defenderOverallHealth - attackerDamage) / defenderHealth);
+            var survivedDefenderCreaturesCount = (defenderOverallHealth - attackerOverallDamage) / defenderHealth;
+            var killedDefenderCreaturesCount = defenderCount - survivedDefenderCreaturesCount;
+            defenderSlot.setQuantity(survivedDefenderCreaturesCount);
             var retaliationOverallDamage = defenderSlot.getModifiableDataMap()
-                    .get(DAMAGE).getCurrentValue() * defenderSlot.getQuantity();
+                    .get(DAMAGE).getCurrentValue() * defenderCount;
             var attackerHealth = attackerSlot.getModifiableDataMap()
                     .get(HEALTH).getCurrentValue();
-            var attackerOverallHealth = attackerHealth * attackerSlot.getQuantity();
+            var attackerOverallHealth = attackerHealth * attackerCount;
             var retaliationResult = Math.abs(retaliationOverallDamage - attackerOverallHealth);
             log.info("::: {} survives and strikes {} back :::",
                     defenderCreature, attackerCreature);
-            attackerSlot.setQuantity(retaliationResult / attackerHealth);
+            var survivedAttackerCreaturesCount = retaliationResult / attackerHealth;
+            var killedAttackerCreaturesCount = attackerCount - survivedAttackerCreaturesCount;
+            attackerSlot.setQuantity(survivedAttackerCreaturesCount);
             return new AttackResultDto(
                     attackerSlotId,
                     defenderSlotId,
                     attackerCreature,
                     defenderCreature,
-                    retaliationOverallDamage,
-                    attackerHealth,
+                    attackerCount,
+                    attackerCount,
+                    survivedAttackerCreaturesCount,
+                    survivedDefenderCreaturesCount,
+                    killedAttackerCreaturesCount,
+                    killedDefenderCreaturesCount,
+                    attackerOverallDamage,
+                    defenderOverallHealth,
                     Boolean.TRUE,
-                    attackerDamage - defenderHealth,
+                    defenderOverallHealth - attackerOverallDamage,
                     true,
                     retaliationOverallDamage,
                     retaliationResult,
-                    retaliationOverallDamage - attackerHealth,
-                    attackerSlot.getQuantity() > 0
-                    //todo there were some confusion on the results displayed,
-                    // need to check them
+                    attackerCount > 0
             );
         }
     }
 
     private static void checkArmySizeAndVanquishHeroAtLastSlotDefeat(
-            //todo saves attack result only in scope of battle
-            //todo if battle ends, results are discarded
             Hero defender,
             Hero attacker,
             CreatureSlot attackerSlot,
             CreatureSlot defenderSlot,
             AttackResultDto dto) {
         if (!dto.defenderSurvivedAttack()) {
-            if (defender.getArmyList().size() > 1) {
+            if (defender.getArmyList().size() >= 1) {
                 defender.getArmyList().remove(defenderSlot); //uncomment for real removal
                 log.info("Defender slot {} has fallen in attack",
                         defenderSlot.getType());
@@ -171,7 +182,7 @@ public class CombatService {
                         defenderSlot.getType());
             }
         } else if (!dto.attackedSurvivedRetaliation()) {
-            if (attacker.getArmyList().size() > 1) {
+            if (attacker.getArmyList().size() >= 1) {
                 attacker.getArmyList().remove(attackerSlot); //uncomment for real removal
                 log.info("Attacker slot {} has fallen in retaliation",
                         attackerSlot.getType());
