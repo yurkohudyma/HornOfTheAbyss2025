@@ -1,6 +1,4 @@
-package ua.hudyma.enums;
-
-import jakarta.persistence.criteria.CriteriaBuilder;
+package ua.hudyma.dto;
 
 public record AttackResultDto(
         String attackingSlotId,

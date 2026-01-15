@@ -182,18 +182,20 @@ public class HeroService {
         return heroMapper.toDto(hero);
     }
 
-    public static void syncSpellPointsValues(Hero hero) {
+    public void syncSpellPointsValues(Hero hero) {
+        Map<HeroParams, Integer> paramMap = getOrCreateHeroParamsMap(hero);
+        var intelligenceLevel = getIntelligenceLevel(hero);
+        var knowledgeLevel = getKnowledgeLevel(hero);
+        paramMap.put(MAX_SPELL_POINTS, (int) (knowledgeLevel * 10 * intelligenceLevel));
+        paramMap.putIfAbsent(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
+    }
+
+    public Map<HeroParams, Integer> getOrCreateHeroParamsMap(Hero hero) {
         var paramMap = hero.getParametersMap();
         if (paramMap == null) {
             paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
         }
-        var intelligenceLevel = getIntelligenceLevel(hero);
-        var knowledgeLevel = getKnowledgeLevel(hero);
-        paramMap.put(MAX_SPELL_POINTS, (int) (knowledgeLevel * 10 * intelligenceLevel));
-        /*if (!paramMap.containsKey(CUR_SPELL_POINTS)) {
-            paramMap.put(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
-        }*/
-        paramMap.putIfAbsent(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
+        return paramMap;
     }
 
     static int getKnowledgeLevel(Hero hero) {

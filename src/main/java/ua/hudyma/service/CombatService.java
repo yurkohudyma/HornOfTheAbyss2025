@@ -5,21 +5,27 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.HeroParams;
+import ua.hudyma.domain.spells.AbstractSpellSchool;
+import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.enums.AttackResultDto;
-import ua.hudyma.enums.BattleResultDto;
-import ua.hudyma.util.MessageProcessor;
+import ua.hudyma.dto.AttackResultDto;
+import ua.hudyma.dto.BattleResultDto;
+import ua.hudyma.dto.SpellAttackResultDto;
+import ua.hudyma.dto.SpellCastCombatReqDto;
+import ua.hudyma.exception.SpellCastException;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
+import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,7 @@ public class CombatService {
     private final HeroService heroService;
     private final CreatureService creatureService;
     private final BattlefieldService battlefieldService;
+    private final ArmyService armyService;
 
     public void initTownBattle(Hero hero, Town town) {
         throw new IllegalStateException
@@ -69,7 +76,7 @@ public class CombatService {
             checkArmySizeAndVanquishHeroAtLastSlotDefeat(
                     defender, attacker, attackerSlot, defenderSlot, dto);
             attackResultDtoList.add(dto);
-            Thread.sleep(2000);
+            Thread.sleep(500);
         }
         log.info(attackResultDtoList);
         return new BattleResultDto(
@@ -87,7 +94,52 @@ public class CombatService {
                         ("Strongest CreatureSlot has not been resolved"));
     }
 
-    private AttackResultDto attackSlot(CreatureSlot attackerSlot, CreatureSlot defenderSlot) {
+    @Transactional
+    public SpellAttackResultDto spellCast(SpellCastCombatReqDto dto) {
+        var attacker = heroService.getHero(dto.attackerId());
+        var attackerArmy = attacker.getArmyList();
+        var defender = heroService.getHero(dto.defenderId());
+        var defenderArmy = defender.getArmyList();
+        var attackerSlot = armyService.getSlot(attackerArmy, dto.attackingSlotId());
+        var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
+        var spell = dto.spell();
+        var spellEnum = SpellRegistry.fromCode(spell);
+        var spellAction = spellEnum.getSpellAction();
+        var manaCost = spellEnum.getManaCost();
+        var parametersMap = heroService.getOrCreateHeroParamsMap(attacker);
+        var heroSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
+        if (heroSpellPoints < manaCost) {
+            throw new SpellCastException("Hero spell points = " + heroSpellPoints +
+                    ", while spell costs " + manaCost);
+        }
+        return switch (spellAction){
+            case DAMAGE -> {
+                parametersMap.put(CUR_SPELL_POINTS, heroSpellPoints - manaCost);
+                yield attackSlotWithSpell(defenderSlot, spellEnum);
+            }
+            case MISC, BUF, DEBUF, ADVENTURE -> throw new SpellCastException
+                    ("MISC, BUF, DEBUF, ADVENTURE not implemented");
+        };
+    }
+
+    private SpellAttackResultDto attackSlotWithSpell(
+            CreatureSlot defenderSlot,
+            AbstractSpellSchool spellEnum) {
+        var defenderCount = defenderSlot.getQuantity();
+        log.info("::: {} is attacked by {}",
+                spellEnum,
+                defenderSlot.getType());
+        var defenderHealth = defenderSlot
+                .getModifiableDataMap()
+                .get(HEALTH).getCurrentValue();
+        var defenderOverallHealth = defenderHealth * defenderCount;
+
+        return null;//new SpellAttackResultDto();
+    }
+
+    private AttackResultDto attackSlot(
+            CreatureSlot attackerSlot,
+            CreatureSlot defenderSlot) {
         var attackerDamage = attackerSlot
                 .getModifiableDataMap()
                 .get(DAMAGE).getCurrentValue(); //todo attack/defense skills NOT accounted (use nullable modified values)
@@ -100,7 +152,7 @@ public class CombatService {
         var defenderHealth = defenderSlot
                 .getModifiableDataMap()
                 .get(HEALTH).getCurrentValue();
-        var defenderOverallHealth = defenderHealth * attackerCount;
+        var defenderOverallHealth = defenderHealth * defenderCount;
         var attackerSlotId = attackerSlot.getSlotId();
         var defenderSlotId = defenderSlot.getSlotId();
         var attackerCreature = attackerSlot.getType().getCode();

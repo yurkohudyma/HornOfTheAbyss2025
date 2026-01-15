@@ -2,12 +2,10 @@ package ua.hudyma.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import ua.hudyma.enums.AttackResultDto;
-import ua.hudyma.enums.BattleResultDto;
+import org.springframework.web.bind.annotation.*;
+import ua.hudyma.dto.BattleResultDto;
+import ua.hudyma.dto.SpellAttackResultDto;
+import ua.hudyma.dto.SpellCastCombatReqDto;
 import ua.hudyma.service.BattlefieldService;
 import ua.hudyma.service.CombatService;
 
@@ -35,4 +33,13 @@ public class CombatController {
     public void reinitBattlefield (){
         battlefieldService.renderBattlefield();
     }
+
+    @PostMapping("/castSpell")
+    public ResponseEntity<SpellAttackResultDto> spellCast (
+            @RequestBody SpellCastCombatReqDto dto) {
+        return ResponseEntity.ok(combatService
+                .spellCast(dto));
+    }
+
+
 }

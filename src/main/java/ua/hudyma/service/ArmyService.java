@@ -180,7 +180,7 @@ public class ArmyService {
                 difference + " and " + requestedQuantity;
     }
 
-    private static CreatureSlot getSlot(List<CreatureSlot> army, String dto) {
+    public CreatureSlot getSlot(List<CreatureSlot> army, String dto) {
         return army
                 .stream()
                 .filter(s -> s.getSlotId()

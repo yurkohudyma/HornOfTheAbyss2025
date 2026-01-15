@@ -1,4 +1,4 @@
-package ua.hudyma.enums;
+package ua.hudyma.dto;
 
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 

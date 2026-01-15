@@ -16,7 +16,7 @@ import static ua.hudyma.domain.spells.enums.SpellSchool.AIR;
 @Getter
 @RequiredArgsConstructor
 public enum AirSpellProperties implements AbstractSpellProperty {
-
+    MAGIC_ARROW(AIR, emptyMap(), Set.of()),
     DISGUISE(AIR, emptyMap(), Set.of()),
     PRECISION(AIR, emptyMap(), Set.of()), //todo introduce secondarySkillMap,), //real is 8
     VISIONS(AIR,emptyMap(), Set.of());
