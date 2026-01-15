@@ -8,9 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.Hero;
-import ua.hudyma.domain.heroes.HeroParams;
+import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
+import ua.hudyma.domain.spells.enums.SpellSchool;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.dto.AttackResultDto;
 import ua.hudyma.dto.BattleResultDto;
@@ -21,11 +22,11 @@ import ua.hudyma.exception.SpellCastException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
+import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
 
 @Service
 @RequiredArgsConstructor
@@ -97,13 +98,13 @@ public class CombatService {
     @Transactional
     public SpellAttackResultDto spellCast(SpellCastCombatReqDto dto) {
         var attacker = heroService.getHero(dto.attackerId());
-        var attackerArmy = attacker.getArmyList();
         var defender = heroService.getHero(dto.defenderId());
         var defenderArmy = defender.getArmyList();
-        var attackerSlot = armyService.getSlot(attackerArmy, dto.attackingSlotId());
         var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
         var spell = dto.spell();
         var spellEnum = SpellRegistry.fromCode(spell);
+        var spellEnumProperty = SpellRegistry.fromCodeProperty(spell);
+        var spellSchool = spellEnumProperty.getSpellSchool();
         var spellAction = spellEnum.getSpellAction();
         var manaCost = spellEnum.getManaCost();
         var parametersMap = heroService.getOrCreateHeroParamsMap(attacker);
@@ -112,10 +113,10 @@ public class CombatService {
             throw new SpellCastException("Hero spell points = " + heroSpellPoints +
                     ", while spell costs " + manaCost);
         }
-        return switch (spellAction){
+        return switch (spellAction) {
             case DAMAGE -> {
                 parametersMap.put(CUR_SPELL_POINTS, heroSpellPoints - manaCost);
-                yield attackSlotWithSpell(defenderSlot, spellEnum);
+                yield attackSlotWithSpell(defenderSlot, spellEnum, spellSchool, attacker);
             }
             case MISC, BUF, DEBUF, ADVENTURE -> throw new SpellCastException
                     ("MISC, BUF, DEBUF, ADVENTURE not implemented");
@@ -124,7 +125,9 @@ public class CombatService {
 
     private SpellAttackResultDto attackSlotWithSpell(
             CreatureSlot defenderSlot,
-            AbstractSpellSchool spellEnum) {
+            AbstractSpellSchool spellEnum,
+            SpellSchool spellSchool,
+            Hero attacker) {
         var defenderCount = defenderSlot.getQuantity();
         log.info("::: {} is attacked by {}",
                 spellEnum,
@@ -133,8 +136,36 @@ public class CombatService {
                 .getModifiableDataMap()
                 .get(HEALTH).getCurrentValue();
         var defenderOverallHealth = defenderHealth * defenderCount;
-
+        var attackerPrimarySkillMap = attacker.getPrimarySkillMap();
+        var attackerSecondarySkillMap = attacker.getSecondarySkillMap();
+        var heroSkillModifierDto = spellEnum.getHeroSkillSpellModifierDto();
+        var dtoSkill = heroSkillModifierDto.skill();
+        var attackerPrimarySpellSkillLevel = attackerPrimarySkillMap.get(dtoSkill); //POWER = 10
+        var spellSecondarySkill = resolveSecondarySkillLevelByMagicSchool(spellSchool);
+        var attackerSecSkillLevel = attackerSecondarySkillMap.get(spellSecondarySkill);
+        if (attackerPrimarySpellSkillLevel == null) throw new IllegalArgumentException("Obligatory primary Skill is NULL");
+        var skillLevelModifierMap = heroSkillModifierDto
+                .skillLevelModifierMap();
+        var spellSecSkillLevelModifier = skillLevelModifierMap.get(attackerSecSkillLevel);
+        if (spellSecSkillLevelModifier == null) spellSecSkillLevelModifier = 0;
+        var spellDamageValue = attackerPrimarySpellSkillLevel * 10 + spellSecSkillLevelModifier;
+        if (spellDamageValue >= defenderOverallHealth) {
+            //todo slot killed
+        }
+        else {
+            //todo slot survived
+        }
         return null;//new SpellAttackResultDto();
+    }
+
+    private static SecondarySkill resolveSecondarySkillLevelByMagicSchool(
+            SpellSchool spellSchool) {
+        return switch (spellSchool){
+            case AIR -> AIR_MAGIC;
+            case FIRE -> FIRE_MAGIC;
+            case EARTH -> EARTH_MAGIC;
+            case WATER -> WATER_MAGIC;
+        };
     }
 
     private AttackResultDto attackSlot(

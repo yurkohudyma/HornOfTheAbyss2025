@@ -84,10 +84,8 @@ public class SpellService {
         var intelligenceLevel = getIntelligenceLevel(hero);
         var knowledgeLevel = getKnowledgeLevel(hero);
         paramMap.put(MAX_SPELL_POINTS, (int) (knowledgeLevel * 10 * intelligenceLevel));
-        paramMap.computeIfAbsent(CUR_SPELL_POINTS, value -> paramMap.get(MAX_SPELL_POINTS));
-        /*if (!paramMap.containsKey(CUR_SPELL_POINTS)) {
-            paramMap.put(CUR_SPELL_POINTS, paramMap.get(MAX_SPELL_POINTS));
-        }*/
+        paramMap.computeIfAbsent(CUR_SPELL_POINTS,
+                value -> paramMap.get(MAX_SPELL_POINTS));
     }
 
     private static Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {

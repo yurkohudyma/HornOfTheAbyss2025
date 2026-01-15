@@ -2,6 +2,7 @@ package ua.hudyma.domain.spells.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import ua.hudyma.domain.heroes.dto.HeroSkillSpellModifierDto;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 
 import static ua.hudyma.domain.spells.enums.SpellAction.DAMAGE;
@@ -36,5 +37,10 @@ public enum FireSpellSchool implements AbstractSpellSchool {
     @Override
     public Integer getManaCost(){
         return manaCost;
+    }
+
+    @Override
+    public HeroSkillSpellModifierDto getHeroSkillSpellModifierDto() {
+        return null;
     }
 }

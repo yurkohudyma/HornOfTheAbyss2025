@@ -1,6 +1,7 @@
 package ua.hudyma.domain.spells;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import ua.hudyma.domain.heroes.dto.HeroSkillSpellModifierDto;
 import ua.hudyma.domain.spells.converter.AbstractSpellSchoolDeserializer;
 import ua.hudyma.domain.spells.enums.SpellAction;
 
@@ -11,4 +12,5 @@ public interface AbstractSpellSchool {
     String getName();
     SpellAction getSpellAction();
     Integer getManaCost();
+    HeroSkillSpellModifierDto getHeroSkillSpellModifierDto();
 }

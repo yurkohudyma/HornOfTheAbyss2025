@@ -9,18 +9,19 @@ import ua.hudyma.domain.spells.AbstractSpellSchool;
 
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.POWER;
 
 @Getter
 @RequiredArgsConstructor
 public enum AirSpellSchool implements AbstractSpellSchool {
-    MAGIC_ARROW (1,
+    MAGIC_ARROW(1,
             SpellAction.DAMAGE,
             6,
-            toDto(POWER, 10, List.of(10,20,30))),
+            toDto(
+                    POWER,
+                    10,
+                    List.of(10, 20, 30))),
     // BASIC:  One enemy target unit receives ((Power x 10) + 10) damage.
     // ADV:    One enemy target unit receives ((Power x 10) + 20) damage.
     // EXPERT: One enemy target unit receives ((Power x 10) + 30) damage.
@@ -33,17 +34,25 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     private final Integer manaCost;
     private final HeroSkillSpellModifierDto heroSkillSpellModifierDto;
 
-    private static HeroSkillSpellModifierDto toDto(PrimarySkill skill, Integer coefficient, List<Integer> modifList){
-        return new HeroSkillSpellModifierDto(skill, coefficient, toSkillLevelMap(modifList));
+    private static HeroSkillSpellModifierDto toDto(
+            PrimarySkill skill,
+            Integer coefficient,
+            List<Integer> modifList) {
+        return new HeroSkillSpellModifierDto(
+                skill,
+                coefficient,
+                toSkillLevelMap(modifList));
     }
 
-    private static EnumMap<SkillLevel, Integer> toSkillLevelMap(List<Integer> modifiersList){
+    private static EnumMap<SkillLevel, Integer> toSkillLevelMap(
+            List<Integer> modifiersList) {
         var enumMap = new EnumMap<SkillLevel, Integer>(SkillLevel.class);
-        if (modifiersList.size() != 3) throw new IllegalArgumentException("SkillLevel modifier Set should have size of 3");
+        if (modifiersList.size() != 3) throw new IllegalArgumentException
+                ("SkillLevel modifier List should have size of 3");
+        var skillLevelCounter = 0;
+        var values = SkillLevel.values();
         for (Integer integer : modifiersList) {
-            for (SkillLevel level : SkillLevel.values()) {
-                enumMap.put(level, integer);
-            }
+            enumMap.put(values[skillLevelCounter++], integer);
         }
         return enumMap;
     }
@@ -61,5 +70,10 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     @Override
     public Integer getManaCost() {
         return manaCost;
+    }
+
+    @Override
+    public HeroSkillSpellModifierDto getHeroSkillSpellModifierDto (){
+        return heroSkillSpellModifierDto;
     }
 }
