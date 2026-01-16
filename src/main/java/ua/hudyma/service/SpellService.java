@@ -100,7 +100,7 @@ public class SpellService {
 
     public Set<String> getAllSchoolSpells(String spellSchool) {
         var enumClass =
-                resolveEnumClass(spellSchool);
+                resolveSpellSchoolEnumClass(spellSchool);
         return Arrays
                 .stream(enumClass.getEnumConstants())
                 .map(Enum::name)
@@ -108,7 +108,7 @@ public class SpellService {
     }
 
     private static Class<? extends Enum<? extends AbstractSpellSchool>>
-    resolveEnumClass(String spellSchool) {
+    resolveSpellSchoolEnumClass(String spellSchool) {
         return switch (spellSchool) {
             case "AIR" -> AirSpellSchool.class;
             case "EARTH" -> EarthSpellSchool.class;

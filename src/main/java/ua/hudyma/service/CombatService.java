@@ -9,9 +9,10 @@ import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
+import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
-import ua.hudyma.domain.spells.enums.SpellSchool;
+import ua.hudyma.domain.spells.enums.*;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.dto.AttackResultDto;
 import ua.hudyma.dto.BattleResultDto;
@@ -19,9 +20,7 @@ import ua.hudyma.dto.SpellAttackResultDto;
 import ua.hudyma.dto.SpellCastCombatReqDto;
 import ua.hudyma.exception.SpellCastException;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
@@ -77,7 +76,7 @@ public class CombatService {
             checkArmySizeAndVanquishHeroAtLastSlotDefeat(
                     defender, attacker, attackerSlot, defenderSlot, dto);
             attackResultDtoList.add(dto);
-            Thread.sleep(500);
+            Thread.sleep(2000);
         }
         log.info(attackResultDtoList);
         return new BattleResultDto(
@@ -102,10 +101,15 @@ public class CombatService {
         var defenderArmy = defender.getArmyList();
         var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
         var spell = dto.spell();
-        var spellEnum = SpellRegistry.fromCode(spell);
+        //var spellEnum = SpellRegistry.fromCode(spell);
         var spellEnumProperty = SpellRegistry.fromCodeProperty(spell);
-        var spellSchool = spellEnumProperty.getSpellSchool();
+        var spellSchool = dto.spellSchool();
+        var spellSchoolEnumClass =
+                resolveSpellSchoolEnumClass(spellSchool);
+        var enumConstants = spellSchoolEnumClass.getEnumConstants();
+        var spellEnum = extractSpellFromEnum(enumConstants, spell);
         var spellAction = spellEnum.getSpellAction();
+        //todo fetch spell from specific school
         var manaCost = spellEnum.getManaCost();
         var parametersMap = heroService.getOrCreateHeroParamsMap(attacker);
         var heroSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
@@ -123,39 +127,97 @@ public class CombatService {
         };
     }
 
+    private AbstractSpellSchool extractSpellFromEnum(
+            Enum<? extends AbstractSpellSchool>[] enumConstants, String spell) {
+        return (AbstractSpellSchool) Arrays
+                .stream(enumConstants)
+                .filter(s -> s.name()
+                        .equals(spell))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    private static Class<? extends Enum<? extends AbstractSpellSchool>>
+    resolveSpellSchoolEnumClass(SpellSchool spellSchool) {
+        return switch (spellSchool) {
+            case AIR -> AirSpellSchool.class;
+            case EARTH -> EarthSpellSchool.class;
+            case WATER -> WaterSpellSchool.class;
+            case FIRE -> FireSpellSchool.class;
+            default -> throw new IllegalArgumentException("Unknown spell school " + spellSchool);
+        };
+    }
+
     private SpellAttackResultDto attackSlotWithSpell(
             CreatureSlot defenderSlot,
             AbstractSpellSchool spellEnum,
             SpellSchool spellSchool,
             Hero attacker) {
         var defenderCount = defenderSlot.getQuantity();
-        log.info("::: {} is attacked by {}",
-                spellEnum,
+        log.info("::: {} is cast upon {}",
+                spellEnum.getName(),
                 defenderSlot.getType());
-        var defenderHealth = defenderSlot
+        var defenderUnitHealthValue = defenderSlot
                 .getModifiableDataMap()
                 .get(HEALTH).getCurrentValue();
-        var defenderOverallHealth = defenderHealth * defenderCount;
+        var defenderOverallHealth = defenderUnitHealthValue * defenderCount;
         var attackerPrimarySkillMap = attacker.getPrimarySkillMap();
         var attackerSecondarySkillMap = attacker.getSecondarySkillMap();
-        var heroSkillModifierDto = spellEnum.getHeroSkillSpellModifierDto();
-        var dtoSkill = heroSkillModifierDto.skill();
+        var dtoSkill = spellEnum.getSpellPrimarySkill();
         var attackerPrimarySpellSkillLevel = attackerPrimarySkillMap.get(dtoSkill); //POWER = 10
+        if (attackerPrimarySpellSkillLevel == null) throw new IllegalArgumentException
+                ("Obligatory primary Skill is NULL");
+        if (attackerPrimarySpellSkillLevel == 0) attackerPrimarySpellSkillLevel = 1;
         var spellSecondarySkill = resolveSecondarySkillLevelByMagicSchool(spellSchool);
         var attackerSecSkillLevel = attackerSecondarySkillMap.get(spellSecondarySkill);
-        if (attackerPrimarySpellSkillLevel == null) throw new IllegalArgumentException("Obligatory primary Skill is NULL");
-        var skillLevelModifierMap = heroSkillModifierDto
-                .skillLevelModifierMap();
+        var skillLevelModifierMap = resolveSkillLevelModifierMap(spellEnum.getModifiedValuesList());
         var spellSecSkillLevelModifier = skillLevelModifierMap.get(attackerSecSkillLevel);
         if (spellSecSkillLevelModifier == null) spellSecSkillLevelModifier = 0;
-        var spellDamageValue = attackerPrimarySpellSkillLevel * 10 + spellSecSkillLevelModifier;
+        var modifierCoefficient = spellEnum.getModifierCoefficient();
+        var spellDamageValue = attackerPrimarySpellSkillLevel * modifierCoefficient + spellSecSkillLevelModifier;
         if (spellDamageValue >= defenderOverallHealth) {
-            //todo slot killed
+            return new SpellAttackResultDto(
+                    defenderSlot.getSlotId(),
+                    defenderSlot.getType().getCode(),
+                    defenderCount,
+                    0,
+                    defenderCount,
+                    spellDamageValue,
+                    defenderOverallHealth,
+                    false,
+                    0
+            );
         }
         else {
-            //todo slot survived
+            var defenderOverallHealthLeft = defenderOverallHealth - spellDamageValue;
+            var survivedDefenderCount = defenderOverallHealthLeft / defenderUnitHealthValue;
+            var killedDefenderCount = defenderCount - survivedDefenderCount;
+            defenderSlot.setQuantity(survivedDefenderCount);
+            return new SpellAttackResultDto(
+                    defenderSlot.getSlotId(),
+                    defenderSlot.getType().getCode(),
+                    defenderCount,
+                    survivedDefenderCount,
+                    killedDefenderCount,
+                    spellDamageValue,
+                    defenderOverallHealth,
+                    true,
+                    defenderOverallHealthLeft
+            );
         }
-        return null;//new SpellAttackResultDto();
+    }
+
+    private static EnumMap<SkillLevel, Integer> resolveSkillLevelModifierMap(
+            List<Integer> modifiersList) {
+        var enumMap = new EnumMap<SkillLevel, Integer>(SkillLevel.class);
+        if (modifiersList.size() != 3) throw new IllegalArgumentException
+                ("SkillLevel modifier List should have size of 3");
+        var skillLevelCounter = 0;
+        var values = SkillLevel.values();
+        for (Integer integer : modifiersList) {
+            enumMap.put(values[skillLevelCounter++], integer);
+        }
+        return enumMap;
     }
 
     private static SecondarySkill resolveSecondarySkillLevelByMagicSchool(
@@ -210,7 +272,7 @@ public class CombatService {
                     null
             );
         } else {
-            var survivedDefenderCreaturesCount = (defenderOverallHealth - attackerOverallDamage) / defenderHealth;
+            var survivedDefenderCreaturesCount = (defenderOverallHealth - attackerOverallDamage) / defenderCount;
             var killedDefenderCreaturesCount = defenderCount - survivedDefenderCreaturesCount;
             defenderSlot.setQuantity(survivedDefenderCreaturesCount);
             var retaliationOverallDamage = defenderSlot.getModifiableDataMap()
@@ -254,7 +316,7 @@ public class CombatService {
             CreatureSlot defenderSlot,
             AttackResultDto dto) {
         if (!dto.defenderSurvivedAttack()) {
-            if (defender.getArmyList().size() >= 1) {
+            if (!defender.getArmyList().isEmpty()) {
                 defender.getArmyList().remove(defenderSlot); //uncomment for real removal
                 log.info("Defender slot {} has fallen in attack",
                         defenderSlot.getType());
@@ -265,7 +327,7 @@ public class CombatService {
                         defenderSlot.getType());
             }
         } else if (!dto.attackedSurvivedRetaliation()) {
-            if (attacker.getArmyList().size() >= 1) {
+            if (!attacker.getArmyList().isEmpty()) {
                 attacker.getArmyList().remove(attackerSlot); //uncomment for real removal
                 log.info("Attacker slot {} has fallen in retaliation",
                         attackerSlot.getType());

@@ -1,9 +1,11 @@
 package ua.hudyma.domain.spells;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import ua.hudyma.domain.heroes.dto.HeroSkillSpellModifierDto;
+import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.domain.spells.converter.AbstractSpellSchoolDeserializer;
 import ua.hudyma.domain.spells.enums.SpellAction;
+
+import java.util.List;
 
 @JsonDeserialize(
         using = AbstractSpellSchoolDeserializer.class)
@@ -12,5 +14,7 @@ public interface AbstractSpellSchool {
     String getName();
     SpellAction getSpellAction();
     Integer getManaCost();
-    HeroSkillSpellModifierDto getHeroSkillSpellModifierDto();
+    PrimarySkill getSpellPrimarySkill();
+    Integer getModifierCoefficient();
+    List<Integer> getModifiedValuesList();
 }
