@@ -19,6 +19,7 @@ import ua.hudyma.dto.BattleResultDto;
 import ua.hudyma.dto.SpellAttackResultDto;
 import ua.hudyma.dto.SpellCastCombatReqDto;
 import ua.hudyma.exception.SpellCastException;
+import ua.hudyma.util.MessageProcessor;
 
 import java.util.*;
 
@@ -101,15 +102,12 @@ public class CombatService {
         var defenderArmy = defender.getArmyList();
         var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
         var spell = dto.spell();
-        //var spellEnum = SpellRegistry.fromCode(spell);
-        var spellEnumProperty = SpellRegistry.fromCodeProperty(spell);
         var spellSchool = dto.spellSchool();
         var spellSchoolEnumClass =
                 resolveSpellSchoolEnumClass(spellSchool);
         var enumConstants = spellSchoolEnumClass.getEnumConstants();
         var spellEnum = extractSpellFromEnum(enumConstants, spell);
         var spellAction = spellEnum.getSpellAction();
-        //todo fetch spell from specific school
         var manaCost = spellEnum.getManaCost();
         var parametersMap = heroService.getOrCreateHeroParamsMap(attacker);
         var heroSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
@@ -127,6 +125,8 @@ public class CombatService {
         };
     }
 
+    //todo implement summon creatures SPELL
+
     private AbstractSpellSchool extractSpellFromEnum(
             Enum<? extends AbstractSpellSchool>[] enumConstants, String spell) {
         return (AbstractSpellSchool) Arrays
@@ -134,7 +134,8 @@ public class CombatService {
                 .filter(s -> s.name()
                         .equals(spell))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() ->
+                        new SpellCastException("Spell not found"));
     }
 
     private static Class<? extends Enum<? extends AbstractSpellSchool>>
@@ -144,7 +145,6 @@ public class CombatService {
             case EARTH -> EarthSpellSchool.class;
             case WATER -> WaterSpellSchool.class;
             case FIRE -> FireSpellSchool.class;
-            default -> throw new IllegalArgumentException("Unknown spell school " + spellSchool);
         };
     }
 
