@@ -5,5 +5,6 @@ public enum SpellAction {
     BUF,
     DEBUF,
     MISC,
-    ADVENTURE
+    ADVENTURE,
+    SUMMON
 }

@@ -70,6 +70,8 @@ public class Hero implements BaseEntity {
     @Column(columnDefinition = "json", name = "army_slot_list")
     @ToString.Exclude
     private List<CreatureSlot> armyList;
+    @ToString.Exclude
+    private List<CreatureSlot> combatArmyList;
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;

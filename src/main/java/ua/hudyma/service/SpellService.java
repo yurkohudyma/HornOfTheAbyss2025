@@ -121,8 +121,9 @@ public class SpellService {
     /**
      * This method concerns learning single spell from town or any other source that demands
      * wisdom secondary skill
+     *
      * @param heroId - String hero code
-     * @param spell - UPPERCASED spell name
+     * @param spell  - UPPERCASED spell name
      * @return spellBook
      */
     @Transactional
@@ -134,7 +135,7 @@ public class SpellService {
                 .getSecondarySkillMap());
         if (spellLevel > heroWisdomlevel) throw new SpellCastException
                 (hero.getName() + " is not wise enough to learn " + spell
-                + " spell's is " + spellLevel + ", while hero's " + heroWisdomlevel);
+                        + " spell's is " + spellLevel + ", while hero's " + heroWisdomlevel);
         var heroSpellBook = hero.getSpellBook();
         var spellSet = heroSpellBook.get(spellLevel);
         spellSet.add(spell);
@@ -172,9 +173,7 @@ public class SpellService {
         if (miscInventoryContainsSpecificTomeOfMagicBook(miscInventoryMap, specificTomeOfMagic)) return;
         for (Map.Entry<Integer, Set<String>> entry : spellBook.entrySet()) {
             var spellSet = entry.getValue();
-            for (String spell : spellSet) {
-                if (spellSet.contains(spellName)) return;
-            }
+            if (spellSet.contains(spellName)) return;
         }
         throw new SpellCastException(spellName + " HAS not been learnt by " + heroName + " yet");
     }

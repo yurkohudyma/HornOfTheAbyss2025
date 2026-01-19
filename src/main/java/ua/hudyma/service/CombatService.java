@@ -5,13 +5,14 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
-import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.*;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.dto.AttackResultDto;
@@ -19,10 +20,10 @@ import ua.hudyma.dto.BattleResultDto;
 import ua.hudyma.dto.SpellAttackResultDto;
 import ua.hudyma.dto.SpellCastCombatReqDto;
 import ua.hudyma.exception.SpellCastException;
-import ua.hudyma.util.MessageProcessor;
 
 import java.util.*;
 
+import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ARCHANGEL;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
@@ -36,6 +37,7 @@ public class CombatService {
     private final CreatureService creatureService;
     private final BattlefieldService battlefieldService;
     private final ArmyService armyService;
+    private final ArmyHeroService armyHeroService;
 
     public void initTownBattle(Hero hero, Town town) {
         throw new IllegalStateException
@@ -80,6 +82,8 @@ public class CombatService {
             Thread.sleep(2000);
         }
         log.info(attackResultDtoList);
+        attacker.getCombatArmyList().clear();
+        defender.getCombatArmyList().clear();
         return new BattleResultDto(
                 defenderArmy.isEmpty(),
                 attackerArmy.isEmpty(),
@@ -98,6 +102,9 @@ public class CombatService {
     @Transactional
     public SpellAttackResultDto spellCast(SpellCastCombatReqDto dto) {
         var attacker = heroService.getHero(dto.attackerId());
+        //todo introduce checker whether hero learnt the spell (implemented as static in SpellService,
+        // could not be used directly
+        //checkHeroLearntSpell(spell)
         var defender = heroService.getHero(dto.defenderId());
         var defenderArmy = defender.getArmyList();
         var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
@@ -120,8 +127,36 @@ public class CombatService {
                 parametersMap.put(CUR_SPELL_POINTS, heroSpellPoints - manaCost);
                 yield attackSlotWithSpell(defenderSlot, spellEnum, spellSchool, attacker);
             }
+            case SUMMON -> {
+                var creature = resolveSummonableCreature(spell);
+                var quantity = calculateSummonnedCreaturesQty(spellEnum, parametersMap);
+                armyHeroService.summonCreatureSlot(creature, attacker, quantity);
+                yield new SpellAttackResultDto(
+                        attacker.getCombatArmyList().toString(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null);
+            }
             case MISC, BUF, DEBUF, ADVENTURE -> throw new SpellCastException
                     ("MISC, BUF, DEBUF, ADVENTURE not implemented");
+        };
+    }
+
+    private int calculateSummonnedCreaturesQty(
+            AbstractSpellSchool spellEnum,
+            Map<HeroParams, Integer> parametersMap) {
+        return 666;
+    }
+
+    private Creature resolveSummonableCreature(String spellName) {
+        return switch (spellName) {
+            case "SUMMON_EARTH_ELEMENTAL" -> creatureService.fetchCreatureByType(ARCHANGEL);
+            default -> throw new SpellCastException("Creature Summon NOT implemented");
         };
     }
 
@@ -187,8 +222,7 @@ public class CombatService {
                     false,
                     0
             );
-        }
-        else {
+        } else {
             var defenderOverallHealthLeft = defenderOverallHealth - spellDamageValue;
             var survivedDefenderCount = defenderOverallHealthLeft / defenderUnitHealthValue;
             var killedDefenderCount = defenderCount - survivedDefenderCount;
@@ -222,7 +256,7 @@ public class CombatService {
 
     private static SecondarySkill resolveSecondarySkillLevelByMagicSchool(
             SpellSchool spellSchool) {
-        return switch (spellSchool){
+        return switch (spellSchool) {
             case AIR -> AIR_MAGIC;
             case FIRE -> FIRE_MAGIC;
             case EARTH -> EARTH_MAGIC;

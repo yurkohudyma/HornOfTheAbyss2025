@@ -2,7 +2,6 @@ package ua.hudyma.domain.spells.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.domain.heroes.dto.HeroSkillSpellModifierDto;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 

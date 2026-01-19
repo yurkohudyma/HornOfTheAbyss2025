@@ -58,7 +58,7 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
     STONE_SKIN(1, BUF, 0, null,
             1,
             List.of()),
-    SUMMON_EARTH_ELEMENTAL(5,MISC, 0, null,
+    SUMMON_EARTH_ELEMENTAL(5,SUMMON, 25, POWER,
             1,
             List.of()),
     TOWN_PORTAL(4, ADVENTURE, 0, null,
