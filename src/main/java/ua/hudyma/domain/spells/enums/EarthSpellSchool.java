@@ -30,7 +30,7 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
             List.of()),
     IMPLOSION(5, DAMAGE, 30, POWER,
             75,
-            List.of(100, 200, 300)),
+            List.of(100f, 200f, 300f)),
     MAGIC_ARROW(1, DAMAGE, 6, POWER,
             1,
             List.of()),
@@ -60,7 +60,7 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
             List.of()),
     SUMMON_EARTH_ELEMENTAL(5,SUMMON, 25, POWER,
             1,
-            List.of()),
+            List.of(2f, 2.5f, 3f)),
     TOWN_PORTAL(4, ADVENTURE, 0, null,
             1,
             List.of()),
@@ -75,7 +75,7 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
     private final Integer manaCost;
     private final PrimarySkill spellPrimarySkill; // hero's primary skill accounted in spell damage calculation (mostly WISDOM)
     private final Integer modifierCoefficient;
-    private final List<Integer> modifiedValuesList;
+    private final List<Float> modifiedValuesList;
 
     @Override
     public String getName() {
@@ -98,7 +98,7 @@ public enum EarthSpellSchool implements AbstractSpellSchool {
     }
 
     @Override
-    public List<Integer> getModifiedValuesList() {
+    public List<Float> getModifiedValuesList() {
         return modifiedValuesList;
     }
 }

@@ -9,11 +9,12 @@ import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.Hero;
-import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
+import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.*;
+import ua.hudyma.domain.spells.enums.properties.AbstractSpellProperty;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.dto.AttackResultDto;
 import ua.hudyma.dto.BattleResultDto;
@@ -27,6 +28,7 @@ import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ARCHANGEL;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
+import static ua.hudyma.domain.heroes.enums.PrimarySkill.POWER;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
 
 @Service
@@ -115,9 +117,12 @@ public class CombatService {
         var enumConstants = spellSchoolEnumClass.getEnumConstants();
         var spellEnum = extractSpellFromEnum(enumConstants, spell);
         var spellAction = spellEnum.getSpellAction();
+        var spellProperty = SpellRegistry.fromCodeProperty(spell);
         var manaCost = spellEnum.getManaCost();
         var parametersMap = heroService.getOrCreateHeroParamsMap(attacker);
         var heroSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
+        var secondarySkillMap = attacker.getSecondarySkillMap();
+        var heroPowerValue = attacker.getPrimarySkillMap().get(POWER);
         if (heroSpellPoints < manaCost) {
             throw new SpellCastException("Hero spell points = " + heroSpellPoints +
                     ", while spell costs " + manaCost);
@@ -129,7 +134,8 @@ public class CombatService {
             }
             case SUMMON -> {
                 var creature = resolveSummonableCreature(spell);
-                var quantity = calculateSummonnedCreaturesQty(spellEnum, parametersMap);
+                var quantity = calculateSummonnedCreaturesQty(
+                        spellEnum, secondarySkillMap, spellProperty, heroPowerValue);
                 armyHeroService.summonCreatureSlot(creature, attacker, quantity);
                 yield new SpellAttackResultDto(
                         attacker.getCombatArmyList().toString(),
@@ -149,8 +155,17 @@ public class CombatService {
 
     private int calculateSummonnedCreaturesQty(
             AbstractSpellSchool spellEnum,
-            Map<HeroParams, Integer> parametersMap) {
-        return 666;
+            Map<SecondarySkill, SkillLevel> secondarySkillMap,
+            AbstractSpellProperty spellProperty,
+            Integer heroPowerValue) {
+        var modifiersList = spellEnum.getModifiedValuesList();
+        var magicSchool = spellProperty.getSpellSchool();
+        var magicSkill = resolveSecondarySkillLevelByMagicSchool(magicSchool);
+        var heroSpellLevel = secondarySkillMap.get(magicSkill);
+        var skillLevelMap = resolveSkillLevelModifierFloatMap(modifiersList);
+        var skillLevelModifier = skillLevelMap.get(heroSpellLevel);
+        skillLevelModifier = skillLevelModifier == null ? 1f: skillLevelModifier;
+        return (int) ((int) heroPowerValue * skillLevelModifier);
     }
 
     private Creature resolveSummonableCreature(String spellName) {
@@ -205,9 +220,9 @@ public class CombatService {
         if (attackerPrimarySpellSkillLevel == 0) attackerPrimarySpellSkillLevel = 1;
         var spellSecondarySkill = resolveSecondarySkillLevelByMagicSchool(spellSchool);
         var attackerSecSkillLevel = attackerSecondarySkillMap.get(spellSecondarySkill);
-        var skillLevelModifierMap = resolveSkillLevelModifierMap(spellEnum.getModifiedValuesList());
+        var skillLevelModifierMap = resolveSkillLevelModifierFloatMap(spellEnum.getModifiedValuesList());
         var spellSecSkillLevelModifier = skillLevelModifierMap.get(attackerSecSkillLevel);
-        if (spellSecSkillLevelModifier == null) spellSecSkillLevelModifier = 0;
+        if (spellSecSkillLevelModifier == null) spellSecSkillLevelModifier = 0f;
         var modifierCoefficient = spellEnum.getModifierCoefficient();
         var spellDamageValue = attackerPrimarySpellSkillLevel * modifierCoefficient + spellSecSkillLevelModifier;
         if (spellDamageValue >= defenderOverallHealth) {
@@ -217,7 +232,7 @@ public class CombatService {
                     defenderCount,
                     0,
                     defenderCount,
-                    spellDamageValue,
+                    (int) spellDamageValue,
                     defenderOverallHealth,
                     false,
                     0
@@ -226,17 +241,17 @@ public class CombatService {
             var defenderOverallHealthLeft = defenderOverallHealth - spellDamageValue;
             var survivedDefenderCount = defenderOverallHealthLeft / defenderUnitHealthValue;
             var killedDefenderCount = defenderCount - survivedDefenderCount;
-            defenderSlot.setQuantity(survivedDefenderCount);
+            defenderSlot.setQuantity((int) survivedDefenderCount);
             return new SpellAttackResultDto(
                     defenderSlot.getSlotId(),
                     defenderSlot.getType().getCode(),
                     defenderCount,
-                    survivedDefenderCount,
-                    killedDefenderCount,
-                    spellDamageValue,
+                    (int) survivedDefenderCount,
+                    (int) killedDefenderCount,
+                    (int) spellDamageValue,
                     defenderOverallHealth,
                     true,
-                    defenderOverallHealthLeft
+                    (int) defenderOverallHealthLeft
             );
         }
     }
@@ -250,6 +265,19 @@ public class CombatService {
         var values = SkillLevel.values();
         for (Integer integer : modifiersList) {
             enumMap.put(values[skillLevelCounter++], integer);
+        }
+        return enumMap;
+    }
+
+    private static EnumMap<SkillLevel, Float> resolveSkillLevelModifierFloatMap(
+            List<Float> modifiersList) {
+        var enumMap = new EnumMap<SkillLevel, Float>(SkillLevel.class);
+        if (modifiersList.size() != 3) throw new IllegalArgumentException
+                ("SkillLevel modifier List should have size of 3");
+        var skillLevelCounter = 0;
+        var values = SkillLevel.values();
+        for (Float f : modifiersList) {
+            enumMap.put(values[skillLevelCounter++], f);
         }
         return enumMap;
     }

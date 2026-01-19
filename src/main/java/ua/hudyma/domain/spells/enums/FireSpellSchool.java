@@ -27,7 +27,7 @@ public enum FireSpellSchool implements AbstractSpellSchool {
     private final Integer manaCost;
     private final PrimarySkill spellPrimarySkill; // hero's primary skill accounted in spell damage calculation (mostly WISDOM)
     private final Integer modifierCoefficient;
-    private final List<Integer> modifiedValuesList;
+    private final List<Float> modifiedValuesList;
 
 
     @Override
@@ -56,7 +56,7 @@ public enum FireSpellSchool implements AbstractSpellSchool {
     }
 
     @Override
-    public List<Integer> getModifiedValuesList() {
+    public List<Float> getModifiedValuesList() {
         return modifiedValuesList;
     }
 }

@@ -17,7 +17,7 @@ public enum AirSpellSchool implements AbstractSpellSchool {
             6,
             POWER,
             10,
-            List.of(10, 20, 30)),
+            List.of(10f, 20f, 30f)),
     DISGUISE(2, SpellAction.MISC, 0,
             null,
             1,
@@ -32,7 +32,7 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     private final Integer manaCost;
     private final PrimarySkill spellPrimarySkill; // hero's primary skill accounted in spell damage calculation (mostly WISDOM)
     private final Integer modifierCoefficient;
-    private final List<Integer> modifiedValuesList;
+    private final List<Float> modifiedValuesList;
 
 
     /*private static HeroSkillSpellModifierDto toDto(
@@ -70,7 +70,7 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     }
 
     @Override
-    public List<Integer> getModifiedValuesList() {
+    public List<Float> getModifiedValuesList() {
         return modifiedValuesList;
     }
 }

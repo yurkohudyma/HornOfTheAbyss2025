@@ -15,6 +15,10 @@ import static ua.hudyma.domain.spells.enums.SpellSchool.EARTH;
 @RequiredArgsConstructor
 public enum EarthSpellProperties implements AbstractSpellProperty {
 
+    SUMMON_EARTH_ELEMENTAL(EARTH,
+            emptyMap(),
+            Set.of()),
+
     IMPLOSION(EARTH,
             emptyMap(),
             Set.of());

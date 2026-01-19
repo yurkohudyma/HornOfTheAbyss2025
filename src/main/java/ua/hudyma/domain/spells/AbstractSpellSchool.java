@@ -16,5 +16,5 @@ public interface AbstractSpellSchool {
     Integer getManaCost();
     PrimarySkill getSpellPrimarySkill();
     Integer getModifierCoefficient();
-    List<Integer> getModifiedValuesList();
+    List<Float> getModifiedValuesList();
 }
