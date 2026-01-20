@@ -8,6 +8,7 @@ import ua.hudyma.domain.spells.AbstractSpellSchool;
 import java.util.List;
 
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.POWER;
+import static ua.hudyma.domain.spells.enums.SpellAction.SUMMON;
 
 @Getter
 @RequiredArgsConstructor
@@ -24,7 +25,10 @@ public enum AirSpellSchool implements AbstractSpellSchool {
             List.of()),
     PRECISION(2, SpellAction.BUF, 16, //real is 8
             null, 1, List.of()),
-    VISIONS(2, SpellAction.MISC, 0, null, 1, List.of());
+    VISIONS(2, SpellAction.MISC, 0, null, 1, List.of()),
+    SUMMON_AIR_ELEMENTAL(5,SUMMON, 25, POWER,
+            1,
+            List.of(2f, 2.5f, 3f));
 
 
     private final int spellLevel;

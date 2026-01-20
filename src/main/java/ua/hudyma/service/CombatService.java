@@ -25,6 +25,7 @@ import ua.hudyma.exception.SpellCastException;
 import java.util.*;
 
 import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ARCHANGEL;
+import static ua.hudyma.domain.creatures.enums.CastleCreatureType.MARKSMAN;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
@@ -171,11 +172,10 @@ public class CombatService {
     private Creature resolveSummonableCreature(String spellName) {
         return switch (spellName) {
             case "SUMMON_EARTH_ELEMENTAL" -> creatureService.fetchCreatureByType(ARCHANGEL);
+            case "SUMMON_AIR_ELEMENTAL" -> creatureService.fetchCreatureByType(MARKSMAN);
             default -> throw new SpellCastException("Creature Summon NOT implemented");
         };
     }
-
-    //todo implement summon creatures SPELL
 
     private AbstractSpellSchool extractSpellFromEnum(
             Enum<? extends AbstractSpellSchool>[] enumConstants, String spell) {

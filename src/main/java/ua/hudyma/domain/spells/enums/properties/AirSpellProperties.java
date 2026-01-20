@@ -19,7 +19,8 @@ public enum AirSpellProperties implements AbstractSpellProperty {
     MAGIC_ARROW(AIR, emptyMap(), Set.of()),
     DISGUISE(AIR, emptyMap(), Set.of()),
     PRECISION(AIR, emptyMap(), Set.of()), //todo introduce secondarySkillMap,), //real is 8
-    VISIONS(AIR,emptyMap(), Set.of());
+    VISIONS(AIR,emptyMap(), Set.of()),
+    SUMMON_AIR_ELEMENTAL (AIR, emptyMap(), Set.of());
     private final SpellSchool spellSchool;
     private final Map<PrimarySkill, Integer> skillModifierMap;
     private final Set<String> targetCreatureSet;
