@@ -1,5 +1,6 @@
 package ua.hudyma.domain.spells.enums.properties;
 
+import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.domain.spells.enums.SpellSchool;
 
@@ -11,4 +12,5 @@ public interface AbstractSpellProperty {
     Map<PrimarySkill, Integer> getSkillModifierMap();
     Set<String> getTargetCreatureSet();
     SpellSchool getSpellSchool();
+    Set<AttackType> getEffectedActivityType();
 }

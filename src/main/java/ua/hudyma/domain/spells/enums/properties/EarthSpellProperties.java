@@ -2,6 +2,7 @@ package ua.hudyma.domain.spells.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.domain.spells.enums.SpellSchool;
 
@@ -17,15 +18,18 @@ public enum EarthSpellProperties implements AbstractSpellProperty {
 
     SUMMON_EARTH_ELEMENTAL(EARTH,
             emptyMap(),
+            Set.of(),
             Set.of()),
 
     IMPLOSION(EARTH,
             emptyMap(),
+            Set.of(),
             Set.of());
 
     private final SpellSchool spellSchool;
     private final Map<PrimarySkill, Integer> skillModifierMap;
     private final Set<String> targetCreatureSet;
+    private final Set<AttackType> effectedActivityType;
 
     private static <T extends Enum<T>> EnumMap<T, Integer> emptyMap() {
         return new EnumMap<>((Class<T>) PrimarySkill.class);
@@ -45,6 +49,11 @@ public enum EarthSpellProperties implements AbstractSpellProperty {
     @Override
     public SpellSchool getSpellSchool(){
         return spellSchool;
+    }
+
+    @Override
+    public Set<AttackType> getEffectedActivityType() {
+        return effectedActivityType;
     }
 
 }
