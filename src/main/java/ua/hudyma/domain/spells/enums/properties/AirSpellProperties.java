@@ -3,14 +3,12 @@ package ua.hudyma.domain.spells.enums.properties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
-import ua.hudyma.domain.spells.enums.SpellAction;
 import ua.hudyma.domain.spells.enums.SpellSchool;
 
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
 
-import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;
 import static ua.hudyma.domain.spells.enums.SpellSchool.AIR;
 
 @Getter
