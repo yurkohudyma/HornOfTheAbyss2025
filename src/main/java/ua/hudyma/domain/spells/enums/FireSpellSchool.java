@@ -25,7 +25,7 @@ public enum FireSpellSchool implements AbstractSpellSchool {
     private final Integer spellLevel;
     private final SpellAction spellAction;
     private final Integer manaCost;
-    private final PrimarySkill spellPrimarySkill; // hero's primary skill accounted in spell damage calculation (mostly WISDOM)
+    private final PrimarySkill spellPrimarySkill; // (mostly POWER)
     private final Integer modifierCoefficient;
     private final List<Float> modifiedValuesList;
 
