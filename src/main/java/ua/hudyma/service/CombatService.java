@@ -78,13 +78,11 @@ public class CombatService {
             } else {
                 dto = attackSlot(attackerSlot, defenderSlot);
             }
-            log.info(dto);
             checkArmySizeAndVanquishHeroAtLastSlotDefeat(
                     defender, attacker, attackerSlot, defenderSlot, dto);
             attackResultDtoList.add(dto);
             Thread.sleep(2000);
         }
-        log.info(attackResultDtoList);
         attacker.getCombatArmyList().clear();
         defender.getCombatArmyList().clear();
         return new BattleResultDto(
@@ -105,13 +103,11 @@ public class CombatService {
     @Transactional
     public SpellAttackResultDto spellCast(SpellCastCombatReqDto dto) {
         var attacker = heroService.getHero(dto.attackerId());
-        //todo introduce checker whether hero learnt the spell (implemented as static in SpellService,
-        // could not be used directly
-        //checkHeroLearntSpell(spell)
+        var spell = dto.spell();
+        checkHeroLearntSpell(spell, attacker.getSpellBook());
         var defender = heroService.getHero(dto.defenderId());
         var defenderArmy = defender.getArmyList();
         var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
-        var spell = dto.spell();
         var spellSchool = dto.spellSchool();
         var spellSchoolEnumClass =
                 resolveSpellSchoolEnumClass(spellSchool);
@@ -154,6 +150,13 @@ public class CombatService {
         };
     }
 
+    private static void checkHeroLearntSpell(String spell, Map<Integer, Set<String>> spellBook) {
+        for (Map.Entry<Integer, Set<String>> entry : spellBook.entrySet()){
+            if (entry.getValue().contains(spell)) return;
+        }
+        throw new SpellCastException("Spell has NOT been learnt by hero YET");
+    }
+
     private int calculateSummonnedCreaturesQty(
             AbstractSpellSchool spellEnum,
             Map<SecondarySkill, SkillLevel> secondarySkillMap,
@@ -163,7 +166,7 @@ public class CombatService {
         var magicSchool = spellProperty.getSpellSchool();
         var magicSkill = resolveSecondarySkillLevelByMagicSchool(magicSchool);
         var heroSpellLevel = secondarySkillMap.get(magicSkill);
-        var skillLevelMap = resolveSkillLevelModifierFloatMap(modifiersList);
+        var skillLevelMap = resolveSkillLevelModifierMap(modifiersList);
         var skillLevelModifier = skillLevelMap.get(heroSpellLevel);
         skillLevelModifier = skillLevelModifier == null ? 1f: skillLevelModifier;
         return (int) ((int) heroPowerValue * skillLevelModifier);
@@ -220,7 +223,7 @@ public class CombatService {
         if (attackerPrimarySpellSkillLevel == 0) attackerPrimarySpellSkillLevel = 1;
         var spellSecondarySkill = resolveSecondarySkillLevelByMagicSchool(spellSchool);
         var attackerSecSkillLevel = attackerSecondarySkillMap.get(spellSecondarySkill);
-        var skillLevelModifierMap = resolveSkillLevelModifierFloatMap(spellEnum.getModifiedValuesList());
+        var skillLevelModifierMap = resolveSkillLevelModifierMap(spellEnum.getModifiedValuesList());
         var spellSecSkillLevelModifier = skillLevelModifierMap.get(attackerSecSkillLevel);
         if (spellSecSkillLevelModifier == null) spellSecSkillLevelModifier = 0f;
         var modifierCoefficient = spellEnum.getModifierCoefficient();
@@ -254,22 +257,9 @@ public class CombatService {
                     (int) defenderOverallHealthLeft
             );
         }
-    }
+    }    
 
-    private static EnumMap<SkillLevel, Integer> resolveSkillLevelModifierMap(
-            List<Integer> modifiersList) {
-        var enumMap = new EnumMap<SkillLevel, Integer>(SkillLevel.class);
-        if (modifiersList.size() != 3) throw new IllegalArgumentException
-                ("SkillLevel modifier List should have size of 3");
-        var skillLevelCounter = 0;
-        var values = SkillLevel.values();
-        for (Integer integer : modifiersList) {
-            enumMap.put(values[skillLevelCounter++], integer);
-        }
-        return enumMap;
-    }
-
-    private static EnumMap<SkillLevel, Float> resolveSkillLevelModifierFloatMap(
+    private static EnumMap<SkillLevel, Float> resolveSkillLevelModifierMap(
             List<Float> modifiersList) {
         var enumMap = new EnumMap<SkillLevel, Float>(SkillLevel.class);
         if (modifiersList.size() != 3) throw new IllegalArgumentException
@@ -295,9 +285,10 @@ public class CombatService {
     private AttackResultDto attackSlot(
             CreatureSlot attackerSlot,
             CreatureSlot defenderSlot) {
+        //todo attack/defense skills NOT accounted (use nullable modified values)
         var attackerDamage = attackerSlot
                 .getModifiableDataMap()
-                .get(DAMAGE).getCurrentValue(); //todo attack/defense skills NOT accounted (use nullable modified values)
+                .get(DAMAGE).getCurrentValue(); 
         var attackerCount = attackerSlot.getQuantity();
         var defenderCount = defenderSlot.getQuantity();
         var attackerOverallDamage = attackerDamage * attackerCount;
@@ -390,7 +381,7 @@ public class CombatService {
             }
         } else if (!dto.attackedSurvivedRetaliation()) {
             if (!attacker.getArmyList().isEmpty()) {
-                attacker.getArmyList().remove(attackerSlot); //uncomment for real removal
+                attacker.getArmyList().remove(attackerSlot);
                 log.info("Attacker slot {} has fallen in retaliation",
                         attackerSlot.getType());
             } else {

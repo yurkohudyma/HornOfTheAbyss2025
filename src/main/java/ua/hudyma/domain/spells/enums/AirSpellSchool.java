@@ -30,24 +30,12 @@ public enum AirSpellSchool implements AbstractSpellSchool {
             1,
             List.of(2f, 2.5f, 3f));
 
-
     private final int spellLevel;
     private final SpellAction spellAction;
     private final Integer manaCost;
-    private final PrimarySkill spellPrimarySkill; // hero's primary skill accounted in spell damage calculation (mostly WISDOM)
+    private final PrimarySkill spellPrimarySkill;
     private final Integer modifierCoefficient;
     private final List<Float> modifiedValuesList;
-
-
-    /*private static HeroSkillSpellModifierDto toDto(
-            PrimarySkill skill,
-            Integer coefficient,
-            List<Integer> modifList) {
-        return new HeroSkillSpellModifierDto(
-                skill,
-                coefficient,
-                toSkillLevelMap(modifList));
-    }*/
 
     @Override
     public int getSpellLevel() {
