@@ -32,9 +32,13 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 @RequiredArgsConstructor
 @Log4j2
 public class ArmyService {
+
     private final HeroService heroService;
+
     private final ArmyMapper armyMapper;
+
     private final ArmyHeroService armyHeroService;
+
     private static final Integer ARMY_SLOT_MAX_QTY = 7;
 
     @Transactional
@@ -99,6 +103,7 @@ public class ArmyService {
         var heroArmy = hero.getArmyList();
         return discoverLowestLevelCreatureType(heroArmy);
     }
+
     public CreatureType getLowestCreature(List<CreatureSlot> armyList) {
         return discoverLowestLevelCreatureType(armyList);
     }
@@ -128,8 +133,24 @@ public class ArmyService {
         slot.setQuantity(distributionNumber + remainder);
         return "Slot has been distributed in " + freeSlotsCount + " slots by elements "
                 + distributionNumber + " with remainder " + remainder;
-        //todo redistribute remainder evenly by slots (avoid 100 = 16 + 6 x 14)
+        //todo redistribute remainder evenly by slots (currently 100 = 16,14,14,14,14,14,14)
         //todo must be 15,15,14,14,14,14,14
+    }
+
+    public List<Integer> splitAndDistributeNumber(Integer number) {
+        if (number <= 1)
+            throw new ArmyFreeSlotOverflowException("Number shall be higher or equal to 2 to distribute from");
+        var distributionNumber = number / ARMY_SLOT_MAX_QTY;
+        var remainder = number % ARMY_SLOT_MAX_QTY;
+       var list = new ArrayList<>(IntStream
+               .range(0, ARMY_SLOT_MAX_QTY)
+               .mapToObj(num -> distributionNumber)
+               .toList());
+       for (int i = 0; i < remainder; i++){
+           list.set(i, list.get(i) + 1);
+       }
+       log.info(list.stream().reduce(0, Integer::sum));
+       return list;
     }
 
     @Transactional
@@ -212,9 +233,9 @@ public class ArmyService {
     }
 
     private void mergeArmies(List<CreatureSlot> donorArmy,
-                                    List<CreatureSlot> acceptorArmy,
-                                    CreatureSlot lowestLevelDonorCreatureSlot,
-                                    int acceptorArmyFreeSlotsNumber,
+                             List<CreatureSlot> acceptorArmy,
+                             CreatureSlot lowestLevelDonorCreatureSlot,
+                             int acceptorArmyFreeSlotsNumber,
                              String donorId) {
         var donorArmyAfterMergeList = new ArrayList<CreatureSlot>();
         for (int i = 0; i < donorArmy.size() && i < acceptorArmyFreeSlotsNumber; i++) {
@@ -235,8 +256,7 @@ public class ArmyService {
                             + donorSlot.getQuantity() - 1);
                     donorSlot.setQuantity(1);
                     donorArmyAfterMergeList.add(donorSlot);
-                }
-                else {
+                } else {
                     acceptorSlot.setQuantity(acceptorSlot.getQuantity() + donorSlot.getQuantity());
                 }
             } else {
@@ -249,8 +269,7 @@ public class ArmyService {
                     acceptorArmy.add(newSlot);
                     donorSlot.setQuantity(1);
                     donorArmyAfterMergeList.add(donorSlot);
-                }
-                else {
+                } else {
                     newSlot.setQuantity(donorSlot.getQuantity());
                     acceptorArmy.add(newSlot);
                 }
@@ -268,12 +287,12 @@ public class ArmyService {
         // всіх виявлених у армії у загальну мапу
         armyList
                 .forEach(slot -> {
-                        var levelCreatureMap = getLevelCreatureTypeMap(slot.getType());
-                        levelCreatureMap.entrySet()
-                                .stream()
-                                .filter(v -> v.getValue().equals(slot.getType()))
-                                .forEach(k -> allLowestCreatureMap.put(k.getValue(), k.getKey()));
-                        });
+                    var levelCreatureMap = getLevelCreatureTypeMap(slot.getType());
+                    levelCreatureMap.entrySet()
+                            .stream()
+                            .filter(v -> v.getValue().equals(slot.getType()))
+                            .forEach(k -> allLowestCreatureMap.put(k.getValue(), k.getKey()));
+                });
         //сортуємо цю мапу по значенню (яка тут вже LEVEL) і беремо перший-ліпший тип істоти.
         // Тобто видасть випадкове значення, яке буде першим у values(), навіть якщо це не є factionwise
         return allLowestCreatureMap
@@ -305,10 +324,9 @@ public class ArmyService {
     }
 
 
-
     public static int getModifiedValue(Hero hero,
-                                ModifiableSkill skill,
-                                CreatureSkillValue regularSkillValue) {
+                                       ModifiableSkill skill,
+                                       CreatureSkillValue regularSkillValue) {
         var heroPrimarySkill = getPrimarySkill(skill);
         var modifiedValue = heroPrimarySkill.isPresent() ? hero.getPrimarySkillMap()
                 .get(heroPrimarySkill.get()) : 0;

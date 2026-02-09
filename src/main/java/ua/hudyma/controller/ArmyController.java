@@ -1,5 +1,6 @@
 package ua.hudyma.controller;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -76,6 +77,14 @@ public class ArmyController {
         return ResponseEntity.ok(armyService
                 .splitAndDistribute(dto));
     }
+
+    @GetMapping("/distributeNum")
+    public ResponseEntity<List<Integer>> distributeSlot (
+            @RequestParam Integer number) {
+        return ResponseEntity.ok(armyService
+                .splitAndDistributeNumber(number));
+    }
+
     @PatchMapping("/exchange")
     public ResponseEntity<String> exchangeArmies (
             @RequestParam String hero1Id,
