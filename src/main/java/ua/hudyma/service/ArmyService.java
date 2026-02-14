@@ -9,16 +9,13 @@ import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
-import ua.hudyma.domain.creatures.dto.ModifiableData;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
-import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.exception.ArmyFreeSlotOverflowException;
-import ua.hudyma.exception.EnumMappingErrorException;
 import ua.hudyma.exception.MinimalUnitOperationException;
 import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
@@ -119,9 +116,11 @@ public class ArmyService {
         if (freeSlotsCount == 0) throw new ArmyFreeSlotOverflowException
                 ("No free Slots for Splitting");
         var slotQuantity = slot.getQuantity();
+        if (slotQuantity == 1) throw new ArmyFreeSlotOverflowException
+                ("Slot qty shall be bigger than 1");
         var distributionNumber = slotQuantity / ++freeSlotsCount;
         var remainder = slotQuantity % freeSlotsCount;
-        IntStream.range(0, freeSlotsCount)
+        IntStream.range(0, --freeSlotsCount)
                 .mapToObj(i -> {
                     var newSlot = new CreatureSlot();
                     newSlot.setType(slot.getType());
@@ -130,11 +129,21 @@ public class ArmyService {
                     return newSlot;
                 })
                 .forEach(army::add);
-        slot.setQuantity(distributionNumber + remainder);
-        return "Slot has been distributed in " + freeSlotsCount + " slots by elements "
-                + distributionNumber + " with remainder " + remainder;
-        //todo redistribute remainder evenly by slots (currently 100 = 16,14,14,14,14,14,14)
-        //todo must be 15,15,14,14,14,14,14
+        slot.setQuantity(distributionNumber);
+        for (int i = 0; i < remainder; i++){
+            var currentSlot = army.get(i);
+            currentSlot.setQuantity(currentSlot.getQuantity() + 1);
+        }
+        var distributedSlotsOverallQuantity = distributedSlotsOverallQuantity(army);
+        return army.stream().mapToInt(CreatureSlot::getQuantity).boxed().toList() +
+                " = " + distributedSlotsOverallQuantity;
+    }
+
+    private Integer distributedSlotsOverallQuantity (List<CreatureSlot> army){
+        return army
+                .stream()
+                .mapToInt(CreatureSlot::getQuantity)
+                .reduce(0, Integer::sum);
     }
 
     public List<Integer> splitAndDistributeNumber(Integer number) {
