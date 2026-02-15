@@ -148,7 +148,8 @@ public class ArmyService {
 
     public List<Integer> splitAndDistributeNumber(Integer number) {
         if (number <= 1)
-            throw new ArmyFreeSlotOverflowException("Number shall be higher or equal to 2 to distribute from");
+            throw new ArmyFreeSlotOverflowException
+                    ("Number shall be higher or equal to 2 to distribute from");
         var distributionNumber = number / ARMY_SLOT_MAX_QTY;
         var remainder = number % ARMY_SLOT_MAX_QTY;
        var list = new ArrayList<>(IntStream

@@ -5,10 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
-import ua.hudyma.domain.towns.enums.AbstractBuildingType;
+import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/towns")
@@ -16,6 +18,14 @@ import ua.hudyma.service.build.AbstractBuildService;
 public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
+
+    @GetMapping("generateWeekkyCreatures")
+    public ResponseEntity<List<TownGenerCreaturesReport>>
+    generateAllTownsWeeklyCreatures (@RequestParam Long playerId){
+        return ResponseEntity.ok(townService
+                .generateWeeklyCreatures(playerId));
+    }
+
     @PostMapping
     public ResponseEntity<String> createTown (
             @RequestBody TownReqDto dto){

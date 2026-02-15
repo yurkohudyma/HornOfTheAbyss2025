@@ -9,10 +9,17 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.TownReqDto;
+import ua.hudyma.domain.towns.enums.HordeBuildingType;
+import ua.hudyma.dto.TownGenerCreaturesReport;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.util.MessageProcessor;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -24,7 +31,7 @@ public class TownService {
     private final TownMapper townMapper;
     private final HeroService heroService;
     private final CombatService combatService;
-    private final ArmyService armyService;
+    private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
 
     @SneakyThrows
@@ -65,6 +72,43 @@ public class TownService {
             town.setVisitingHero(incomingHero);
         }
         return String.format("Hero %s is now visiting %s", incomingHero.getName(), town.getName());
+    }
+
+    @Transactional
+    public List<TownGenerCreaturesReport> generateWeeklyCreatures(Long playerId) {
+        var player = playerService.getPlayer(playerId);
+        var townList = player.getTownsList();
+        for (Town town : townList) {
+            retrieveTownDwellingsAndGenerateCreatures(town);
+        }
+        return null;
+    }
+
+    private static void retrieveTownDwellingsAndGenerateCreatures(Town town) {
+        var townDwellingMap = town.getDwellingMap();
+        var townHordeBuildingSet = retrieveTownSpecificHordeBuildingsExistence(town);
+        for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()){
+            var dwellingName = entry.getKey();
+            //todo retrieve specific enum (CastleDwellingType etc) and corresponding creature
+        }
+        //todo get creature from built dwelling type
+        //todo get growth
+        //todo check horde_building creature_type_specific exists and modify if any
+        //todo generate creature slot and add to TAC
+        //todo update townDwellingMap with new creatures quantities
+    }
+
+    private static List<HordeBuildingType> retrieveTownSpecificHordeBuildingsExistence(Town town) {
+        var townFaction = town.getFaction();
+        return retrieveHordeBuildingTypeByFaction(townFaction);
+    }
+
+    private static List<HordeBuildingType> retrieveHordeBuildingTypeByFaction(Faction townFaction) {
+        return Arrays
+                .stream(HordeBuildingType.values())
+                .filter(faction -> faction
+                        .getFaction() == townFaction)
+                .toList();
     }
 
     private void upgradeGarnisonSkillsByHero(Town town, Hero hero) {
