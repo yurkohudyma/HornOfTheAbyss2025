@@ -24,4 +24,9 @@ public enum CastleDwellingType implements AbstractDwellingType {
     public String getCode() {
         return name();
     }
+
+    @Override
+    public CastleCreatureType getCreature() {
+        return creature;
+    }
 }

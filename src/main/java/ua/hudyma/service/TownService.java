@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
+import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
+import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.mapper.TownMapper;
@@ -89,7 +91,9 @@ public class TownService {
         var townHordeBuildingSet = retrieveTownSpecificHordeBuildingsExistence(town);
         for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()){
             var dwellingName = entry.getKey();
-            //todo retrieve specific enum (CastleDwellingType etc) and corresponding creature
+            var specificDwellingEnum = AbstractDwellingTypeRegistry.fromCode(dwellingName);
+            //var creature = (CastleDwellingType) specificDwellingEnum
+            //todo retrieve specific enum (CastleDwellingType etc) and corresponding building type
         }
         //todo get creature from built dwelling type
         //todo get growth
