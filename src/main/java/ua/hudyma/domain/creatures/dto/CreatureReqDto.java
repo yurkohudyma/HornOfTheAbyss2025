@@ -15,7 +15,7 @@ public record CreatureReqDto(
         AttackType attackType,
         Map<CreatureProperty, List<CreaturePropertyValue>>
                 creaturePropertyMap,
-        Map<CreatureSkill, List<CreatureSkillValue>>
+        Map<CreatureSkill, CreatureSkillValue>
                 creatureSkillMap
 ) {
 }

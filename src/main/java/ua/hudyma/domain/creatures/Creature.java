@@ -35,6 +35,6 @@ public class Creature implements BaseEntity {
             creaturePropertyMap;
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "creature_skill_map")
-    private Map<CreatureSkill, List<CreatureSkillValue>>
+    private Map<CreatureSkill, CreatureSkillValue>
             creatureSkillMap;
 }

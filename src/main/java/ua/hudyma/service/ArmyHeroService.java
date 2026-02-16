@@ -49,9 +49,9 @@ public class ArmyHeroService {
                                         .orElseThrow(() -> new EnumMappingErrorException
                                                 ("Error mapping to " +
                                                         CreatureSkill.class.getSimpleName())))
-                                .get(0);
+                                .value();
                         modifiableMap.put(skill, new ModifiableData(
-                                        regularSkillValue.value(),
+                                        regularSkillValue,
                                         ArmyService.getModifiedValue(hero, skill, regularSkillValue)
                                 )
                         );

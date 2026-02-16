@@ -9,7 +9,7 @@ import java.io.IOException;
 public class CreatureTypeKeyDeserializer extends KeyDeserializer {
 
     @Override
-    public CreatureType deserializeKey(String key, DeserializationContext ctxt) throws IOException {
+    public CreatureType deserializeKey(String key, DeserializationContext ctxt){
         return CreatureTypeRegistry.fromCode(key);
     }
 }

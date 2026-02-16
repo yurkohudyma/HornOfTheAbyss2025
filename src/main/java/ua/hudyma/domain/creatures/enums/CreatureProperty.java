@@ -8,6 +8,7 @@ public enum CreatureProperty {
     MORALE,
     LUCK,
     NO_RETALIATION,
+    RETALIATION,
     ATTACKS_TWICE,
     LAND_MOVEMENT,
     SEA_MOVEMENT;

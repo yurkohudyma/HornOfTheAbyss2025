@@ -336,11 +336,11 @@ public class ArmyService {
 
     public static int getModifiedValue(Hero hero,
                                        ModifiableSkill skill,
-                                       CreatureSkillValue regularSkillValue) {
+                                       Integer regularSkillValue) {
         var heroPrimarySkill = getPrimarySkill(skill);
         var modifiedValue = heroPrimarySkill.isPresent() ? hero.getPrimarySkillMap()
                 .get(heroPrimarySkill.get()) : 0;
-        return regularSkillValue.value() + modifiedValue;
+        return regularSkillValue + modifiedValue;
     }
 
     private static Optional<PrimarySkill> getPrimarySkill(ModifiableSkill skill) {

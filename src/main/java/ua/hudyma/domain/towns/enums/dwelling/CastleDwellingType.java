@@ -3,6 +3,7 @@ package ua.hudyma.domain.towns.enums.dwelling;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.enums.CastleCreatureType;
 import ua.hudyma.domain.towns.enums.AbstractBuildingType;
 
@@ -26,7 +27,7 @@ public enum CastleDwellingType implements AbstractDwellingType {
     }
 
     @Override
-    public CastleCreatureType getCreature() {
+    public CreatureType getCreature() {
         return creature;
     }
 }

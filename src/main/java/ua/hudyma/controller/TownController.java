@@ -19,7 +19,7 @@ public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
 
-    @GetMapping("generateWeekkyCreatures")
+    @GetMapping("generateWeeklyCreatures")
     public ResponseEntity<List<TownGenerCreaturesReport>>
     generateAllTownsWeeklyCreatures (@RequestParam Long playerId){
         return ResponseEntity.ok(townService
