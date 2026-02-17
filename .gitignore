@@ -1,10 +1,4 @@
 /.idea/
 /target/
-/sql/hota_creatures.sql
-/sql/hota_heroes.sql
-/sql/hota_players.sql
-/sql/hota_towns.sql
-/sql/Old/hota_creatures.sql
-/sql/Old/hota_heroes.sql
-/sql/Old/hota_players.sql
-/sql/Old/hota_towns.sql
+/sql/
+/httpie/

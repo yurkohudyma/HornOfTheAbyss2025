@@ -7,6 +7,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.Creature;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
@@ -20,9 +21,7 @@ import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.util.MessageProcessor;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -82,16 +81,19 @@ public class TownService {
     public List<TownGenerCreaturesReport> generateWeeklyCreatures(Long playerId) {
         var player = playerService.getPlayer(playerId);
         var townList = player.getTownsList();
+        var list = new ArrayList<TownGenerCreaturesReport>();
         for (Town town : townList) {
-            retrieveTownDwellingsAndGenerateCreatures(town);
+            var reportDto = retrieveTownDwellingsAndGenerateCreatures(town);
+            list.add(reportDto);
         }
-        return null;
+        return list;
     }
 
-    private void retrieveTownDwellingsAndGenerateCreatures(Town town) {
+    private TownGenerCreaturesReport retrieveTownDwellingsAndGenerateCreatures(Town town) {
         var townDwellingMap = town.getDwellingMap();
         var townHordeBuildingList =
-                retrieveTownSpecificHordeBuildingsExistence(town);
+                retrieveHordeBuildingTypeByFaction(town.getFaction());
+        var reportMap = new HashMap<CreatureType, Integer>();
         for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()){
             var dwellingName = entry.getKey();
             var specificDwellingEnum = AbstractDwellingTypeRegistry
@@ -109,9 +111,12 @@ public class TownService {
             if (!townHordeBuildingList.isEmpty()) {
                 hordeCreatureBoost = getHordeBuildingCreatureBoost(creature, townHordeBuildingList);
             }
-            entry.setValue(creatureGrowth + entry.getValue() + hordeCreatureBoost);
+            int modifiedValue = creatureGrowth + hordeCreatureBoost;
+            entry.setValue(entry.getValue() + modifiedValue);
+            reportMap.put(creature.getCreatureType(), modifiedValue);
             townDwellingMap.put(entry.getKey(), entry.getValue());
         }
+        return new TownGenerCreaturesReport(town.getName(), reportMap);
     }
 
     private Integer getHordeBuildingCreatureBoost(
@@ -128,11 +133,6 @@ public class TownService {
         var creatureSkillMap = creature.getCreatureSkillMap();
         var growth = creatureSkillMap.get(CreatureSkill.GROWTH);
         return growth.multipliedValue() == null ? growth.value() : growth.multipliedValue();
-    }
-
-    private static List<HordeBuildingType> retrieveTownSpecificHordeBuildingsExistence(Town town) {
-        var townFaction = town.getFaction();
-        return retrieveHordeBuildingTypeByFaction(townFaction);
     }
 
     private static List<HordeBuildingType> retrieveHordeBuildingTypeByFaction(Faction townFaction) {
