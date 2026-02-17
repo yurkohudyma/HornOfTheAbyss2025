@@ -125,6 +125,8 @@ public class TownService {
         return new TownGenerCreaturesReport(town.getName(), reportMap);
     }
 
+    //todo implement hiring creatures
+
     @Nonnull
     private static LinkedHashMap<CreatureType, Integer> getValueSortedMap(
             HashMap<CreatureType, Integer> reportMap) {

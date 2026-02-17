@@ -16,7 +16,7 @@ public enum HordeBuildingType implements AbstractBuildingType{
     CAGES(INFERNO, null, 0),
     DENDROID_SAPLINGS (RAMPART, null, 0),
     GARDEN_OF_LIFE (CONFLUX, null, 0),
-    GRIFFIN_BASTION (CASTLE, ROYAL_GRIFFIN, 2),
+    GRIFFIN_BASTION (CASTLE, ROYAL_GRIFFIN, 3),
     MESS_HALL(STRONGHOLD, null, 0),
     MINERS_GUILD (RAMPART, null, 0),
     MUSHROOM_RINGS (DUNGEON, null, 0),
