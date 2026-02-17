@@ -21,7 +21,9 @@ import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.util.MessageProcessor;
 
+import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -91,6 +93,8 @@ public class TownService {
 
     private TownGenerCreaturesReport retrieveTownDwellingsAndGenerateCreatures(Town town) {
         var townDwellingMap = town.getDwellingMap();
+        if (townDwellingMap == null) throw new IllegalArgumentException("Dwelling map for town "
+                + town.getName() + " has not been created YET");
         var townHordeBuildingList =
                 retrieveHordeBuildingTypeByFaction(town.getFaction());
         var reportMap = new HashMap<CreatureType, Integer>();
@@ -115,8 +119,28 @@ public class TownService {
             entry.setValue(entry.getValue() + modifiedValue);
             reportMap.put(creature.getCreatureType(), modifiedValue);
             townDwellingMap.put(entry.getKey(), entry.getValue());
+            reportMap = getValueSortedMap(reportMap);
+
         }
         return new TownGenerCreaturesReport(town.getName(), reportMap);
+    }
+
+    @Nonnull
+    private static LinkedHashMap<CreatureType, Integer> getValueSortedMap(
+            HashMap<CreatureType, Integer> reportMap) {
+        return reportMap.entrySet()
+                .stream()
+                .sorted(Comparator.comparing(
+                        Map.Entry::getValue,
+                        Comparator.reverseOrder()
+                ))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+
     }
 
     private Integer getHordeBuildingCreatureBoost(

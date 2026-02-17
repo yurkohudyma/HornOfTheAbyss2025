@@ -11,5 +11,6 @@ public enum CreatureProperty {
     RETALIATION,
     ATTACKS_TWICE,
     LAND_MOVEMENT,
-    SEA_MOVEMENT;
+    SEA_MOVEMENT,
+    BONUS
 }
