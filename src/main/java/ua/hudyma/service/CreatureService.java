@@ -29,9 +29,10 @@ public class CreatureService {
         return MessageProcessor.getReturnMessage(creature, "creatureType");
     }
 
+    //todo додати в creatureTypes ціни на істот та ресурси
+
     public CreatureRespDto fetchCreature(Long id) {
         return creatureMapper.toDto(getCreature(id));
-
     }
 
     public Creature fetchCreatureByType(CreatureType type) {
