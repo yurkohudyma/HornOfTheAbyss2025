@@ -97,15 +97,20 @@ public class TownService {
         var reportMap = new HashMap<CreatureType, Integer>();
         for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()){
             var dwellingName = entry.getKey();
-            var specificDwellingEnum = AbstractDwellingTypeRegistry
-                    .fromCode(dwellingName);
-            var creatureEnum = specificDwellingEnum.getCreature();
-            var creature = creatureService.fetchCreatureByType(creatureEnum);
+            var creature = getCreature(dwellingName);
             if (creature == null) continue;
             reportMap.put(creature.getCreatureType(), entry.getValue());
         }
         reportMap = getValueSortedMap(reportMap);
         return new TownGenerCreaturesReport(townName, reportMap);
+    }
+
+    private Creature getCreature(String dwellingName) {
+        var specificDwellingEnum = AbstractDwellingTypeRegistry
+                .fromCode(dwellingName);
+        var creatureEnum = specificDwellingEnum.getCreature();
+        return creatureService
+                .fetchCreatureByType(creatureEnum);
     }
 
     private TownGenerCreaturesReport retrieveTownDwellingsAndGenerateCreatures(Town town) {
@@ -117,15 +122,7 @@ public class TownService {
         var reportMap = new HashMap<CreatureType, Integer>();
         for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()){
             var dwellingName = entry.getKey();
-            var specificDwellingEnum = AbstractDwellingTypeRegistry
-                    .fromCode(dwellingName);
-            var creatureEnum = specificDwellingEnum.getCreature();
-            Creature creature = null;
-            try {
-                creature = creatureService.fetchCreatureByType(creatureEnum);
-            } catch (EntityNotFoundException e) {
-                log.error("Entity {} not found", creatureEnum);
-            }
+            var creature = getCreature(dwellingName);
             if (creature == null) continue;
             var creatureGrowth = retrieveCreatureGrowth(creature);
             var hordeCreatureBoost = 0;
@@ -137,7 +134,6 @@ public class TownService {
             reportMap.put(creature.getCreatureType(), modifiedValue);
             townDwellingMap.put(entry.getKey(), entry.getValue());
             reportMap = getValueSortedMap(reportMap);
-
         }
         return new TownGenerCreaturesReport(town.getName(), reportMap);
     }
