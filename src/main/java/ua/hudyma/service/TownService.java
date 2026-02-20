@@ -91,6 +91,23 @@ public class TownService {
         return list;
     }
 
+    public TownGenerCreaturesReport getAvailCreaturesForHire(String townName) {
+        var town = getTown(townName);
+        var dwellingMap = town.getDwellingMap();
+        var reportMap = new HashMap<CreatureType, Integer>();
+        for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()){
+            var dwellingName = entry.getKey();
+            var specificDwellingEnum = AbstractDwellingTypeRegistry
+                    .fromCode(dwellingName);
+            var creatureEnum = specificDwellingEnum.getCreature();
+            var creature = creatureService.fetchCreatureByType(creatureEnum);
+            if (creature == null) continue;
+            reportMap.put(creature.getCreatureType(), entry.getValue());
+        }
+        reportMap = getValueSortedMap(reportMap);
+        return new TownGenerCreaturesReport(townName, reportMap);
+    }
+
     private TownGenerCreaturesReport retrieveTownDwellingsAndGenerateCreatures(Town town) {
         var townDwellingMap = town.getDwellingMap();
         if (townDwellingMap == null) throw new IllegalArgumentException("Dwelling map for town "
@@ -125,10 +142,8 @@ public class TownService {
         return new TownGenerCreaturesReport(town.getName(), reportMap);
     }
 
-    //todo implement hiring creatures
-
     @Nonnull
-    private static LinkedHashMap<CreatureType, Integer> getValueSortedMap(
+    private LinkedHashMap<CreatureType, Integer> getValueSortedMap(
             HashMap<CreatureType, Integer> reportMap) {
         return reportMap.entrySet()
                 .stream()

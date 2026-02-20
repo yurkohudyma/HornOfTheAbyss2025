@@ -3,6 +3,7 @@ package ua.hudyma.domain.creatures.enums;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
