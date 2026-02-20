@@ -8,23 +8,33 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
+import ua.hudyma.domain.creatures.dto.ModifiableData;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
+import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
+import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Faction;
+import ua.hudyma.exception.ArmyFreeSlotOverflowException;
+import ua.hudyma.exception.InsufficientResourcesException;
+import ua.hudyma.exception.NoAvailableCreaturesForHireException;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
+import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.MessageProcessor;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ua.hudyma.service.ArmyService.ARMY_SLOT_MAX_QTY;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -38,6 +48,7 @@ public class TownService {
     private final CombatService combatService;
     private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
+    private final ArmyService armyService;
 
     @SneakyThrows
     public String createTown(TownReqDto dto) {
@@ -95,9 +106,9 @@ public class TownService {
         var town = getTown(townName);
         var dwellingMap = town.getDwellingMap();
         var reportMap = new HashMap<CreatureType, Integer>();
-        for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()){
+        for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()) {
             var dwellingName = entry.getKey();
-            var creature = getCreature(dwellingName);
+            var creature = getCreatureFromDwelling(dwellingName);
             if (creature == null) continue;
             reportMap.put(creature.getCreatureType(), entry.getValue());
         }
@@ -105,29 +116,104 @@ public class TownService {
         return new TownGenerCreaturesReport(townName, reportMap);
     }
 
-    private Creature getCreature(String dwellingName) {
+    @Transactional
+    public List<CreatureSlot> hireCreatures(TownHireCreaturesReqDto dto) {
+        var reqMap = dto.reqMap();
+        if (reqMap == null || reqMap.isEmpty()) {
+            throw new IllegalArgumentException("Req map cannot be null or empty");
+        }
+        var townName = dto.townName();
+        var town = getTown(townName);
+        if (!checkAvailableCreaturesForHire(town)) {
+            throw new NoAvailableCreaturesForHireException("No avail creatures in " + townName);
+        }
+        var player = town.getPlayer();
+        if (!player.getTownsList().contains(town)) throw new IllegalStateException
+                (townName + " does NOT belong to " + player.getName());
+        var hero = heroService.getHero(dto.heroId());
+        var heroArmy = hero.getArmyList();
+        if (heroArmy.size() == ARMY_SLOT_MAX_QTY) {
+            throw new ArmyFreeSlotOverflowException("No free slots for hiring creatures");
+        }
+        var resourcesMap = player.getResourceMap();
+        var availCreaturesMap = getAvailCreaturesForHire(townName)
+                .generCreatureMap();
+        var newSlotsList = new ArrayList<CreatureSlot>();
+        var dwellingMap = town.getDwellingMap();
+        for (Map.Entry<CreatureType, Integer> entry : reqMap.entrySet()){
+            var creatureType = entry.getKey();
+            var reqQty = entry.getValue();
+            if (availCreaturesMap.containsKey(creatureType)){
+                var availCreatureQty = availCreaturesMap.get(creatureType);
+                var creatureResourcePriceMap = getCreatureResourceMapFromCreatureType(
+                        (creatureType.toString()));
+                if (creatureResourcePriceMap == null || creatureResourcePriceMap.isEmpty())
+                    throw new IllegalArgumentException("Creature Resource Map is null or empty, reinstate one before hire");
+                if (reqQty > availCreatureQty){
+                    log.error(creatureType + " is only " + availCreatureQty + " left, while you ask " + reqQty);
+            }
+                else {
+                    checkResourceAvailableForCreatureHire(resourcesMap, player.getResourceMap());
+                    var newSlot = new CreatureSlot();
+                    newSlot.setType(creatureType);
+                    newSlot.setQuantity(reqQty);
+                    newSlotsList.add(newSlot);
+                    dwellingMap.put(creatureType.toString(), reqQty - availCreatureQty);
+                }
+            }
+        }
+        heroArmy.addAll(newSlotsList);
+        armyHeroService.syncArmySkillsWithHero(newSlotsList, hero);
+        return newSlotsList;
+    }
+
+    private static void checkResourceAvailableForCreatureHire(
+            Map<ResourceType, Integer> reqResourcesMap,
+            Map<ResourceType, Integer> availResourceMap) {
+        for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()){
+            var resourceName = reqEntry.getKey();
+            var reqResQty = reqEntry.getValue();
+            var availResQty = availResourceMap.get(resourceName);
+            if (availResQty < reqResQty) throw new InsufficientResourcesException("No enough "
+                    + resourceName + ": available : " + availResQty + ", while required " + reqResQty);
+        }
+    }
+
+    private static Map<ResourceType, Integer> getCreatureResourceMapFromCreatureType(String creatureType) {
+        return CreatureTypeRegistry
+                .fromCode(creatureType).getRequiredResourceMap();
+    }
+
+    private boolean checkAvailableCreaturesForHire(Town town) {
+        return town.getDwellingMap().values().stream().anyMatch(a -> a > 0);
+    }
+
+    private Creature getCreatureFromDwelling(String dwellingName) {
         var specificDwellingEnum = AbstractDwellingTypeRegistry
                 .fromCode(dwellingName);
-        var creatureEnum = specificDwellingEnum.getCreature();
+        var creatureEnum = specificDwellingEnum.getCreature();        
         return creatureService
                 .fetchCreatureByType(creatureEnum);
     }
 
-    private TownGenerCreaturesReport retrieveTownDwellingsAndGenerateCreatures(Town town) {
+    private TownGenerCreaturesReport retrieveTownDwellingsAndGenerateCreatures
+            (Town town) {
         var townDwellingMap = town.getDwellingMap();
-        if (townDwellingMap == null) throw new IllegalArgumentException("Dwelling map for town "
-                + town.getName() + " has not been created YET");
+        if (townDwellingMap == null) throw new IllegalArgumentException
+                ("Dwelling map for town "
+                        + town.getName() + " has not been created YET");
         var townHordeBuildingList =
                 retrieveHordeBuildingTypeByFaction(town.getFaction());
         var reportMap = new HashMap<CreatureType, Integer>();
-        for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()){
+        for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()) {
             var dwellingName = entry.getKey();
-            var creature = getCreature(dwellingName);
+            var creature = getCreatureFromDwelling(dwellingName);
             if (creature == null) continue;
             var creatureGrowth = retrieveCreatureGrowth(creature);
             var hordeCreatureBoost = 0;
             if (!townHordeBuildingList.isEmpty()) {
-                hordeCreatureBoost = getHordeBuildingCreatureBoost(creature, townHordeBuildingList);
+                hordeCreatureBoost = getHordeBuildingCreatureBoost
+                        (creature, townHordeBuildingList);
             }
             int modifiedValue = creatureGrowth + hordeCreatureBoost;
             entry.setValue(entry.getValue() + modifiedValue);
@@ -135,7 +221,8 @@ public class TownService {
             townDwellingMap.put(entry.getKey(), entry.getValue());
             reportMap = getValueSortedMap(reportMap);
         }
-        return new TownGenerCreaturesReport(town.getName(), reportMap);
+        return new TownGenerCreaturesReport
+                (town.getName(), reportMap);
     }
 
     @Nonnull
@@ -158,8 +245,8 @@ public class TownService {
 
     private Integer getHordeBuildingCreatureBoost(
             Creature creature, List<HordeBuildingType> townHordeBuildingList) {
-        for (HordeBuildingType horde : townHordeBuildingList){
-            if (horde.getCreatureType() == creature.getCreatureType()){
+        for (HordeBuildingType horde : townHordeBuildingList) {
+            if (horde.getCreatureType() == creature.getCreatureType()) {
                 return horde.getCreatureBoost();
             }
         }

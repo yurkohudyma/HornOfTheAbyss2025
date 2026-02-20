@@ -36,7 +36,7 @@ public class ArmyService {
 
     private final ArmyHeroService armyHeroService;
 
-    private static final Integer ARMY_SLOT_MAX_QTY = 7;
+    static final Integer ARMY_SLOT_MAX_QTY = 7;
 
     @Transactional
     public String compressArmy(String heroId) {

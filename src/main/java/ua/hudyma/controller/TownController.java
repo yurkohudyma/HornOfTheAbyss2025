@@ -3,9 +3,11 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.dto.TownGenerCreaturesReport;
+import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
@@ -19,10 +21,17 @@ public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
 
+    @PostMapping("/hireCreatures")
+    public ResponseEntity<List<CreatureSlot>> hireCreatures
+            (TownHireCreaturesReqDto dto) {
+        return ResponseEntity.ok(townService.hireCreatures(dto));
+    }
+
     @GetMapping("/getTownCreaturesForHire")
     public ResponseEntity<TownGenerCreaturesReport> getTownGenCreaturesForHire
             (@RequestParam String townName){
-        return ResponseEntity.ok(townService.getAvailCreaturesForHire(townName));
+        return ResponseEntity.ok(townService
+                .getAvailCreaturesForHire(townName));
     }
 
     @GetMapping("generateWeeklyCreatures")
