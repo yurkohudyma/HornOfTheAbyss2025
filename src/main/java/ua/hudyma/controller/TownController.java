@@ -23,7 +23,7 @@ public class TownController {
 
     @PostMapping("/hireCreatures")
     public ResponseEntity<List<CreatureSlot>> hireCreatures
-            (TownHireCreaturesReqDto dto) {
+            (@RequestBody TownHireCreaturesReqDto dto) {
         return ResponseEntity.ok(townService.hireCreatures(dto));
     }
 

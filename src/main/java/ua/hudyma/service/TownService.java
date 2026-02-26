@@ -150,15 +150,18 @@ public class TownService {
                 if (creatureResourcePriceMap == null || creatureResourcePriceMap.isEmpty())
                     throw new IllegalArgumentException("Creature Resource Map is null or empty, reinstate one before hire");
                 if (reqQty > availCreatureQty){
-                    log.error(creatureType + " is only " + availCreatureQty + " left, while you ask " + reqQty);
+                    log.error("{} is only {} left, while you ask {}", creatureType, availCreatureQty, reqQty);
             }
                 else {
                     checkResourceAvailableForCreatureHire(resourcesMap, player.getResourceMap());
+                    //todo implement resources decrementing upon successfull hiring
                     var newSlot = new CreatureSlot();
                     newSlot.setType(creatureType);
                     newSlot.setQuantity(reqQty);
                     newSlotsList.add(newSlot);
                     dwellingMap.put(creatureType.toString(), reqQty - availCreatureQty);
+                    town.setDwellingMap(dwellingMap);
+                    //todo FIXED. check if dwelling map contains renewed hired creature number
                 }
             }
         }
