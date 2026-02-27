@@ -18,6 +18,7 @@ import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Faction;
@@ -159,15 +160,20 @@ public class TownService {
                     newSlot.setType(creatureType);
                     newSlot.setQuantity(reqQty);
                     newSlotsList.add(newSlot);
-                    dwellingMap.put(creatureType.toString(), reqQty - availCreatureQty);
+                    //todo retrieve dwelling NAME and insert
+                    var dwellingName = retrieveTownDwelling(creatureType, town);
+                    dwellingMap.put(String.valueOf(dwellingName), availCreatureQty - reqQty);
                     town.setDwellingMap(dwellingMap);
-                    //todo FIXED. check if dwelling map contains renewed hired creature number
                 }
             }
         }
         heroArmy.addAll(newSlotsList);
         armyHeroService.syncArmySkillsWithHero(newSlotsList, hero);
         return newSlotsList;
+    }
+
+    private AbstractDwellingType retrieveTownDwelling(CreatureType creatureType, Town town) {
+        throw new IllegalCallerException("Method not implemented");
     }
 
     private static void checkResourceAvailableForCreatureHire(
@@ -182,9 +188,11 @@ public class TownService {
         }
     }
 
-    private static Map<ResourceType, Integer> getCreatureResourceMapFromCreatureType(String creatureType) {
+    private static Map<ResourceType, Integer> getCreatureResourceMapFromCreatureType
+            (String creatureType) {
         return CreatureTypeRegistry
-                .fromCode(creatureType).getRequiredResourceMap();
+                .fromCode(creatureType)
+                .getRequiredResourceMap();
     }
 
     private boolean checkAvailableCreaturesForHire(Town town) {
