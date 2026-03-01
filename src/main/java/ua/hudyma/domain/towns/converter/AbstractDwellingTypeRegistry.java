@@ -1,16 +1,17 @@
 package ua.hudyma.domain.towns.converter;
 
 import org.reflections.Reflections;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 
-import java.util.Arrays;
 import java.util.Set;
 
 public class AbstractDwellingTypeRegistry {
     private static final Reflections reflections;
     private static final Set<Class<? extends AbstractDwellingType>> ENUM_TYPES;
 
-    private AbstractDwellingTypeRegistry(){}
+    private AbstractDwellingTypeRegistry() {
+    }
 
     static {
         reflections = new Reflections("ua.hudyma.domain.towns.enums.dwelling");
@@ -28,7 +29,7 @@ public class AbstractDwellingTypeRegistry {
     }
 
     @SuppressWarnings("unchecked")
-    private static <E extends Enum<E> & AbstractDwellingType> AbstractDwellingType enumFromCode(
+    public static <E extends Enum<E> & AbstractDwellingType> AbstractDwellingType enumFromCode(
             Class<? extends AbstractDwellingType> type, String code) {
         Class<E> enumClass = (Class<E>) type;
         try {
@@ -39,25 +40,51 @@ public class AbstractDwellingTypeRegistry {
     }
 
     /**
-     * Пошук enum-класу серед усіх підтипів базового інтерфейсу/класу.
+     * Пошук enum-класу за типом істоти серед усіх підтипів базового інтерфейсу/класу.
      *
-     * @param type          частина назви enum-класу для пошуку
      * @param baseInterface інтерфейс або базовий клас, який реалізує enum
      * @param <B>           тип базового інтерфейсу
      * @return enum-клас, який реалізує B
      */
-    @SuppressWarnings("unchecked")
-    public static <B> Class<? extends Enum<?>> findEnumClassByChildName(
-            AbstractDwellingType type, Class<B> baseInterface) {
+   /* @SuppressWarnings("unchecked")
+    public static <B extends AbstractDwellingType> Class<? extends Enum<?>> findEnumClassByCreatureType(
+            Class<B> baseInterface, CreatureType creatureType) {
         Set<Class<? extends B>> subtypes = reflections
                 .getSubTypesOf(baseInterface);
         for (Class<? extends B> subtype : subtypes) {
-            if (subtype.isEnum() && Arrays.asList(subtype
-                    .getEnumConstants()).contains(type)) {
-                return (Class<? extends Enum<?>>) subtype;
+            var enumConstants = subtype
+                    .getEnumConstants();
+            if (subtype.isEnum())
+                return getDwellingTypeContainingCreature(enumConstants, creatureType);
+        }
+        throw new IllegalArgumentException("No enum class matches name for "
+                + baseInterface.getSimpleName());
+    }*/
+
+    public static AbstractDwellingType findByCreatureType(
+            CreatureType creatureType) {
+        Set<Class<? extends AbstractDwellingType>> subtypes =
+                reflections.getSubTypesOf(AbstractDwellingType.class);
+        for (Class<? extends AbstractDwellingType> subtype : subtypes) {
+            if (!subtype.isEnum()) continue;
+            AbstractDwellingType[] enumConstants =
+                    subtype.getEnumConstants();
+            for (AbstractDwellingType constant : enumConstants) {
+                if (constant.getCreature().equals(creatureType)) {
+                    return constant;
+                }
             }
         }
-        throw new IllegalArgumentException("No enum class matches name: " + type + " for "
-                + baseInterface.getSimpleName());
+        throw new IllegalArgumentException(
+                "No dwelling type found for creature " + creatureType);
     }
+
+    /*private static <B> B getDwellingTypeContainingCreature(
+            B[] enumConstants, CreatureType creatureType) {
+        for (B enumm : enumConstants) {
+            if (((AbstractDwellingType) enumm).getCreature().equals(creatureType))
+                return enumm;
+        }
+        throw new IllegalStateException("Dwelling type for Creature " + creatureType + " NOT found");
+    }*/
 }

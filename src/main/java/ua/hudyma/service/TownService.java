@@ -140,7 +140,6 @@ public class TownService {
         var availCreaturesMap = getAvailCreaturesForHire(townName)
                 .generCreatureMap();
         var newSlotsList = new ArrayList<CreatureSlot>();
-        var dwellingMap = town.getDwellingMap();
         for (Map.Entry<CreatureType, Integer> entry : reqMap.entrySet()){
             var creatureType = entry.getKey();
             var reqQty = entry.getValue();
@@ -148,11 +147,12 @@ public class TownService {
                 var availCreatureQty = availCreaturesMap.get(creatureType);
                 var creatureResourcePriceMap = getCreatureResourceMapFromCreatureType(
                         (creatureType.toString()));
-                if (creatureResourcePriceMap == null || creatureResourcePriceMap.isEmpty())
+                if (creatureResourcePriceMap == null || creatureResourcePriceMap.isEmpty()) {
                     throw new IllegalArgumentException("Creature Resource Map is null or empty, reinstate one before hire");
+                }
                 if (reqQty > availCreatureQty){
                     log.error("{} is only {} left, while you ask {}", creatureType, availCreatureQty, reqQty);
-            }
+                }
                 else {
                     checkResourceAvailableForCreatureHire(resourcesMap, player.getResourceMap());
                     //todo implement resources decrementing upon successfull hiring
@@ -160,9 +160,10 @@ public class TownService {
                     newSlot.setType(creatureType);
                     newSlot.setQuantity(reqQty);
                     newSlotsList.add(newSlot);
-                    //todo retrieve dwelling NAME and insert
-                    var dwellingName = retrieveTownDwelling(creatureType, town);
-                    dwellingMap.put(String.valueOf(dwellingName), availCreatureQty - reqQty);
+                    var dwellingMap = town.getDwellingMap();
+                    var dwellingName = AbstractDwellingTypeRegistry
+                            .findByCreatureType(creatureType);
+                    dwellingMap.put(dwellingName.getCode(), availCreatureQty - reqQty);
                     town.setDwellingMap(dwellingMap);
                 }
             }
@@ -170,10 +171,6 @@ public class TownService {
         heroArmy.addAll(newSlotsList);
         armyHeroService.syncArmySkillsWithHero(newSlotsList, hero);
         return newSlotsList;
-    }
-
-    private AbstractDwellingType retrieveTownDwelling(CreatureType creatureType, Town town) {
-        throw new IllegalCallerException("Method not implemented");
     }
 
     private static void checkResourceAvailableForCreatureHire(
@@ -251,7 +248,6 @@ public class TownService {
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
-
     }
 
     private Integer getHordeBuildingCreatureBoost(

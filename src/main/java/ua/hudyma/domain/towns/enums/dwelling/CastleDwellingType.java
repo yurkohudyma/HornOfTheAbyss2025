@@ -19,7 +19,7 @@ public enum CastleDwellingType implements AbstractDwellingType {
     MONASTERY (ZEALOT),
     TRAINING_GROUNDS (CHAMPION),
     PORTAL_OF_GLORY (ARCHANGEL);
-    private final CastleCreatureType creature;
+    private final CreatureType creature;
 
     @Override
     public String getCode() {
