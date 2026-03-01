@@ -10,15 +10,12 @@ import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
-import ua.hudyma.domain.creatures.dto.ModifiableData;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
-import ua.hudyma.domain.creatures.enums.ModifiableSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
-import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Faction;
@@ -136,7 +133,7 @@ public class TownService {
         if (heroArmy.size() == ARMY_SLOT_MAX_QTY) {
             throw new ArmyFreeSlotOverflowException("No free slots for hiring creatures");
         }
-        var resourcesMap = player.getResourceMap();
+        var playerResourcesMap = player.getResourceMap();
         var availCreaturesMap = getAvailCreaturesForHire(townName)
                 .generCreatureMap();
         var newSlotsList = new ArrayList<CreatureSlot>();
@@ -154,17 +151,21 @@ public class TownService {
                     log.error("{} is only {} left, while you ask {}", creatureType, availCreatureQty, reqQty);
                 }
                 else {
-                    checkResourceAvailableForCreatureHire(resourcesMap, player.getResourceMap());
-                    //todo implement resources decrementing upon successfull hiring
+                    var updatedPlayerResourceMap = checkResourceAvailableForCreatureHire(
+                            creatureResourcePriceMap,
+                            playerResourcesMap);
+                    //todo check decrementing resources procedure
                     var newSlot = new CreatureSlot();
                     newSlot.setType(creatureType);
                     newSlot.setQuantity(reqQty);
                     newSlotsList.add(newSlot);
                     var dwellingMap = town.getDwellingMap();
                     var dwellingName = AbstractDwellingTypeRegistry
-                            .findByCreatureType(creatureType);
+                            .findDwellingByCreatureType(creatureType);
                     dwellingMap.put(dwellingName.getCode(), availCreatureQty - reqQty);
                     town.setDwellingMap(dwellingMap);
+                    if (!updatedPlayerResourceMap.isEmpty())
+                        player.setResourceMap(updatedPlayerResourceMap);
                 }
             }
         }
@@ -173,16 +174,21 @@ public class TownService {
         return newSlotsList;
     }
 
-    private static void checkResourceAvailableForCreatureHire(
+    private static Map<ResourceType, Integer> checkResourceAvailableForCreatureHire(
             Map<ResourceType, Integer> reqResourcesMap,
             Map<ResourceType, Integer> availResourceMap) {
+        var updatedResourceMap = new HashMap<ResourceType, Integer>();
         for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()){
             var resourceName = reqEntry.getKey();
             var reqResQty = reqEntry.getValue();
             var availResQty = availResourceMap.get(resourceName);
             if (availResQty < reqResQty) throw new InsufficientResourcesException("No enough "
                     + resourceName + ": available : " + availResQty + ", while required " + reqResQty);
+            else {
+                updatedResourceMap.put(resourceName, availResQty - reqResQty);
+            }
         }
+        return reqResourcesMap;
     }
 
     private static Map<ResourceType, Integer> getCreatureResourceMapFromCreatureType
