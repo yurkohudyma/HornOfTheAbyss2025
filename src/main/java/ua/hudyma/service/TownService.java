@@ -188,7 +188,7 @@ public class TownService {
                 updatedResourceMap.put(resourceName, availResQty - reqResQty);
             }
         }
-        return reqResourcesMap;
+        return updatedResourceMap;
     }
 
     private static Map<ResourceType, Integer> getCreatureResourceMapFromCreatureType
@@ -244,10 +244,8 @@ public class TownService {
             HashMap<CreatureType, Integer> reportMap) {
         return reportMap.entrySet()
                 .stream()
-                .sorted(Comparator.comparing(
-                        Map.Entry::getValue,
-                        Comparator.reverseOrder()
-                ))
+                .sorted(Map.Entry
+                        .comparingByValue(Comparator.reverseOrder()))
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         Map.Entry::getValue,
