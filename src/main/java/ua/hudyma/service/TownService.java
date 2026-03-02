@@ -164,8 +164,10 @@ public class TownService {
                             .findDwellingByCreatureType(creatureType);
                     dwellingMap.put(dwellingName.getCode(), availCreatureQty - reqQty);
                     town.setDwellingMap(dwellingMap);
-                    if (!updatedPlayerResourceMap.isEmpty())
-                        player.setResourceMap(updatedPlayerResourceMap);
+                    if (!updatedPlayerResourceMap.isEmpty()){
+                        playerResourcesMap.putAll(updatedPlayerResourceMap);
+                        player.setResourceMap(playerResourcesMap);
+                    }
                 }
             }
         }
