@@ -8,6 +8,7 @@ import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
+import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.service.PlayerService;
 
@@ -18,6 +19,20 @@ import java.util.Map;
 @RequestMapping("/players")
 public class PlayerController {
     private final PlayerService playerService;
+
+    @GetMapping("/mines")
+    public ResponseEntity<Map<MineType, Integer>> getMines (
+            @RequestParam Long playerId){
+        return ResponseEntity.ok(playerService.getMines(playerId));
+    }
+
+    @GetMapping("/addMine")
+    public ResponseEntity<String> addMine(
+            @RequestParam MineType mineType, @RequestParam Long playerId){
+        return ResponseEntity.ok(playerService.addMine(mineType, playerId));
+    }
+
+
     @PostMapping
     public ResponseEntity<String> createPlayer (
             @RequestBody PlayerReqDto dto){

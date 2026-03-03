@@ -14,8 +14,10 @@ import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
+import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -81,5 +83,25 @@ public class PlayerService {
                         Player.class,
                         playerId,
                         EntityNotFoundException::new, false));
+    }
+
+    public Map<MineType, Integer> getMines(Long playerId) {
+        var player = getPlayer(playerId);
+        return player.getMinesMap();
+    }
+
+    @Transactional
+    public String addMine(MineType mineType, Long playerId) {
+        var player = getPlayer(playerId);
+        var mineMap = fetchOrCreateMineMap(player);
+        mineMap.merge(mineType, 1, Integer::sum);
+        player.setMinesMap(mineMap);
+        return mineType + " succ acquired by " + player.getName();
+    }
+
+    private Map<MineType, Integer> fetchOrCreateMineMap(Player player) {
+        return player.getMinesMap() == null ?
+                new EnumMap<>(MineType.class) :
+                player.getMinesMap();
     }
 }
