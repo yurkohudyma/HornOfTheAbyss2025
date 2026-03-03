@@ -99,9 +99,26 @@ public class PlayerService {
         return mineType + " succ acquired by " + player.getName();
     }
 
-    private Map<MineType, Integer> fetchOrCreateMineMap(Player player) {
+    private static Map<MineType, Integer> fetchOrCreateMineMap(Player player) {
         return player.getMinesMap() == null ?
                 new EnumMap<>(MineType.class) :
                 player.getMinesMap();
+    }
+
+    public Map<ResourceType, Integer> getMinesWeeklyIncome(Long playerId) {
+        var player = getPlayer(playerId);
+        var mineMap = player.getMinesMap();
+        if (mineMap == null || mineMap.isEmpty()){
+            throw new IllegalStateException("Mine Map is empty, no income");
+        }
+        var incomeMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
+        for (Map.Entry<MineType, Integer> entry : mineMap.entrySet()){
+            var mineType = entry.getKey();
+            var mineQty = entry.getValue();
+            var resourceType = mineType.getResourceType();
+            var resourceRateIncome = mineType.getWeeklyProductionRate();
+            incomeMap.put(resourceType, mineQty * resourceRateIncome);
+        }
+        return incomeMap;
     }
 }
