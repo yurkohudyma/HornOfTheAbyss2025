@@ -113,7 +113,8 @@ public class TownService {
         reportMap = getValueSortedMap(reportMap);
         return new TownGenerCreaturesReport(townName, reportMap);
     }
-
+    //todo hiring of non-existent faction and dwelling creature i.e.
+    // ARCHDEVIL finished with no error which must've taken place
     @Transactional
     public List<CreatureSlot> hireCreatures(TownHireCreaturesReqDto dto) {
         var reqMap = dto.reqMap();
@@ -154,7 +155,6 @@ public class TownService {
                     var updatedPlayerResourceMap = checkResourceAvailableForCreatureHire(
                             creatureResourcePriceMap,
                             playerResourcesMap);
-                    //todo check decrementing resources procedure
                     var newSlot = new CreatureSlot();
                     newSlot.setType(creatureType);
                     newSlot.setQuantity(reqQty);
@@ -179,7 +179,7 @@ public class TownService {
     private static Map<ResourceType, Integer> checkResourceAvailableForCreatureHire(
             Map<ResourceType, Integer> reqResourcesMap,
             Map<ResourceType, Integer> availResourceMap) {
-        var updatedResourceMap = new HashMap<ResourceType, Integer>();
+        var updatedResourceMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
         for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()){
             var resourceName = reqEntry.getKey();
             var reqResQty = reqEntry.getValue();
