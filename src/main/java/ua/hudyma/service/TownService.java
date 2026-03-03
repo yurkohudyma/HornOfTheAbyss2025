@@ -20,6 +20,7 @@ import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.ArmyFreeSlotOverflowException;
+import ua.hudyma.exception.HireCreatureException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.exception.NoAvailableCreaturesForHireException;
 import ua.hudyma.mapper.TownMapper;
@@ -113,8 +114,7 @@ public class TownService {
         reportMap = getValueSortedMap(reportMap);
         return new TownGenerCreaturesReport(townName, reportMap);
     }
-    //todo hiring of non-existent faction and dwelling creature i.e.
-    // ARCHDEVIL finished with no error which must've taken place
+
     @Transactional
     public List<CreatureSlot> hireCreatures(TownHireCreaturesReqDto dto) {
         var reqMap = dto.reqMap();
@@ -169,6 +169,9 @@ public class TownService {
                         player.setResourceMap(playerResourcesMap);
                     }
                 }
+            }
+            else {
+                throw new HireCreatureException(creatureType + " is not available for hire in " + town.getName());
             }
         }
         heroArmy.addAll(newSlotsList);
