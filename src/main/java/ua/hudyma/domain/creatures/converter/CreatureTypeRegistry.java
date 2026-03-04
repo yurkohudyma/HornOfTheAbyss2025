@@ -80,18 +80,34 @@ public class CreatureTypeRegistry {
                 ));
     }
 
-    public static EnumSet<? extends CreatureType> getAllCreaturesByFaction(Faction faction, Boolean essential) {
-        var essentialSuffix = essential ? "Essential" : "";
-        //todo переробити, щоб працювало з покращеними істотами
+    /*public static CreatureType[] getAllCreaturesByFaction(Faction faction, Boolean fetchEssential) {
         var normalized = normalizeFactionEnumName(faction.name());
-        return ENUM_TYPES.stream()
-                .filter(Class::isEnum)
-                .filter(type -> type.getSimpleName().contains(normalized))
-                .filter(type -> type.getSimpleName().contains(essentialSuffix))
-                .findFirst()
-                .map(type -> EnumSet.allOf((Class<? extends Enum>) type))
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Essential creatures of " + faction + " not found"));
+        for (Class<? extends CreatureType> type : ENUM_TYPES) {
+            if (!type.isEnum()) throw new IllegalStateException("Enum is expected, program halted");
+            var containsEssential = type.getSimpleName().contains("Essential");
+            if (type.getSimpleName().contains(normalized)) {
+                if (containsEssential && fetchEssential) {
+                    return type.getEnumConstants();
+                } else if (!fetchEssential && !containsEssential) {
+                    return type.getEnumConstants();
+                }
+            }
+        }
+        throw new IllegalArgumentException("Creatures of " + faction + " not found");
+    }*/
+    public static CreatureType[] getAllCreaturesByFaction(Faction faction, boolean fetchEssential) {
+        var normalized = normalizeFactionEnumName(faction.name());
+        for (Class<? extends CreatureType> type : ENUM_TYPES) {
+            if (!type.isEnum()) throw new IllegalStateException("Enum is expected, program halted");
+            var enumName = type.getSimpleName();
+            var containsEssential = enumName.contains("Essential");
+            if (enumName.contains(normalized)) {
+                if (fetchEssential == containsEssential) {
+                    return type.getEnumConstants();
+                }
+            }
+        }
+        throw new IllegalArgumentException("Creatures of " + faction + " not found");
     }
 
     private static String normalizeFactionEnumName(String faction) {

@@ -321,8 +321,8 @@ public class TownService {
                         false));
     }
 
-    public EnumSet<? extends CreatureType> getAllCreaturesTypes
-            (String townName, Boolean essential) {
+    public CreatureType[] getAllCreaturesTypes
+            (String townName, boolean essential) {
         var town = getTown(townName);
         var faction = town.getFaction();
         return CreatureTypeRegistry.getAllCreaturesByFaction(faction, essential);
