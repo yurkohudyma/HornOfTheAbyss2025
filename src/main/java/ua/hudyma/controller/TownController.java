@@ -3,6 +3,7 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
@@ -12,6 +13,7 @@ import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
 
+import java.util.EnumSet;
 import java.util.List;
 
 @RestController
@@ -20,6 +22,13 @@ import java.util.List;
 public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
+
+    @GetMapping("/getAllBasicCreaturesTypes")
+    public ResponseEntity<EnumSet<? extends CreatureType>> getAllTownBasicCreatures (
+            @RequestParam String townName){
+        return ResponseEntity.ok(townService
+                .getAllBasicCreaturesTypes(townName));
+    }
 
     @PostMapping("/hireCreatures")
     public ResponseEntity<List<CreatureSlot>> hireCreatures
@@ -34,7 +43,7 @@ public class TownController {
                 .getAvailCreaturesForHire(townName));
     }
 
-    @GetMapping("generateWeeklyCreatures")
+    @GetMapping("/generateWeeklyCreatures")
     public ResponseEntity<List<TownGenerCreaturesReport>>
     generateAllTownsWeeklyCreatures (@RequestParam Long playerId){
         return ResponseEntity.ok(townService

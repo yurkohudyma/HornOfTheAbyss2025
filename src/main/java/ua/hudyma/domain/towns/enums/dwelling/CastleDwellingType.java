@@ -1,24 +1,23 @@
 package ua.hudyma.domain.towns.enums.dwelling;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.CreatureType;
-import ua.hudyma.domain.creatures.enums.CastleCreatureType;
-import ua.hudyma.domain.towns.enums.AbstractBuildingType;
 
 import static ua.hudyma.domain.creatures.enums.CastleCreatureType.*;
+import static ua.hudyma.domain.creatures.enums.CastleEssentialCreatureType.*;
 
 @Getter
 @RequiredArgsConstructor
 public enum CastleDwellingType implements AbstractDwellingType {
-    GUARDHOUSE (HALBERDIER),
-    ARCHER_TOWER (MARKSMAN),
-    GRIFFIN_TOWER (ROYAL_GRIFFIN),
-    BARRACKS (CRUSADER),
-    MONASTERY (ZEALOT),
-    TRAINING_GROUNDS (CHAMPION),
-    PORTAL_OF_GLORY (ARCHANGEL);
+    GUARDHOUSE (PIKEMEN, HALBERDIER),
+    ARCHER_TOWER (ARCHER, MARKSMAN),
+    GRIFFIN_TOWER (GRIFFIN, ROYAL_GRIFFIN),
+    BARRACKS (SWORDSMAN, CRUSADER),
+    MONASTERY (MONK, ZEALOT),
+    TRAINING_GROUNDS (CAVALIER, CHAMPION),
+    PORTAL_OF_GLORY (ANGEL, ARCHANGEL);
+    private final CreatureType essentialCreature;
     private final CreatureType creature;
 
     @Override
@@ -29,5 +28,10 @@ public enum CastleDwellingType implements AbstractDwellingType {
     @Override
     public CreatureType getCreature() {
         return creature;
+    }
+
+    @Override
+    public CreatureType getEssentialCreature(){
+        return essentialCreature;
     }
 }

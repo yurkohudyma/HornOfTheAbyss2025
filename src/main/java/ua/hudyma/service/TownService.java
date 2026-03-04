@@ -320,4 +320,12 @@ public class TownService {
                         EntityNotFoundException::new,
                         false));
     }
+
+    public EnumSet<? extends CreatureType> getAllBasicCreaturesTypes
+            (String townName) {
+        var town = getTown(townName);
+        var faction = town.getFaction();
+        throw new RuntimeException("Method not implemented");
+
+    }
 }

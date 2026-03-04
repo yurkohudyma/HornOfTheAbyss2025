@@ -9,4 +9,5 @@ import ua.hudyma.domain.towns.converter.AbstractDwellingTypeDeserializer;
 public interface AbstractDwellingType {
     String getCode();
     CreatureType getCreature();
+    CreatureType getEssentialCreature();
 }
