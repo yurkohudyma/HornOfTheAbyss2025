@@ -321,11 +321,10 @@ public class TownService {
                         false));
     }
 
-    public EnumSet<? extends CreatureType> getAllBasicCreaturesTypes
-            (String townName) {
+    public EnumSet<? extends CreatureType> getAllCreaturesTypes
+            (String townName, Boolean essential) {
         var town = getTown(townName);
         var faction = town.getFaction();
-        throw new RuntimeException("Method not implemented");
-
+        return CreatureTypeRegistry.getAllCreaturesByFaction(faction, essential);
     }
 }

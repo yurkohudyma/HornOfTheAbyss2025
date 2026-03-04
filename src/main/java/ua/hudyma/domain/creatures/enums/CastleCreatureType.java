@@ -42,7 +42,7 @@ public enum CastleCreatureType implements CreatureType {
     private static EnumMap<ResourceType, Integer> toResourceEnumMap(
             Map<ResourceType, Integer> resources) {
         var map = new EnumMap<ResourceType, Integer>(ResourceType.class);
-        map.putAll((resources));
+        map.putAll(resources);
         return map;
     }
 

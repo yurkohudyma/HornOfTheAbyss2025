@@ -2,8 +2,10 @@ package ua.hudyma.domain.creatures.converter;
 
 import org.reflections.Reflections;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.enums.Faction;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toMap;
@@ -76,5 +78,27 @@ public class CreatureTypeRegistry {
                         (a, b) -> a,
                         LinkedHashMap::new
                 ));
+    }
+
+    public static EnumSet<? extends CreatureType> getAllCreaturesByFaction(Faction faction, Boolean essential) {
+        var essentialSuffix = essential ? "Essential" : "";
+        //todo переробити, щоб працювало з покращеними істотами
+        var normalized = normalizeFactionEnumName(faction.name());
+        return ENUM_TYPES.stream()
+                .filter(Class::isEnum)
+                .filter(type -> type.getSimpleName().contains(normalized))
+                .filter(type -> type.getSimpleName().contains(essentialSuffix))
+                .findFirst()
+                .map(type -> EnumSet.allOf((Class<? extends Enum>) type))
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Essential creatures of " + faction + " not found"));
+    }
+
+    private static String normalizeFactionEnumName(String faction) {
+        if (faction == null || faction.isBlank()) {
+            throw new IllegalArgumentException("Faction cannot be null or blank");
+        }
+        return faction.substring(0, 1).toUpperCase() +
+                faction.substring(1).toLowerCase();
     }
 }

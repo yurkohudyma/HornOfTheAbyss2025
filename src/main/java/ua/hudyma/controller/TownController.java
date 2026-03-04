@@ -25,9 +25,9 @@ public class TownController {
 
     @GetMapping("/getAllBasicCreaturesTypes")
     public ResponseEntity<EnumSet<? extends CreatureType>> getAllTownBasicCreatures (
-            @RequestParam String townName){
+            @RequestParam String townName, @RequestParam Boolean essential){
         return ResponseEntity.ok(townService
-                .getAllBasicCreaturesTypes(townName));
+                .getAllCreaturesTypes(townName, essential));
     }
 
     @PostMapping("/hireCreatures")

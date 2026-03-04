@@ -15,29 +15,28 @@ import static ua.hudyma.resource.enums.ResourceType.GOLD;
 @RequiredArgsConstructor
 public enum CastleEssentialCreatureType implements CreatureType {
 
-    //todo correct numbers lazy.net
     ANGEL(7, toResourceEnumMap(
             Map.of(
-                    GEMS, 3,
-                    GOLD, 5000))),
+                    GEMS, 1,
+                    GOLD, 3000))),
     CAVALIER(6, toResourceEnumMap(
             Map.of(
-                    GOLD, 1200))),
+                    GOLD, 1000))),
     MONK(5, toResourceEnumMap(
             Map.of(
-                    GOLD, 450))),
+                    GOLD, 400))),
     SWORDSMAN(4,toResourceEnumMap(
             Map.of(
-                    GOLD, 400))),
+                    GOLD, 300))),
     GRIFFIN(3, toResourceEnumMap(
             Map.of(
-                    GOLD, 240))),
+                    GOLD, 200))),
     ARCHER(2, toResourceEnumMap(
             Map.of(
-                    GOLD, 150))),
+                    GOLD, 100))),
     PIKEMEN (1, toResourceEnumMap(
             Map.of(
-                    GOLD, 75)));
+                    GOLD, 60)));
     private final Integer level;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
 
