@@ -13,7 +13,7 @@ import ua.hudyma.service.HeroService;
 public class HeroController {
     private final HeroService heroService;
 
-    @GetMapping
+    @GetMapping("/gainExperience")
     public ResponseEntity<String> gainExperience (
             @RequestParam String heroId, @RequestParam Integer experience){
         return ResponseEntity.ok(heroService.gainExperience(heroId, experience));
