@@ -19,6 +19,7 @@ import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.FixedSizeMap;
+import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
 
@@ -27,6 +28,7 @@ import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.INTELLIGENCE;
+import static ua.hudyma.util.IdGenerator.generateRandomStartingExperience;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -304,5 +306,18 @@ public class HeroService {
 
     public void vanquishHero(Hero hero) {
         heroRepository.delete(hero);
+    }
+
+    @Transactional
+    public String gainExperience(String heroId, Integer newExperience) {
+        var hero = getHero(heroId);
+        var experience = hero.getExperience();
+        var level = hero.getLevel();
+        var summedExp = experience + newExperience;
+        if ((double) newExperience / experience - 1 > 0.2){
+            hero.setLevel(level + 1);
+        }
+        hero.setExperience(summedExp);
+        return "Hero has gain new level " + hero.getLevel() + " with current exp = " + summedExp;
     }
 }

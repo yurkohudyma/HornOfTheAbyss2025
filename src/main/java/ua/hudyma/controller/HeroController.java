@@ -12,6 +12,12 @@ import ua.hudyma.service.HeroService;
 @RequiredArgsConstructor
 public class HeroController {
     private final HeroService heroService;
+
+    @GetMapping
+    public ResponseEntity<String> gainExperience (
+            @RequestParam String heroId, @RequestParam Integer experience){
+        return ResponseEntity.ok(heroService.gainExperience(heroId, experience));
+    }
     @PostMapping
     public ResponseEntity<String> createHero (
             @RequestBody HeroReqDto dto){

@@ -17,6 +17,8 @@ import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
 
+import static ua.hudyma.util.IdGenerator.generateRandomStartingExperience;
+
 @Entity
 @Table(name = "heroes")
 @Data
@@ -86,4 +88,6 @@ public class Hero implements BaseEntity {
     @ToString.Exclude
     private Map<Integer, Set<String>> spellBook =
             new HashMap<>();
+    private int experience = generateRandomStartingExperience();
+    private int level = 1;
 }

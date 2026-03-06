@@ -148,4 +148,45 @@ public class IdGenerator {
         int index = secureRandom.nextInt(values.length);
         return values[index];
     }
+
+    public static Integer generateRandomStartingExperience() {
+        return secureRandom.nextInt(100);
+    }
+
+//    Experience is a measurement of hero's capability.
+//    Initially, every hired hero starts with a random number of experience
+//    in the range of 40 to 90 points. Experience is gained as heroes explore
+//    and battle. When they have enough experience points, they gain a level.
+//    Gaining a level may have several effects. It does always increase one of the
+//    hero's primary skills by one. Hero classes have different probabilities of
+//    which primary skill is increased, but the general rule is that might heroes
+//    tend to get more attack and defense while magic heroes get more power and knowledge.
+//    Typically, when a hero gains a level, he or she is offered a choice of one of two
+//    secondary skills. Additionally, many of the hero specialties are affected at level up.
+//
+//    Typical ways for heroes to gain experience is through combat or from treasure chests.
+//    Additionally, Pandora's Boxes, Events and Quests can give experience. The Dungeon town
+//    has a special building, the Battle Scholar Academy, which gives 1,000 experience points
+//    to every visiting hero. There are also objects on the map which give experience:
+//    The Learning Stone gives 1,000 experience points, the Tree of Knowledge allows a hero
+//    to level-up and the Altar of Sacrifice allows to sacrifice creatures or artifacts for experience.
+//
+//    From winning a combat, the hero receives one experience point for each HP of the enemy
+//    creatures he managed to vanquish in the battle (clones, war machines and bonus health
+//    from artifacts do not count). Resurrected creatures are only counted once, except Demons
+//    raised by Pit Lords. If an enemy hero is defeated or an enemy town is captured
+//    during a siege, the hero receives 500 extra experience points. A hero will not receive
+//    this bonus if the enemy hero escapes or surrenders. If a hero escapes or surrenders,
+//    then that hero does not gain any experience, even if he/she managed to kill creatures
+//    from the victorious hero. A hero from whom the enemy hero escaped receives experience
+//    for the killed enemy creatures, but does not gain experience for the defeated hero.
+//
+//    Heroes with Learning gain extra experience.
+//    Bug: after reaching level 75, a hero gets level 88 at once (13 more level-ups consecutively).
+//    From now on, the level-up mechanics shows highly unstable work. The next available levels
+//    are level 100, followed by level 108, level 868, level 3732, and level 5920. The final usable
+//    level is level 6424. Exceeding this level will result in falling into an infinite
+//    loop of level-ups. The process of leveling up from a lower available level to a higher
+//    one is continuous.
+
 }

@@ -15,8 +15,11 @@ import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
+import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
+
+import static ua.hudyma.util.IdGenerator.generateRandomStartingExperience;
 
 @Entity
 @Table(name = "players")

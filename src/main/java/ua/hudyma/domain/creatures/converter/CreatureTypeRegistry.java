@@ -80,21 +80,6 @@ public class CreatureTypeRegistry {
                 ));
     }
 
-    /*public static CreatureType[] getAllCreaturesByFaction(Faction faction, Boolean fetchEssential) {
-        var normalized = normalizeFactionEnumName(faction.name());
-        for (Class<? extends CreatureType> type : ENUM_TYPES) {
-            if (!type.isEnum()) throw new IllegalStateException("Enum is expected, program halted");
-            var containsEssential = type.getSimpleName().contains("Essential");
-            if (type.getSimpleName().contains(normalized)) {
-                if (containsEssential && fetchEssential) {
-                    return type.getEnumConstants();
-                } else if (!fetchEssential && !containsEssential) {
-                    return type.getEnumConstants();
-                }
-            }
-        }
-        throw new IllegalArgumentException("Creatures of " + faction + " not found");
-    }*/
     public static CreatureType[] getAllCreaturesByFaction(Faction faction, boolean fetchEssential) {
         var normalized = normalizeFactionEnumName(faction.name());
         for (Class<? extends CreatureType> type : ENUM_TYPES) {
