@@ -13,6 +13,13 @@ import ua.hudyma.service.HeroService;
 public class HeroController {
     private final HeroService heroService;
 
+    //todo calculate the most powerful hero of a player
+    //fetch primary skills
+    //fetch hero level
+    //fetch troops levels and quantity
+    //summarise them all up
+    //respond with maximum number holder
+
     @GetMapping("/gainExperience")
     public ResponseEntity<String> gainExperience (
             @RequestParam String heroId, @RequestParam Integer experience){

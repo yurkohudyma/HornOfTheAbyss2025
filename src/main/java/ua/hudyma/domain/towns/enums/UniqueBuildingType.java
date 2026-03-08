@@ -15,6 +15,9 @@ public enum UniqueBuildingType implements AbstractBuildingType{
     LIGHTHOUSE (CASTLE),
     STABLES (CASTLE),
 
+    TREASURY (RAMPART),
+    //todo implem treasury 10% calculation
+
     //inferno
     CASTLE_GATE (INFERNO),
     ORDER_OF_FIRE(INFERNO);

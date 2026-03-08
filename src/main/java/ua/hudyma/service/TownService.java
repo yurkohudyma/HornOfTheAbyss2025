@@ -312,7 +312,6 @@ public class TownService {
                 garnisoner.getName(),
                 visitor.getName());
     }
-
     public Town getTown(String name) {
         return townRepository.findByName(name)
                 .orElseThrow(getExceptionSupplier(Town.class,
@@ -320,7 +319,6 @@ public class TownService {
                         EntityNotFoundException::new,
                         false));
     }
-
     public CreatureType[] getAllCreaturesTypes
             (String townName, boolean essential) {
         var town = getTown(townName);
