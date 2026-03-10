@@ -15,6 +15,8 @@ import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType;
 import ua.hudyma.domain.towns.enums.properties.*;
+import ua.hudyma.domain.towns.enums.properties.dwelling.CastleDwellingTypeProperties;
+import ua.hudyma.domain.towns.enums.properties.dwelling.RampartDwellingTypeProperties;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.mapper.TownMapper;
@@ -144,28 +146,31 @@ public class AbstractBuildService {
         }
         var town = townService.getTown(dto.townName());
         checkTownBelongsToPlayer(player, town);
-        var buildingType = resolveDwellingType(dto.buildingType());
+        var dwellingType = resolveDwellingType(dto.buildingType());
         var enumTypeClass = resolveDwellingEnumType
-                (buildingType.toString());
+                (dwellingType.toString());
         var constantProperties =
                 getTypeSpecificDwellConstantProperties(
-                        buildingType.toString(), enumTypeClass);
+                        dwellingType.toString(), enumTypeClass);
         resolveDwellingTypeAndInvokeSpecificFactoryService
-                (player, buildingLevel, town, buildingType, constantProperties);
+                (player, buildingLevel, town, dwellingType, constantProperties);
         var msg = buildingLevel > 0 ? String.format(
                 "%s Level %d has been erected in %s",
-                buildingType, buildingLevel, town.getName()) :
+                dwellingType, buildingLevel, town.getName()) :
                 String.format("%s has been erected in %s",
-                        buildingType, town.getName());
+                        dwellingType, town.getName());
         log.info(msg);
         return msg;
     }
 
+    //to be appended
     AbstractDwellingTypeProperties getTypeSpecificDwellConstantProperties(
             String propertyName, Class<? extends AbstractDwellingType> enumTypeClass) {
         if (enumTypeClass.equals(CastleDwellingType.class)) {
             return CastleDwellingTypeProperties.valueOf(propertyName);
-        } else throw new IllegalArgumentException("Unknown AbstractBuildingType propertyName: "
+        } else if (enumTypeClass.equals(RampartDwellingType.class)) {
+            return RampartDwellingTypeProperties.valueOf(propertyName);
+        } else throw new IllegalArgumentException("Unknown AbstractDwellingType propertyName: "
                 + propertyName);
     }
 
@@ -215,15 +220,13 @@ public class AbstractBuildService {
             Player player,
             int buildingLevel,
             Town town,
-            AbstractDwellingType buildingType,
+            AbstractDwellingType dwellingType,
             AbstractDwellingTypeProperties constantProperties) {
-        if (buildingType instanceof CastleDwellingType ||
-            buildingType instanceof RampartDwellingType) {
-            //todo try to insert AbstractDwellingType instead of enumerating all childs
-            //buildingType instanceof AbstractDwellingType
+        if (dwellingType != null /*CastleDwellingType ||
+            dwellingType instanceof RampartDwellingType*/) {
             dwellingBuildService.build(new DwellReqDto(
                     town,
-                    buildingType,
+                    dwellingType,
                     buildingLevel,
                     player,
                     constantProperties));
@@ -248,10 +251,9 @@ public class AbstractBuildService {
                     player,
                     constantProperties));
         } else if (buildingType instanceof AbstractDwellingType) {
-            throw new IllegalArgumentException("AbstractDwellingType not APPREHENDED");
-            //todo refactor building dwelling types via dedicated procedure instead of common building one
+            throw new IllegalArgumentException("AbstractDwellingType not ACCEPTABLE");
         } else if (buildingType instanceof GrailBuildingType) {
-            throw new IllegalArgumentException("GrailBuildingType not APPREHENDED");
+            throw new IllegalArgumentException("GrailBuildingType not ACCEPTABLE");
         }
     }
 
@@ -263,8 +265,9 @@ public class AbstractBuildService {
         }
     }
 
-    private String getModifiedPropertiesName(AbstractBuildingType buildingType,
-                                             int buildingLevel) {
+    private String getModifiedPropertiesName(
+            AbstractBuildingType buildingType,
+            int buildingLevel) {
         if (buildingType == MAGE_GUILD) return buildingType + "_L" + buildingLevel;
         return buildingType.toString();
     }

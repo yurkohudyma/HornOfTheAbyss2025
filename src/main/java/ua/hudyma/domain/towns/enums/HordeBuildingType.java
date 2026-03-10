@@ -13,8 +13,6 @@ import static ua.hudyma.enums.Faction.*;
 @RequiredArgsConstructor
 public enum HordeBuildingType implements AbstractBuildingType{
 
-    //todo need to refactor creatureType field into EnumSet of types
-    BIRTHING_POOL (INFERNO, null, 0),
     CAPTAINS_QUARTERS(FORTRESS, null, 0),
     CAGES(INFERNO, null, 0),
     DENDROID_SAPLINGS (RAMPART, null, 0),
@@ -28,8 +26,10 @@ public enum HordeBuildingType implements AbstractBuildingType{
     ROOST(COVE, null, 0),
     SCULPTORS_WINGS(TOWER, null, 0),
     UNEARTHED_GRAVES(NECROPOLIS, null, 0),
-    VAULT_OF_ASHES(CONFLUX, null, 0);
+    VAULT_OF_ASHES(CONFLUX, null, 0),
+    BIRTHING_POOL (INFERNO, null, 0);
     private final Faction faction;
     private final CreatureType creatureType;
+    //todo need to refactor creatureType field into EnumSet of types
     private final Integer creatureBoost;
 }

@@ -9,8 +9,8 @@ import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType;
-import ua.hudyma.domain.towns.enums.properties.CastleDwellingTypeProperties;
-import ua.hudyma.domain.towns.enums.properties.RampartDwellingTypeProperties;
+import ua.hudyma.domain.towns.enums.properties.dwelling.CastleDwellingTypeProperties;
+import ua.hudyma.domain.towns.enums.properties.dwelling.RampartDwellingTypeProperties;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.resource.enums.ResourceType;
@@ -32,7 +32,7 @@ public class DwellingBuildService {
 
     public void build(DwellReqDto dto) {
         var town = dto.town();
-        var buildingType = dto.buildingType();
+        var dwellingType = dto.dwellingType();
         var buildingLevel = dto.buildingLevel();
         var player = dto.player();
         var constantProperties = dto.constantProperties();
@@ -46,18 +46,17 @@ public class DwellingBuildService {
             if (resourceMap == null) {
                 throw new IllegalStateException("Available Resources Map is NULL");
             }
-            if (buildingType instanceof CastleDwellingType ||
-                buildingType instanceof RampartDwellingType) {
-                if (dwellingBuildingMap.containsKey(buildingType.getCode())) {
-                    existingBuildLevel = dwellingBuildingMap.get(buildingType.getCode());
-                    throwExceptionWhenLevelMatchesOrZero(town, buildingType,
+            if (dwellingType != null) {
+                if (dwellingBuildingMap.containsKey(dwellingType.getCode())) {
+                    existingBuildLevel = dwellingBuildingMap.get(dwellingType.getCode());
+                    throwExceptionWhenLevelMatchesOrZero(town, dwellingType,
                             buildingLevel, existingBuildLevel);
                 }
                 checkDemands(town, resourceMap, constantProperties);
-                dwellingBuildingMap.put(buildingType.getCode(), buildingLevel);
+                dwellingBuildingMap.put(dwellingType.getCode(), buildingLevel);
             } else {
-                throw new IllegalStateException("buildingType is of WRONG instance type = "
-                        + buildingType.getClass().getName());
+                throw new IllegalStateException("dwellingType is of WRONG instance type = "
+                        + dwellingType.getClass().getName());
             }
         }
     }
@@ -83,9 +82,11 @@ public class DwellingBuildService {
             demandedResources = ((RampartDwellingTypeProperties) constantProperties)
                     .getRequiredResourceMap();
         }
-        if (demandedBuildings != null && !demandedBuildings.isEmpty()) {
+        if (demandedBuildings != null &&
+           !demandedBuildings.isEmpty()) {
                 checkDemandedBuildings(town, demandedBuildings);
             }
+        if (demandedResources != null)
             checkResourcesDemandAndDecrement(availResources, demandedResources);
     }
 

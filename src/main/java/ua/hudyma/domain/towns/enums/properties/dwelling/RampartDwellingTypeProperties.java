@@ -1,4 +1,4 @@
-package ua.hudyma.domain.towns.enums.properties;
+package ua.hudyma.domain.towns.enums.properties.dwelling;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,6 @@ import static ua.hudyma.resource.enums.ResourceType.*;
 @Getter
 @RequiredArgsConstructor
 public enum RampartDwellingTypeProperties implements AbstractDwellingTypeProperties {
-    //todo check building reqs
     DWARF_COTTAGE(toStringMap(
             Map.of(FortificationType.FORT.name(), 0)),
             toResourceEnumMap(

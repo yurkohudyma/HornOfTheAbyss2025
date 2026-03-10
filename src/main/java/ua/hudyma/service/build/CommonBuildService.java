@@ -128,7 +128,6 @@ public class CommonBuildService {
         if (!demandedBuildings.isEmpty()) {
             checkDemandedBuildings(town, demandedBuildings);
         }
-
         var demandedResources = constantProperties
                 .getRequiredResourceMap();
         checkResourcesDemandAndDecrement(availResources, demandedResources);
@@ -229,17 +228,19 @@ public class CommonBuildService {
                                         Set<String> demandedBuildings){
         var commonBuildingMap = town
                 .getCommonBuildingMap();
-        var stringifiedExistingBuildingMap =
+        var unifiedAllTownBuildingsMap =
                 convertToStringKeyMap(commonBuildingMap);
         if (town.getUniqueBuildingSet() != null){
-            stringifiedExistingBuildingMap.putAll(toMap(
+            unifiedAllTownBuildingsMap.putAll(toMap(
                     town.getUniqueBuildingSet()));
         }
         if (town.getDwellingMap() != null)
-            stringifiedExistingBuildingMap
+            unifiedAllTownBuildingsMap
                     .putAll(toStringMap(town.getDwellingMap()));
+        if (town.getHordeBuildingSet() != null)
+            unifiedAllTownBuildingsMap.putAll(toMap(town.getHordeBuildingSet()));
         for (String demanded: demandedBuildings){
-            if (!stringifiedExistingBuildingMap.containsKey(demanded)){
+            if (!unifiedAllTownBuildingsMap.containsKey(demanded)){
                 throw getExceptionSupplier(
                         String.format("Required %s", demanded),
                         RequiredBuildingMissingException::new)
@@ -323,6 +324,8 @@ public class CommonBuildService {
             var difference = availResQty - demandedResQty;
             if (difference < 0) {
                 insufficientResoucesMap.put(res.getKey(), demandedResQty);
+                //todo may contain increment instead of decrement (when buying not connected with resource = SULPHUR
+                // building (miners_guild), sulphur has been incremented by 3 pieces.
             }
             else {
                 availResources.replace(res.getKey(), difference);

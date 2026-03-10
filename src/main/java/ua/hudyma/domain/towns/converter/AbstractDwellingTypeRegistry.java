@@ -41,8 +41,6 @@ public class AbstractDwellingTypeRegistry {
 
     public static AbstractDwellingType findDwellingByCreatureType(
             CreatureType creatureType) {
-//        Set<Class<? extends AbstractDwellingType>> subtypes =
-//                reflections.getSubTypesOf(AbstractDwellingType.class);
         for (Class<? extends AbstractDwellingType> subtype : ENUM_TYPES) {
             if (!subtype.isEnum()) continue;
             var enumConstants = subtype.getEnumConstants();

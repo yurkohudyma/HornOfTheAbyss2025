@@ -1,4 +1,4 @@
-package ua.hudyma.domain.towns.enums.properties;
+package ua.hudyma.domain.towns.enums.properties.dwelling;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -9,7 +9,7 @@ import ua.hudyma.domain.towns.enums.properties.AbstractBuildingTypeProperties;
 
 public record DwellReqDto(
         Town town,
-        AbstractDwellingType buildingType,
+        AbstractDwellingType dwellingType,
         int buildingLevel,
         Player player,
         AbstractDwellingTypeProperties constantProperties) {

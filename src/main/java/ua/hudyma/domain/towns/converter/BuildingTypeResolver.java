@@ -25,7 +25,7 @@ public final class BuildingTypeResolver {
                         (Class) type, value);
             } catch (IllegalArgumentException ignored) {}
         }
-        throw new IllegalArgumentException("Unknown building type: " + value);
+        throw new IllegalArgumentException("BuildingTypeResolver: unknown building type: " + value);
     }
 
     public static AbstractDwellingType resolveDwellingType (String value) {
@@ -35,6 +35,6 @@ public final class BuildingTypeResolver {
                         (Class) type, value);
             } catch (IllegalArgumentException ignored) {}
         }
-        throw new IllegalArgumentException("Unknown dwelling type: " + value);
+        throw new IllegalArgumentException("BuildingTypeResolver : unknown dwelling type: " + value);
     }
 }
