@@ -6,11 +6,14 @@ import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.enums.Faction;
 
 import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ROYAL_GRIFFIN;
+import static ua.hudyma.domain.creatures.enums.RampartCreatureType.BATTLE_DWARF;
 import static ua.hudyma.enums.Faction.*;
 
 @Getter
 @RequiredArgsConstructor
 public enum HordeBuildingType implements AbstractBuildingType{
+
+    //todo need to refactor creatureType field into EnumSet of types
     BIRTHING_POOL (INFERNO, null, 0),
     CAPTAINS_QUARTERS(FORTRESS, null, 0),
     CAGES(INFERNO, null, 0),
@@ -18,7 +21,7 @@ public enum HordeBuildingType implements AbstractBuildingType{
     GARDEN_OF_LIFE (CONFLUX, null, 0),
     GRIFFIN_BASTION (CASTLE, ROYAL_GRIFFIN, 3),
     MESS_HALL(STRONGHOLD, null, 0),
-    MINERS_GUILD (RAMPART, null, 0),
+    MINERS_GUILD (RAMPART, BATTLE_DWARF, 4),
     MUSHROOM_RINGS (DUNGEON, null, 0),
     PEN(STRONGHOLD, null, 0),
     PUB(COVE, null, 0),

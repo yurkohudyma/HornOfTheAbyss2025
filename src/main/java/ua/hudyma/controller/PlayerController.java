@@ -69,4 +69,11 @@ public class PlayerController {
         return ResponseEntity.ok(playerService
                 .fetchPlayer(playerId));
     }
+
+    @GetMapping("/initTreasuryIncome")
+    public ResponseEntity<String> initTreasuryIncome (){
+        return ResponseEntity.ok(playerService.calculateTreasuriesWeeklyInterestIncomeIfAny());
+    }
+
+
 }

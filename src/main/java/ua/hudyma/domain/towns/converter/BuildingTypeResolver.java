@@ -35,6 +35,6 @@ public final class BuildingTypeResolver {
                         (Class) type, value);
             } catch (IllegalArgumentException ignored) {}
         }
-        throw new IllegalArgumentException("Unknown building type: " + value);
+        throw new IllegalArgumentException("Unknown dwelling type: " + value);
     }
 }

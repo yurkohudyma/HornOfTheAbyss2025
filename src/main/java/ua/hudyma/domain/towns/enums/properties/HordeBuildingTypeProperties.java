@@ -9,17 +9,23 @@ import java.util.Map;
 import java.util.Set;
 
 import static ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType.GRIFFIN_TOWER;
+import static ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType.DWARF_COTTAGE;
 import static ua.hudyma.resource.enums.ResourceType.GOLD;
 
 @Getter
 @RequiredArgsConstructor
 public enum HordeBuildingTypeProperties implements AbstractBuildingTypeProperties {
-    GRIFFIN_BASTION (Set.of(GRIFFIN_TOWER.name()),
+    GRIFFIN_BASTION(Set.of(GRIFFIN_TOWER.name()),
             toResourceEnumMap(
                     Map.of(
-                            GOLD, 2500)));
+                            GOLD, 2500))),
+    MINERS_GUILD(Set.of(DWARF_COTTAGE.name()),
+            toResourceEnumMap(
+                    Map.of(
+                            GOLD, 1000
+                    )
+            )),
     /*MESS_HALL(STRONGHOLD),
-    MINERS_GUILD (RAMPART),
     MUSHROOM_RINGS (DUNGEON),
     PEN(STRONGHOLD),
     PUB(COVE),
@@ -27,13 +33,16 @@ public enum HordeBuildingTypeProperties implements AbstractBuildingTypePropertie
     SCULPTORS_WINGS(TOWER),
     UNEARTHED_GRAVES(NECROPOLIS),
     VAULT_OF_ASHES(CONFLUX);*/;
+
     /*BIRTHING_POOL (INFERNO),
     CAPTAINS_QUARTERS(FORTRESS),
     CAGES(INFERNO),
     DENDROID_SAPLINGS (RAMPART),
     GARDEN_OF_LIFE (CONFLUX),*/
     private final Set<String> requiredBuildingSet;
+
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
+
     private static EnumMap<ResourceType, Integer> toResourceEnumMap(
             Map<ResourceType, Integer> resources) {
         var map = new EnumMap<ResourceType, Integer>(ResourceType.class);

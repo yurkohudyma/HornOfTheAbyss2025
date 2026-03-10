@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.DwellReqDto;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType;
 import ua.hudyma.domain.towns.enums.properties.CastleDwellingTypeProperties;
+import ua.hudyma.domain.towns.enums.properties.RampartDwellingTypeProperties;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.resource.enums.ResourceType;
@@ -43,14 +46,14 @@ public class DwellingBuildService {
             if (resourceMap == null) {
                 throw new IllegalStateException("Available Resources Map is NULL");
             }
-            if (buildingType instanceof CastleDwellingType) {
+            if (buildingType instanceof CastleDwellingType ||
+                buildingType instanceof RampartDwellingType) {
                 if (dwellingBuildingMap.containsKey(buildingType.getCode())) {
                     existingBuildLevel = dwellingBuildingMap.get(buildingType.getCode());
                     throwExceptionWhenLevelMatchesOrZero(town, buildingType,
                             buildingLevel, existingBuildLevel);
                 }
-                checkDemands(town, resourceMap,
-                        (CastleDwellingTypeProperties) constantProperties);
+                checkDemands(town, resourceMap, constantProperties);
                 dwellingBuildingMap.put(buildingType.getCode(), buildingLevel);
             } else {
                 throw new IllegalStateException("buildingType is of WRONG instance type = "
@@ -60,19 +63,30 @@ public class DwellingBuildService {
     }
 
     /**
-     * CastleDwellingType
+     * CastleDwellingType and Rampart. Add more
      */
     private void checkDemands(
             Town town, Map<ResourceType, Integer> availResources,
-            CastleDwellingTypeProperties constantProperties) {
-        var demandedBuildings =
-                constantProperties.getRequiredBuildingMap();
-        if (!demandedBuildings.isEmpty()) {
-            checkDemandedBuildings(town, demandedBuildings);
+            AbstractDwellingTypeProperties constantProperties) {
+        Map<String, Integer> demandedBuildings = Map.of();
+        EnumMap<ResourceType, Integer> demandedResources = null;
+
+        if (constantProperties instanceof CastleDwellingTypeProperties) {
+            demandedBuildings =
+                    ((CastleDwellingTypeProperties) constantProperties).getRequiredBuildingMap();
+
+            demandedResources = ((CastleDwellingTypeProperties) constantProperties)
+                    .getRequiredResourceMap();
+        } else if (constantProperties instanceof RampartDwellingTypeProperties) {
+            demandedBuildings =
+                    ((RampartDwellingTypeProperties) constantProperties).getRequiredBuildingMap();
+            demandedResources = ((RampartDwellingTypeProperties) constantProperties)
+                    .getRequiredResourceMap();
         }
-        var demandedResources = constantProperties
-                .getRequiredResourceMap();
-        checkResourcesDemandAndDecrement(availResources, demandedResources);
+        if (demandedBuildings != null && !demandedBuildings.isEmpty()) {
+                checkDemandedBuildings(town, demandedBuildings);
+            }
+            checkResourcesDemandAndDecrement(availResources, demandedResources);
     }
 
     private void checkResourcesDemandAndDecrement(
@@ -103,23 +117,6 @@ public class DwellingBuildService {
                     true)
                     .get();
         }
-            /*if (difference < 0) {
-
-                throw getExceptionSupplier(ResourceType.class,
-                        String.format("%s: avail: %d, required: %d",
-                                res.getKey(),
-                                availResQty,
-                                demandedResQty),
-                        InsufficientResourcesException::new,
-                        true)
-                        .get();
-            }
-            availResources.replace(res.getKey(), difference);
-            log.info(" :::: {} has been decremented by {} and now = {}",
-                    res.getKey(),
-                    demandedResQty,
-                    difference);
-        }*/
     }
 
     private void checkDemandedBuildings(

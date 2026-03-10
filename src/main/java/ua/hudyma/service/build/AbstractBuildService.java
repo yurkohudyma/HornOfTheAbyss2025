@@ -13,6 +13,7 @@ import ua.hudyma.domain.towns.enums.*;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType;
 import ua.hudyma.domain.towns.enums.properties.*;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
@@ -101,7 +102,7 @@ public class AbstractBuildService {
             throw new IllegalArgumentException
                     ("Building LEVEL is limited by 5, while provided = " + buildingLevel);
         }
-        var town = townService.getTown(dto.name());
+        var town = townService.getTown(dto.townName());
         checkTownBelongsToPlayer(player, town);
         var buildingType = resolve(dto.buildingType());
         if (buildingType.equals(CAPITOL))
@@ -141,7 +142,7 @@ public class AbstractBuildService {
             throw new IllegalArgumentException
                     ("Building LEVEL is limited by 5, while provided = " + buildingLevel);
         }
-        var town = townService.getTown(dto.name());
+        var town = townService.getTown(dto.townName());
         checkTownBelongsToPlayer(player, town);
         var buildingType = resolveDwellingType(dto.buildingType());
         var enumTypeClass = resolveDwellingEnumType
@@ -216,7 +217,10 @@ public class AbstractBuildService {
             Town town,
             AbstractDwellingType buildingType,
             AbstractDwellingTypeProperties constantProperties) {
-        if (buildingType instanceof CastleDwellingType) {
+        if (buildingType instanceof CastleDwellingType ||
+            buildingType instanceof RampartDwellingType) {
+            //todo try to insert AbstractDwellingType instead of enumerating all childs
+            //buildingType instanceof AbstractDwellingType
             dwellingBuildService.build(new DwellReqDto(
                     town,
                     buildingType,
@@ -245,6 +249,7 @@ public class AbstractBuildService {
                     constantProperties));
         } else if (buildingType instanceof AbstractDwellingType) {
             throw new IllegalArgumentException("AbstractDwellingType not APPREHENDED");
+            //todo refactor building dwelling types via dedicated procedure instead of common building one
         } else if (buildingType instanceof GrailBuildingType) {
             throw new IllegalArgumentException("GrailBuildingType not APPREHENDED");
         }

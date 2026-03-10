@@ -11,15 +11,16 @@ import static ua.hudyma.enums.Faction.*;
 public enum UniqueBuildingType implements AbstractBuildingType{
 
     //castle
-    BROTHERHOOD_OF_THE_SWORD(CASTLE),
-    LIGHTHOUSE (CASTLE),
-    STABLES (CASTLE),
+    BROTHERHOOD_OF_THE_SWORD(CASTLE, 0),
+    LIGHTHOUSE (CASTLE, 0),
+    STABLES (CASTLE, 300),
 
-    TREASURY (RAMPART),
-    //todo implem treasury 10% calculation
+    //rampart
+    TREASURY (RAMPART, 10),
 
     //inferno
-    CASTLE_GATE (INFERNO),
-    ORDER_OF_FIRE(INFERNO);
+    CASTLE_GATE (INFERNO, 0),
+    ORDER_OF_FIRE(INFERNO, 1);
     private final Faction faction;
+    private final Integer value;
 }

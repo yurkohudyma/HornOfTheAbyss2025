@@ -12,6 +12,7 @@ import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.HallType;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.resource.enums.MineType;
@@ -21,6 +22,8 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
+import static ua.hudyma.resource.enums.ResourceType.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -28,11 +31,14 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class PlayerService {
+
     private final PlayerRepository playerRepository;
+
     private final PlayerMapper playerMapper;
 
     @Transactional
     public String addResources(ResourcesReqDto dto) {
+
         var player = getPlayer(dto.playerId());
         var resourceMap = player.getResourceMap();
         if (resourceMap == null) {
@@ -49,7 +55,20 @@ public class PlayerService {
 
     @Transactional(readOnly = true)
     public Integer calcDailyIncome(Long playerId) {
+
         var player = getPlayer(playerId);
+        return player
+                .getTownsList()
+                .stream()
+                .map(Town::getHallType)
+                .filter(Objects::nonNull)
+                .mapToInt(HallType::getIncome)
+                .sum();
+    }
+
+    @Transactional(readOnly = true)
+    public Integer calcDailyIncome(Player player) {
+
         return player
                 .getTownsList()
                 .stream()
@@ -61,6 +80,7 @@ public class PlayerService {
 
     @SneakyThrows
     public String createPlayer(PlayerReqDto dto) {
+
         var player = playerMapper.toEntity(dto);
         playerRepository.save(player);
         return getReturnMessage(player, "name");
@@ -68,15 +88,18 @@ public class PlayerService {
 
     @Transactional
     public PlayerRespDto fetchPlayer(Long playerId) {
+
         return playerMapper.toDto(getPlayer(playerId));
     }
 
     public Map<ResourceType, Integer> fetchResource(Long playerId) {
+
         var player = getPlayer(playerId);
         return player.getResourceMap();
     }
 
     public Player getPlayer(Long playerId) {
+
         return playerRepository
                 .findById(playerId)
                 .orElseThrow(getExceptionSupplier(
@@ -86,12 +109,14 @@ public class PlayerService {
     }
 
     public Map<MineType, Integer> getMines(Long playerId) {
+
         var player = getPlayer(playerId);
         return player.getMinesMap();
     }
 
     @Transactional
     public String addMine(MineType mineType, Long playerId) {
+
         var player = getPlayer(playerId);
         var mineMap = fetchOrCreateMineMap(player);
         mineMap.merge(mineType, 1, Integer::sum);
@@ -100,19 +125,21 @@ public class PlayerService {
     }
 
     private static Map<MineType, Integer> fetchOrCreateMineMap(Player player) {
+
         return player.getMinesMap() == null ?
                 new EnumMap<>(MineType.class) :
                 player.getMinesMap();
     }
 
     public Map<ResourceType, Integer> getMinesWeeklyIncome(Long playerId) {
+
         var player = getPlayer(playerId);
         var mineMap = player.getMinesMap();
-        if (mineMap == null || mineMap.isEmpty()){
+        if (mineMap == null || mineMap.isEmpty()) {
             throw new IllegalStateException("Mine Map is empty, no income");
         }
         var incomeMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
-        for (Map.Entry<MineType, Integer> entry : mineMap.entrySet()){
+        for (Map.Entry<MineType, Integer> entry : mineMap.entrySet()) {
             var mineType = entry.getKey();
             var mineQty = entry.getValue();
             var resourceType = mineType.getResourceType();
@@ -121,4 +148,41 @@ public class PlayerService {
         }
         return incomeMap;
     }
+
+    @Transactional
+    public String calculateTreasuriesWeeklyInterestIncomeIfAny() {
+        //need to check if it's 7th day of the week
+        var playerList = playerRepository.findAll();
+        var totalIncreasedIncome = 0;
+        Map<ResourceType, Integer> resourceMap = null;
+        var playerOverallGold = 0;
+        for (Player player : playerList) {
+            var townList = player.getTownsList();
+            resourceMap = player.getResourceMap();
+            for (Town town : townList) {
+                if (town.getFaction() == Faction.RAMPART &&
+                        town.getUniqueBuildingSet().contains(TREASURY.name())) {
+                    var interestRate = TREASURY.getValue();
+                    playerOverallGold = player.getResourceMap().get(GOLD);
+                    totalIncreasedIncome = playerOverallGold +
+                                    calcDailyIncome(player) +
+                                    (totalIncreasedIncome
+                                            * interestRate
+                                            / 100);
+                }
+            }
+        }
+        if (totalIncreasedIncome > playerOverallGold) {
+            resourceMap.put(GOLD, totalIncreasedIncome);
+            return "Income has been increased by " + totalIncreasedIncome;
+        }
+        throw new IllegalStateException("No TREASURY or RAMPART found");
+    }
+
+    /*
+        On the first day of the week, it produces extra gold equal to 10%
+        of the player's total gold they had on the seventh day of the last
+        week (the day prior to generating this extra income)
+    */
+
 }
