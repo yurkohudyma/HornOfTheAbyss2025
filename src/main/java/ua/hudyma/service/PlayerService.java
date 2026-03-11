@@ -13,6 +13,7 @@ import ua.hudyma.domain.players.dto.ResourcesReqDto;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.enums.Faction;
+import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.resource.enums.MineType;
@@ -23,6 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
+import static ua.hudyma.enums.Faction.RAMPART;
 import static ua.hudyma.resource.enums.ResourceType.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
@@ -152,15 +154,22 @@ public class PlayerService {
     public String calculateTreasuriesWeeklyInterestIncomeIfAny() {
         //need to check if it's 7th day of the week
         var playerList = playerRepository.findAll();
-        var goldWithIncome = 0;
-        Map<ResourceType, Integer> resourceMap = null;
-        var playerGold = 0;
         for (Player player : playerList) {
+            Map<ResourceType, Integer> resourceMap = null;
+            var goldWithIncome = 0;
+            var playerGold = 0;
             var townList = player.getTownsList();
+            var rampartTownsList = townList
+                    .stream()
+                    .filter(town -> town.getFaction() == RAMPART)
+                    .toList();
+            if (rampartTownsList.isEmpty()) {
+                log.error("No Rampart towns have been found");
+                continue;
+            }
             resourceMap = player.getResourceMap();
-            for (Town town : townList) {
-                if (town.getFaction() == Faction.RAMPART &&
-                        town.getUniqueBuildingSet().contains(TREASURY.name())) {
+            for (Town town : rampartTownsList) {
+                if (town.getUniqueBuildingSet().contains(TREASURY.name())) {
                     var interestRate = TREASURY.getValue();
                     playerGold = player.getResourceMap().get(GOLD);
                     var dailyIncome = calcDailyIncome(player);
@@ -170,18 +179,18 @@ public class PlayerService {
                     goldWithIncome += interestTotal;
                 }
             }
+            if (goldWithIncome > playerGold) {
+                resourceMap.put(GOLD, goldWithIncome);
+                return "Income for " + player.getName() + " has been increased by "
+                        + goldWithIncome;
+            }
         }
-        if (goldWithIncome > playerGold) {
-            resourceMap.put(GOLD, goldWithIncome);
-            return "Income has been increased by " + goldWithIncome;
-        }
-        throw new IllegalStateException("No TREASURY or RAMPART found");
-    }
 
     /*
         On the first day of the week, it produces extra gold equal to 10%
         of the player's total gold they had on the seventh day of the last
         week (the day prior to generating this extra income)
     */
-
+        return "No rampart towns with treasuries have been found";
+    }
 }

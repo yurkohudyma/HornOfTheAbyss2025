@@ -33,7 +33,8 @@ public class PlayerController {
     @GetMapping("/minesWeeklyIncome")
     public ResponseEntity<Map<ResourceType, Integer>> getMinesWeeklyReport
             (@RequestParam Long playerId){
-        return ResponseEntity.ok(playerService.getMinesWeeklyIncome(playerId));
+        return ResponseEntity.ok(playerService
+                .getMinesWeeklyIncome(playerId));
     }
 
     @PostMapping
@@ -72,8 +73,7 @@ public class PlayerController {
 
     @GetMapping("/initTreasuryIncome")
     public ResponseEntity<String> initTreasuryIncome (){
-        return ResponseEntity.ok(playerService.calculateTreasuriesWeeklyInterestIncomeIfAny());
+        return ResponseEntity.ok(playerService
+                .calculateTreasuriesWeeklyInterestIncomeIfAny());
     }
-
-
 }
