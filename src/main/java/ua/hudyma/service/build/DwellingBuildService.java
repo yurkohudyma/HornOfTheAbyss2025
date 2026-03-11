@@ -7,12 +7,11 @@ import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.DwellReqDto;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
-import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
-import ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType;
 import ua.hudyma.domain.towns.enums.properties.dwelling.CastleDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.properties.dwelling.RampartDwellingTypeProperties;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
+import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
@@ -30,7 +29,7 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 @Log4j2
 public class DwellingBuildService {
 
-    public void build(DwellReqDto dto) {
+    public void build (DwellReqDto dto) {
         var town = dto.town();
         var dwellingType = dto.dwellingType();
         var buildingLevel = dto.buildingLevel();
@@ -55,8 +54,7 @@ public class DwellingBuildService {
                 checkDemands(town, resourceMap, constantProperties);
                 dwellingBuildingMap.put(dwellingType.getCode(), buildingLevel);
             } else {
-                throw new IllegalStateException("dwellingType is of WRONG instance type = "
-                        + dwellingType.getClass().getName());
+                throw new IllegalStateException("dwellingType is NULL");
             }
         }
     }
@@ -68,12 +66,10 @@ public class DwellingBuildService {
             Town town, Map<ResourceType, Integer> availResources,
             AbstractDwellingTypeProperties constantProperties) {
         Map<String, Integer> demandedBuildings = Map.of();
-        EnumMap<ResourceType, Integer> demandedResources = null;
-
+        EnumMap<ResourceType, Integer> demandedResources = new EnumMap<>(ResourceType.class);
         if (constantProperties instanceof CastleDwellingTypeProperties) {
             demandedBuildings =
                     ((CastleDwellingTypeProperties) constantProperties).getRequiredBuildingMap();
-
             demandedResources = ((CastleDwellingTypeProperties) constantProperties)
                     .getRequiredResourceMap();
         } else if (constantProperties instanceof RampartDwellingTypeProperties) {
@@ -123,26 +119,27 @@ public class DwellingBuildService {
     private void checkDemandedBuildings(
             Town town,
             Map<String, Integer> demandedBuildings) {
-        Map<String, Integer> allMap = getAllTownBuildingsMap(town);
+        Map<String, Integer> allTownBuildingMap = getAllTownBuildingsMap(town);
         for (Map.Entry<String, Integer> entry : demandedBuildings.entrySet()) {
             var demandedBuildingType = entry.getKey();
             var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
-            boolean containsKey = allMap.containsKey(demandedBuildingType);
-            if (demandedBuildingType.equals(FORT.name()) &&
-                    (allMap.containsKey(CITADEL.name()) ||
-                     allMap.containsKey(CASTLE.name()))){
-                log.info(":: FORT is demanded, while CITADEL or CASTLE has been erected");
-            }
-            else if (!containsKey) {
+            boolean containsKey = allTownBuildingMap.containsKey(demandedBuildingType);
+//            if (demandedBuildingType.equals(FORT.name()) &&
+//                    (allTownBuildingMap.containsKey(CITADEL.name()) ||
+//                     allTownBuildingMap.containsKey(CASTLE.name()))){
+//
+//                log.info(":: FORT is demanded, while CITADEL or CASTLE has been erected");
+//                //todo issues: при спробі збудувати dwarf_cottage мало місце позитивне
+                //todo завершення методу зі повідомленням про успішне будівництво
+            //}
+            if (!containsKey) {
                 var msg = demandedBuildingLevel > 0 ? String.format
                         ("Required %s of Level %d",
                         entry.getKey(),
                         demandedBuildingLevel) : String.format("Required %s",
                         entry.getKey());
-                throw getExceptionSupplier(ResourceType.class,
-                        msg,
-                        InsufficientResourcesException::new,
-                        true)
+                throw getExceptionSupplier(
+                        msg, RequiredBuildingMissingException::new)
                         .get();
             }
         }

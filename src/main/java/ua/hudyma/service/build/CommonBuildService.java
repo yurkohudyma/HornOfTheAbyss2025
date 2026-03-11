@@ -324,8 +324,6 @@ public class CommonBuildService {
             var difference = availResQty - demandedResQty;
             if (difference < 0) {
                 insufficientResoucesMap.put(res.getKey(), demandedResQty);
-                //todo may contain increment instead of decrement (when buying not connected with resource = SULPHUR
-                // building (miners_guild), sulphur has been incremented by 3 pieces.
             }
             else {
                 availResources.replace(res.getKey(), difference);

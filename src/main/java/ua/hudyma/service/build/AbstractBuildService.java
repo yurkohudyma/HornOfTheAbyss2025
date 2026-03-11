@@ -223,13 +223,18 @@ public class AbstractBuildService {
             AbstractDwellingType dwellingType,
             AbstractDwellingTypeProperties constantProperties) {
         if (dwellingType != null /*CastleDwellingType ||
-            dwellingType instanceof RampartDwellingType*/) {
+            dwellingType instanceof RampartDwellingType*/
+            && dwellingType instanceof AbstractDwellingType) {
             dwellingBuildService.build(new DwellReqDto(
                     town,
                     dwellingType,
                     buildingLevel,
                     player,
                     constantProperties));
+        }
+        else {
+            throw new IllegalArgumentException("Only DwellingType is ACCEPTABLE, while type " +
+                    dwellingType + " IS not");
         }
     }
 
@@ -251,7 +256,7 @@ public class AbstractBuildService {
                     player,
                     constantProperties));
         } else if (buildingType instanceof AbstractDwellingType) {
-            throw new IllegalArgumentException("AbstractDwellingType not ACCEPTABLE");
+            throw new IllegalArgumentException("Dwelling type not acceptable");
         } else if (buildingType instanceof GrailBuildingType) {
             throw new IllegalArgumentException("GrailBuildingType not ACCEPTABLE");
         }

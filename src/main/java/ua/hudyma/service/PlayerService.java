@@ -68,7 +68,6 @@ public class PlayerService {
 
     @Transactional(readOnly = true)
     public Integer calcDailyIncome(Player player) {
-
         return player
                 .getTownsList()
                 .stream()
@@ -153,9 +152,9 @@ public class PlayerService {
     public String calculateTreasuriesWeeklyInterestIncomeIfAny() {
         //need to check if it's 7th day of the week
         var playerList = playerRepository.findAll();
-        var totalIncreasedIncome = 0;
+        var goldWithIncome = 0;
         Map<ResourceType, Integer> resourceMap = null;
-        var playerOverallGold = 0;
+        var playerGold = 0;
         for (Player player : playerList) {
             var townList = player.getTownsList();
             resourceMap = player.getResourceMap();
@@ -163,18 +162,18 @@ public class PlayerService {
                 if (town.getFaction() == Faction.RAMPART &&
                         town.getUniqueBuildingSet().contains(TREASURY.name())) {
                     var interestRate = TREASURY.getValue();
-                    playerOverallGold = player.getResourceMap().get(GOLD);
-                    totalIncreasedIncome = playerOverallGold +
-                                    calcDailyIncome(player) +
-                                    (totalIncreasedIncome
-                                            * interestRate
-                                            / 100);
+                    playerGold = player.getResourceMap().get(GOLD);
+                    var dailyIncome = calcDailyIncome(player);
+                    goldWithIncome = playerGold + dailyIncome;
+                    int interestTotal = goldWithIncome
+                            * interestRate / 100;
+                    goldWithIncome += interestTotal;
                 }
             }
         }
-        if (totalIncreasedIncome > playerOverallGold) {
-            resourceMap.put(GOLD, totalIncreasedIncome);
-            return "Income has been increased by " + totalIncreasedIncome;
+        if (goldWithIncome > playerGold) {
+            resourceMap.put(GOLD, goldWithIncome);
+            return "Income has been increased by " + goldWithIncome;
         }
         throw new IllegalStateException("No TREASURY or RAMPART found");
     }
