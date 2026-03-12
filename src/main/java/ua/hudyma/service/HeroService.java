@@ -8,12 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.artifacts.enums.ArtifactProperties;
 import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
+import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
@@ -36,16 +38,23 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class HeroService {
+
     private final static int MISC_INV_MAP_SIZE = 5;
+
     private final static Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
+
     private final HeroMapper heroMapper;
+
     private final HeroRepository heroRepository;
+
     private final PlayerService playerService;
+
     private final ArmyHeroService armyHeroService;
 
     @SneakyThrows
     @Transactional
     public String createHero(HeroReqDto dto) {
+
         var hero = heroMapper.toEntity(dto);
         var player = playerService.getPlayer(dto.playerId());
         hero.setPlayer(player);
@@ -55,6 +64,7 @@ public class HeroService {
 
     @Transactional
     public HeroRespDto defPriSkillsEmptyBodyInvMapAndParamMap(String heroId) {
+
         var hero = getHero(heroId);
         var skillMap = hero.getPrimarySkillMap();
         for (Map.Entry<PrimarySkill, Integer> entry : skillMap.entrySet()) {
@@ -66,15 +76,18 @@ public class HeroService {
     }
 
     public HeroRespDto fetchHero(String code) {
+
         var hero = getHero(code);
         return heroMapper.toDto(hero);
     }
 
     public List<HeroRespDto> fetchHeroDtoList(List<Hero> heroList) {
+
         return heroMapper.toDtoList(heroList);
     }
 
     public Hero getHero(String heroCode) {
+
         return heroRepository.findByCode(heroCode)
                 .orElseThrow(getExceptionSupplier(
                         Hero.class,
@@ -85,6 +98,7 @@ public class HeroService {
     @Transactional
     public HeroRespDto syncHeroSkillsUponArtifactAttachment
             (String heroId, String artifactName) {
+
         var hero = getHero(heroId);
         var artifact = ArtifactProperties.valueOf(artifactName);
         var artifactAction = artifact.getArtifactAction();
@@ -138,6 +152,7 @@ public class HeroService {
     }
 
     private static Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {
+
         return hero.getParametersMap() == null ?
                 new FixedSizeMap<>(new HashMap<>(), 4) :
                 hero.getParametersMap();
@@ -145,6 +160,7 @@ public class HeroService {
 
     @Transactional
     public HeroRespDto syncHeroSkillsUponArtifactDetachment(String heroId, String artifactName) {
+
         var hero = getHero(heroId);
         var artifactProperties = ArtifactProperties.valueOf(artifactName);
         var artifactPropMap = artifactProperties.getActionData();
@@ -185,6 +201,7 @@ public class HeroService {
     }
 
     public void syncSpellPointsValues(Hero hero) {
+
         Map<HeroParams, Integer> paramMap = getOrCreateHeroParamsMap(hero);
         var intelligenceLevel = getIntelligenceLevel(hero);
         var knowledgeLevel = getKnowledgeLevel(hero);
@@ -193,6 +210,7 @@ public class HeroService {
     }
 
     public Map<HeroParams, Integer> getOrCreateHeroParamsMap(Hero hero) {
+
         var paramMap = hero.getParametersMap();
         if (paramMap == null) {
             paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
@@ -201,11 +219,13 @@ public class HeroService {
     }
 
     static int getKnowledgeLevel(Hero hero) {
+
         var knowledgeLevel = hero.getPrimarySkillMap().get(KNOWLEDGE);
         return knowledgeLevel <= 0 ? 1 : knowledgeLevel;
     }
 
     static float getIntelligenceLevel(Hero hero) {
+
         var secondarySkillMap = hero.getSecondarySkillMap();
         var intel = secondarySkillMap.get(INTELLIGENCE);
         if (intel == null) return 1;
@@ -217,6 +237,7 @@ public class HeroService {
     }
 
     private static void detachArtifact(String artifactName, Hero hero) {
+
         var artifactSlot = ArtifactSlotDisposition.valueOf(artifactName).getArtifactSlot();
         var entityField = artifactSlot.getEntityField();
         var bodyMap = getOrCreateBodyInvMap(hero);
@@ -249,6 +270,7 @@ public class HeroService {
 
     private static void attachArtifactToHero(
             String artifactName, Hero hero) {
+
         var newArtifactSlotDisposition = ArtifactSlotDisposition
                 .valueOf(artifactName);
         var newArtifactSlot = newArtifactSlotDisposition.getArtifactSlot();
@@ -278,6 +300,7 @@ public class HeroService {
     }
 
     private static ArtifactSlot detectFreeMiscSlot(Map<ArtifactSlot, ArtifactSlotDisposition> miscInvMap) {
+
         var set = EnumSet.copyOf(MISC_SLOTS_SET);
         set.removeAll(miscInvMap.keySet());
         if (set.isEmpty())
@@ -286,6 +309,7 @@ public class HeroService {
     }
 
     static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateMiscInvMap(Hero hero) {
+
         var miscInvMap = hero.getMiscInventoryMap();
         if (miscInvMap == null) {
             miscInvMap = new FixedSizeMap<>(new HashMap<>(), MISC_INV_MAP_SIZE);
@@ -295,6 +319,7 @@ public class HeroService {
     }
 
     private static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateBodyInvMap(Hero hero) {
+
         var bodyInvMap = hero
                 .getBodyInventoryMap();
         if (bodyInvMap == null) {
@@ -305,6 +330,7 @@ public class HeroService {
     }
 
     public void vanquishHero(Hero hero) {
+
         heroRepository.delete(hero);
     }
 
@@ -312,12 +338,66 @@ public class HeroService {
     public String gainExperience(String heroId, Integer newExperience) {
         var hero = getHero(heroId);
         var experience = hero.getExperience();
+        experience = experience == 0 ? 100 : experience;
         var level = hero.getLevel();
         var summedExp = experience + newExperience;
-        if ((double) newExperience / experience - 1 > 0.2){
+        if ((double) experience / newExperience >= 0.2) {
             hero.setLevel(level + 1);
         }
         hero.setExperience(summedExp);
-        return "Hero has gain new level " + hero.getLevel() + " with current exp = " + summedExp;
+        return hero.getName() + " has gain " + hero.getLevel() +
+                " level with current exp = " + summedExp;
+    }
+
+    @Transactional(readOnly = true)
+    public HeroRespDto getMostPowerfullHero(Long playerId) {
+        var player = playerService.getPlayer(playerId);
+        var allHeroesList = player.getHeroList();
+        var heroComparisonMap = new HashMap<String, Integer>();
+        for (Hero hero : allHeroesList) {
+            var primarySkillMap = hero.getPrimarySkillMap();
+            var primarySkillCoefficient = primarySkillMap
+                    .values()
+                    .stream()
+                    .reduce(0, Integer::sum);
+            var secondarySkillMap = hero.getSecondarySkillMap();
+            int secondarySkillCoefficient = secondarySkillMap
+                    .values()
+                    .stream()
+                    .map(SkillLevel::getLevel)
+                    .reduce(0, Integer::sum);
+            secondarySkillCoefficient *= secondarySkillMap.size();
+            var heroArmy = hero.getArmyList();
+            var armyCoefficient = heroArmy.size() * getAllSlotsQuantity(heroArmy) * getAllSlotsLevelSum(heroArmy);
+            var totalCoefficient = primarySkillCoefficient + secondarySkillCoefficient + armyCoefficient;
+            heroComparisonMap.put(hero.getCode(), totalCoefficient);
+        }
+        return heroMapper.toDto(getHero(getMaxParamsHero(heroComparisonMap)));
+    }
+
+    private String getMaxParamsHero(HashMap<String, Integer> heroComparisonMap) {
+        var maxIndex = heroComparisonMap.values().stream().max(Integer::compareTo).orElse(0);
+        return heroComparisonMap
+                .entrySet()
+                .stream()
+                .filter(entry -> Objects.equals(entry.getValue(), maxIndex))
+                .findFirst()
+                .orElseThrow()
+                .getKey();
+    }
+
+    private int getAllSlotsLevelSum(List<CreatureSlot> heroArmy) {
+        return heroArmy
+                .stream()
+                .map(creatureSlot -> creatureSlot
+                        .getType()
+                        .getLevel())
+                .reduce(0, Integer::sum);    }
+
+    private int getAllSlotsQuantity(List<CreatureSlot> heroArmy) {
+        return heroArmy
+                .stream()
+                .map(slot -> slot.getQuantity())
+                .reduce(0, Integer::sum);
     }
 }

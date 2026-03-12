@@ -13,12 +13,10 @@ import ua.hudyma.service.HeroService;
 public class HeroController {
     private final HeroService heroService;
 
-    //todo calculate the most powerful hero of a player
-    //fetch primary skills
-    //fetch hero level
-    //fetch troops levels and quantity
-    //summarise them all up
-    //respond with maximum number holder
+    @GetMapping("/getBest")
+    public ResponseEntity<HeroRespDto> getMostPowerfulHero (Long playerId){
+        return ResponseEntity.ok(heroService.getMostPowerfullHero(playerId));
+    }
 
     @GetMapping("/gainExperience")
     public ResponseEntity<String> gainExperience (
