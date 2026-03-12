@@ -38,17 +38,11 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class HeroService {
-
     private final static int MISC_INV_MAP_SIZE = 5;
-
     private final static Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
-
     private final HeroMapper heroMapper;
-
     private final HeroRepository heroRepository;
-
     private final PlayerService playerService;
-
     private final ArmyHeroService armyHeroService;
 
     @SneakyThrows
@@ -364,19 +358,33 @@ public class HeroService {
             int secondarySkillCoefficient = secondarySkillMap
                     .values()
                     .stream()
-                    .map(SkillLevel::getLevel)
+                    .map(Enum::ordinal)
                     .reduce(0, Integer::sum);
             secondarySkillCoefficient *= secondarySkillMap.size();
             var heroArmy = hero.getArmyList();
             var armyCoefficient = heroArmy.size() * getAllSlotsQuantity(heroArmy) * getAllSlotsLevelSum(heroArmy);
-            var totalCoefficient = primarySkillCoefficient + secondarySkillCoefficient + armyCoefficient;
+            var experience = hero.getExperience();
+            experience = experience == 0 ? 100 : experience;
+            var level = hero.getLevel();
+            level = level == 0 ? 1 : level;
+            var levelExpCoefficient = level * experience;
+            var totalCoefficient =
+                            primarySkillCoefficient +
+                            secondarySkillCoefficient +
+                            armyCoefficient +
+                            levelExpCoefficient;
             heroComparisonMap.put(hero.getCode(), totalCoefficient);
         }
+        log.info(heroComparisonMap);
         return heroMapper.toDto(getHero(getMaxParamsHero(heroComparisonMap)));
     }
 
     private String getMaxParamsHero(HashMap<String, Integer> heroComparisonMap) {
-        var maxIndex = heroComparisonMap.values().stream().max(Integer::compareTo).orElse(0);
+        var maxIndex = heroComparisonMap
+                .values()
+                .stream()
+                .max(Integer::compareTo)
+                .orElse(0);
         return heroComparisonMap
                 .entrySet()
                 .stream()
@@ -392,7 +400,8 @@ public class HeroService {
                 .map(creatureSlot -> creatureSlot
                         .getType()
                         .getLevel())
-                .reduce(0, Integer::sum);    }
+                .reduce(0, Integer::sum);
+    }
 
     private int getAllSlotsQuantity(List<CreatureSlot> heroArmy) {
         return heroArmy
