@@ -34,6 +34,11 @@ public enum RampartEssentialCreatureType implements CreatureType {
     }
 
     @Override
+    public Integer creatureBoost() {
+        return 0;
+    }
+
+    @Override
     public String getCode() {
         return name();
     }

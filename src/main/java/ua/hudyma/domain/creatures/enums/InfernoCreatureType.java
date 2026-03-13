@@ -25,6 +25,11 @@ public enum InfernoCreatureType implements CreatureType {
         return null;
     }
 
+    @Override
+    public Integer creatureBoost() {
+        return 0;
+    }
+
     private static <T extends Enum<T>> EnumMap<T, Integer> emptyMap() {
         return new EnumMap<>((Class<T>) ResourceType.class);
     }

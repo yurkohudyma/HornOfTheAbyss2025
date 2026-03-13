@@ -262,8 +262,12 @@ public class TownService {
     private Integer getHordeBuildingCreatureBoost(
             Creature creature, List<HordeBuildingType> townHordeBuildingList) {
         for (HordeBuildingType horde : townHordeBuildingList) {
-            if (horde.getCreatureType() == creature.getCreatureType()) {
-                return horde.getCreatureBoost();
+            var creatureTypesSet = horde.getCreatureTypes();
+            if (creatureTypesSet.contains(creature.getCreatureType())) {
+                var hordeCreature = creatureTypesSet.stream()
+                        .filter(creat -> creat
+                                .equals(creature.getCreatureType())).findAny().orElseThrow();
+                return hordeCreature.creatureBoost();
             }
         }
         return 0;

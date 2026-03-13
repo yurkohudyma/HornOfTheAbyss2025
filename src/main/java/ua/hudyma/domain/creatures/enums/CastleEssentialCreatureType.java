@@ -53,6 +53,11 @@ public enum CastleEssentialCreatureType implements CreatureType {
     }
 
     @Override
+    public Integer creatureBoost() {
+        return 0;
+    }
+
+    @Override
     public String getCode() {
         return name();
     }

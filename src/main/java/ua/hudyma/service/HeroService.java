@@ -397,7 +397,7 @@ public class HeroService {
     private int getAllSlotsQuantity(List<CreatureSlot> heroArmy) {
         return heroArmy
                 .stream()
-                .map(slot -> slot.getQuantity())
+                .map(CreatureSlot::getQuantity)
                 .reduce(0, Integer::sum);
     }
 }

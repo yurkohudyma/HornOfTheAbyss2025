@@ -5,8 +5,14 @@ import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.enums.Faction;
 
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+
 import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ROYAL_GRIFFIN;
+import static ua.hudyma.domain.creatures.enums.CastleEssentialCreatureType.GRIFFIN;
 import static ua.hudyma.domain.creatures.enums.RampartCreatureType.BATTLE_DWARF;
+import static ua.hudyma.domain.creatures.enums.RampartEssentialCreatureType.DWARF;
 import static ua.hudyma.enums.Faction.*;
 
 @Getter
@@ -17,9 +23,9 @@ public enum HordeBuildingType implements AbstractBuildingType{
     CAGES(INFERNO, null, 0),
     DENDROID_SAPLINGS (RAMPART, null, 0),
     GARDEN_OF_LIFE (CONFLUX, null, 0),
-    GRIFFIN_BASTION (CASTLE, ROYAL_GRIFFIN, 3),
+    GRIFFIN_BASTION (CASTLE, Set.of(ROYAL_GRIFFIN, GRIFFIN), 3),
     MESS_HALL(STRONGHOLD, null, 0),
-    MINERS_GUILD (RAMPART, BATTLE_DWARF, 4),
+    MINERS_GUILD (RAMPART, Set.of(BATTLE_DWARF, DWARF), 4),
     MUSHROOM_RINGS (DUNGEON, null, 0),
     PEN(STRONGHOLD, null, 0),
     PUB(COVE, null, 0),
@@ -28,8 +34,8 @@ public enum HordeBuildingType implements AbstractBuildingType{
     UNEARTHED_GRAVES(NECROPOLIS, null, 0),
     VAULT_OF_ASHES(CONFLUX, null, 0),
     BIRTHING_POOL (INFERNO, null, 0);
+
     private final Faction faction;
-    private final CreatureType creatureType;
-    //todo need to refactor creatureType field into EnumSet of types
+    private final Set<? extends CreatureType> creatureTypes;
     private final Integer creatureBoost;
 }

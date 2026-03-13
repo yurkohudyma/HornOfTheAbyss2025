@@ -48,6 +48,7 @@ public class TownController {
     generateAllTownsWeeklyCreatures (@RequestParam Long playerId){
         return ResponseEntity.ok(townService
                 .generateWeeklyCreatures(playerId));
+        //todo "Creature BATTLE_DWARF NOT found", playerId = 2
     }
 
     @PostMapping

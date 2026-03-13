@@ -15,4 +15,5 @@ public interface CreatureType {
     String getCode();
     Integer getLevel();
     EnumMap<ResourceType, Integer> getRequiredResourceMap();
+    Integer creatureBoost();
 }
