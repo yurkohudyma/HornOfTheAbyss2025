@@ -117,7 +117,6 @@ public class PlayerService {
 
     @Transactional
     public String addMine(MineType mineType, Long playerId) {
-
         var player = getPlayer(playerId);
         var mineMap = fetchOrCreateMineMap(player);
         mineMap.merge(mineType, 1, Integer::sum);

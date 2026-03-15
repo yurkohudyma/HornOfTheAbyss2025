@@ -1,5 +1,6 @@
 package ua.hudyma.controller;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -7,12 +8,14 @@ import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
 
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -22,6 +25,13 @@ import java.util.List;
 public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
+
+    @GetMapping("/getTownStatByFortification")
+    public ResponseEntity<EnumMap<FortificationType, Integer>>
+            getTownStatByFortification (Long playerId){
+        return ResponseEntity.ok(townService
+                .getTownFortificationStatsCYCLE(playerId));
+    }
 
     @GetMapping("/getAllTownCreatureTypes")
     public ResponseEntity<CreatureType[]> getAllTownBasicCreatures (
