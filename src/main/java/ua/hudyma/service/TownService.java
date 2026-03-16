@@ -263,6 +263,10 @@ public class TownService {
             Creature creature, List<HordeBuildingType> townHordeBuildingList) {
         for (HordeBuildingType horde : townHordeBuildingList) {
             var creatureTypesSet = horde.getCreatureTypes();
+            if (creatureTypesSet == null) {
+                log.warn("CreatureTypesSet is null, skipping");
+                continue;
+            }
             if (creatureTypesSet.contains(creature.getCreatureType())) {
                 var hordeCreature = creatureTypesSet.stream()
                         .filter(creat -> creat

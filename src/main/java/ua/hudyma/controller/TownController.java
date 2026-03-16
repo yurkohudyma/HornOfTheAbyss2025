@@ -49,6 +49,7 @@ public class TownController {
         return ResponseEntity.ok(townService
                 .generateWeeklyCreatures(playerId));
         //todo "Creature BATTLE_DWARF NOT found", playerId = 2
+        //todo >>> створити BATTLE_DWARF, DWARF сутності в БД
     }
 
     @PostMapping
