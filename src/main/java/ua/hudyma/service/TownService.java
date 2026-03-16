@@ -15,6 +15,7 @@ import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
+import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
@@ -33,6 +34,8 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.function.UnaryOperator.identity;
+import static java.util.stream.Collectors.*;
 import static ua.hudyma.service.ArmyService.ARMY_SLOT_MAX_QTY;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -47,7 +50,30 @@ public class TownService {
     private final CombatService combatService;
     private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
-    private final ArmyService armyService;
+
+    /** Declarative stylewise method     */
+    @Transactional(readOnly = true)
+    public EnumMap<FortificationType, Long> getTownFortificationStats(Long playerId) {
+        var player = playerService.getPlayer(playerId);
+        return player.getTownsList()
+                .stream()
+                .collect(groupingBy(
+                        Town::getFortificationType,
+                        () -> new EnumMap<>(FortificationType.class),
+                        counting()));
+    }
+
+    /** Faster cycle algorythm   */
+    @Transactional(readOnly = true)
+    public EnumMap<FortificationType, Integer> getTownFortificationStatsCYCLE(Long playerId) {
+        var player = playerService.getPlayer(playerId);
+        var townList = player.getTownsList();
+        var map = new EnumMap<FortificationType, Integer>(FortificationType.class);
+        for (Town town : townList){
+            map.merge(town.getFortificationType(), 1, Integer::sum);
+        }
+        return map;
+    }
 
     @SneakyThrows
     public String createTown(TownReqDto dto) {
@@ -138,20 +164,19 @@ public class TownService {
         var availCreaturesMap = getAvailCreaturesForHire(townName)
                 .generCreatureMap();
         var newSlotsList = new ArrayList<CreatureSlot>();
-        for (Map.Entry<CreatureType, Integer> entry : reqMap.entrySet()){
+        for (Map.Entry<CreatureType, Integer> entry : reqMap.entrySet()) {
             var creatureType = entry.getKey();
             var reqQty = entry.getValue();
-            if (availCreaturesMap.containsKey(creatureType)){
+            if (availCreaturesMap.containsKey(creatureType)) {
                 var availCreatureQty = availCreaturesMap.get(creatureType);
                 var creatureResourcePriceMap = getCreatureResourceMapFromCreatureType(
                         (creatureType.toString()));
                 if (creatureResourcePriceMap == null || creatureResourcePriceMap.isEmpty()) {
                     throw new IllegalArgumentException("Creature Resource Map is null or empty, reinstate one before hire");
                 }
-                if (reqQty > availCreatureQty){
+                if (reqQty > availCreatureQty) {
                     log.error("{} is only {} left, while you ask {}", creatureType, availCreatureQty, reqQty);
-                }
-                else {
+                } else {
                     var updatedPlayerResourceMap = checkResourceAvailableForCreatureHire(
                             creatureResourcePriceMap,
                             playerResourcesMap);
@@ -164,13 +189,12 @@ public class TownService {
                             .findDwellingByCreatureType(creatureType);
                     dwellingMap.put(dwellingName.getCode(), availCreatureQty - reqQty);
                     town.setDwellingMap(dwellingMap);
-                    if (!updatedPlayerResourceMap.isEmpty()){
+                    if (!updatedPlayerResourceMap.isEmpty()) {
                         playerResourcesMap.putAll(updatedPlayerResourceMap);
                         player.setResourceMap(playerResourcesMap);
                     }
                 }
-            }
-            else {
+            } else {
                 throw new HireCreatureException(creatureType + " is not available for hire in " + town.getName());
             }
         }
@@ -183,7 +207,7 @@ public class TownService {
             Map<ResourceType, Integer> reqResourcesMap,
             Map<ResourceType, Integer> availResourceMap) {
         var updatedResourceMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
-        for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()){
+        for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()) {
             var resourceName = reqEntry.getKey();
             var reqResQty = reqEntry.getValue();
             var availResQty = availResourceMap.get(resourceName);
@@ -210,7 +234,7 @@ public class TownService {
     private Creature getCreatureFromDwelling(String dwellingName) {
         var specificDwellingEnum = AbstractDwellingTypeRegistry
                 .fromCode(dwellingName);
-        var creatureEnum = specificDwellingEnum.getCreature();        
+        var creatureEnum = specificDwellingEnum.getCreature();
         return creatureService
                 .fetchCreatureByType(creatureEnum);
     }
@@ -320,6 +344,7 @@ public class TownService {
                 garnisoner.getName(),
                 visitor.getName());
     }
+
     public Town getTown(String name) {
         return townRepository.findByName(name)
                 .orElseThrow(getExceptionSupplier(Town.class,
@@ -327,6 +352,7 @@ public class TownService {
                         EntityNotFoundException::new,
                         false));
     }
+
     public CreatureType[] getAllCreaturesTypes
             (String townName, boolean essential) {
         var town = getTown(townName);
