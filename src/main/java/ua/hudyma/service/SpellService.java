@@ -11,14 +11,12 @@ import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.*;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.exception.RequiredBuildingMissingException;
-import ua.hudyma.exception.SpellCastException;
-import ua.hudyma.exception.SpellPointsShortageException;
-import ua.hudyma.exception.TownSpellBookSetAlreadyGeneratedException;
+import ua.hudyma.exception.*;
 import ua.hudyma.util.FixedSizeMap;
 
 import java.security.SecureRandom;
@@ -141,6 +139,38 @@ public class SpellService {
         spellSet.add(spell);
         heroSpellBook.put(spellLevel, spellSet);
         return heroSpellBook;
+    }
+
+    public String replaceTownSpell(String townName, String existingSpellName, String newSpellName) {
+        var town = townService.getTown(townName);
+        var spellMap = town.getMagicGuildSpellMap();
+        var spellEnum = SpellRegistry.fromCode(existingSpellName);
+        var spellLevel = spellEnum.getSpellLevel();
+        var specificLevelSpellSet = spellMap.get(spellLevel);
+        if (!specificLevelSpellSet.contains(existingSpellName)){
+            throw new SpellReplaceException("Spell" + existingSpellName + " is not in " + townName
+            + "'s mage-guild spell set");
+        }
+        var newSpellEnum = SpellRegistry.fromCode(newSpellName);
+        var newSpellLevel = newSpellEnum.getSpellLevel();
+        if (newSpellLevel != spellLevel){
+            throw new SpellReplaceException("Existing and new spell shall be of the same level");
+        }
+        checkResourceDemandsAndConsumeIfMet(town.getPlayer(), spellLevel);
+        return "";
+    }
+
+    private static void checkResourceDemandsAndConsumeIfMet(
+            Player player, Integer spellLevel) {
+        var resourceDemands = SpellReplaceDemands.values();
+        var demamdMap = Arrays
+                .stream(resourceDemands)
+                .filter(spell -> spell.ordinal() + 1 == spellLevel)
+                .findAny()
+                .orElseThrow(() -> new SpellCastException
+                        ("Requested spellLevel conversion error")).getResourceMap();
+        var playerResourceMap = player.getResourceMap();
+        //todo proceed demandMap to consume necessary resources;
     }
 
     private int getSecondarySkillManaCostModifier(

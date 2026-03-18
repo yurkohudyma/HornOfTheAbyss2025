@@ -33,14 +33,11 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class PlayerService {
-
     private final PlayerRepository playerRepository;
-
     private final PlayerMapper playerMapper;
 
     @Transactional
     public String addResources(ResourcesReqDto dto) {
-
         var player = getPlayer(dto.playerId());
         var resourceMap = player.getResourceMap();
         if (resourceMap == null) {
@@ -57,7 +54,6 @@ public class PlayerService {
 
     @Transactional(readOnly = true)
     public Integer calcDailyIncome(Long playerId) {
-
         var player = getPlayer(playerId);
         return player
                 .getTownsList()
@@ -81,7 +77,6 @@ public class PlayerService {
 
     @SneakyThrows
     public String createPlayer(PlayerReqDto dto) {
-
         var player = playerMapper.toEntity(dto);
         playerRepository.save(player);
         return getReturnMessage(player, "name");
@@ -89,18 +84,15 @@ public class PlayerService {
 
     @Transactional
     public PlayerRespDto fetchPlayer(Long playerId) {
-
         return playerMapper.toDto(getPlayer(playerId));
     }
 
     public Map<ResourceType, Integer> fetchResource(Long playerId) {
-
         var player = getPlayer(playerId);
         return player.getResourceMap();
     }
 
     public Player getPlayer(Long playerId) {
-
         return playerRepository
                 .findById(playerId)
                 .orElseThrow(getExceptionSupplier(
@@ -110,7 +102,6 @@ public class PlayerService {
     }
 
     public Map<MineType, Integer> getMines(Long playerId) {
-
         var player = getPlayer(playerId);
         return player.getMinesMap();
     }
@@ -125,14 +116,12 @@ public class PlayerService {
     }
 
     private static Map<MineType, Integer> fetchOrCreateMineMap(Player player) {
-
         return player.getMinesMap() == null ?
                 new EnumMap<>(MineType.class) :
                 player.getMinesMap();
     }
 
     public Map<ResourceType, Integer> getMinesWeeklyIncome(Long playerId) {
-
         var player = getPlayer(playerId);
         var mineMap = player.getMinesMap();
         if (mineMap == null || mineMap.isEmpty()) {

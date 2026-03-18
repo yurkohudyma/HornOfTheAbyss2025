@@ -14,6 +14,16 @@ import java.util.Set;
 class SpellController {
     private final SpellService spellService;
 
+    @PatchMapping("/replaceSpell")
+    public ResponseEntity<String> studyAnotherSpell (
+            @RequestParam String townName,
+            @RequestParam String existingSpellName,
+            @RequestParam String newSpellName){
+        return ResponseEntity.ok(spellService
+                .replaceTownSpell(townName,
+                        existingSpellName, newSpellName));
+    }
+
     @GetMapping
     public ResponseEntity<Set<String>> provideTownWithSpellSet(
             @RequestParam String townName, @RequestParam int level) {
