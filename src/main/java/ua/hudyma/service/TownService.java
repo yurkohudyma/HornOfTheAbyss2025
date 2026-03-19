@@ -12,6 +12,9 @@ import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.players.Player;
+import ua.hudyma.domain.spells.converter.SpellRegistry;
+import ua.hudyma.domain.spells.enums.SpellReplaceDemands;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
@@ -20,10 +23,7 @@ import ua.hudyma.domain.towns.enums.HordeBuildingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Faction;
-import ua.hudyma.exception.ArmyFreeSlotOverflowException;
-import ua.hudyma.exception.HireCreatureException;
-import ua.hudyma.exception.InsufficientResourcesException;
-import ua.hudyma.exception.NoAvailableCreaturesForHireException;
+import ua.hudyma.exception.*;
 import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.repository.TownRepository;
@@ -50,6 +50,44 @@ public class TownService {
     private final CombatService combatService;
     private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
+
+    @Transactional
+    public String replaceTownSpell(String townName, String existingSpellName, String newSpellName) {
+        var town = getTown(townName);
+        var spellMap = town.getMagicGuildSpellMap();
+        var spellEnum = SpellRegistry.fromCode(existingSpellName);
+        var spellLevel = spellEnum.getSpellLevel();
+        var specificLevelSpellSet = spellMap.get(spellLevel);
+        if (!specificLevelSpellSet.contains(existingSpellName)){
+            throw new SpellReplaceException("Spell" + existingSpellName + " is not in " + townName
+                    + "'s mage-guild spell set");
+        }
+        var newSpellEnum = SpellRegistry.fromCode(newSpellName);
+        var newSpellLevel = newSpellEnum.getSpellLevel();
+        if (newSpellLevel != spellLevel){
+            throw new SpellReplaceException("Existing and new spell shall be of the same level");
+        }
+        checkResourceDemandsAndConsumeIfMet(town.getPlayer(), spellLevel);
+        specificLevelSpellSet.remove(existingSpellName);
+        specificLevelSpellSet.add(newSpellName);
+        spellMap.put(spellLevel, specificLevelSpellSet);
+        return existingSpellName + " was replaced by " + newSpellName + " in " + townName;
+
+        //todo refack for randomised selection of a new spell
+    }
+
+    private static void checkResourceDemandsAndConsumeIfMet(
+            Player player, Integer spellLevel) {
+        var resourceDemands = SpellReplaceDemands.values();
+        var demandMap = Arrays
+                .stream(resourceDemands)
+                .filter(spell -> spell.ordinal() + 1 == spellLevel)
+                .findAny()
+                .orElseThrow(() -> new SpellCastException
+                        ("Requested spellLevel conversion error")).getResourceMap();
+        var playerResourceMap = player.getResourceMap();
+        checkResourcesDemandsAndConsumeIfMet(demandMap, playerResourceMap);
+    }
 
     /** Declarative stylewise method     */
     @Transactional(readOnly = true)
@@ -177,7 +215,7 @@ public class TownService {
                 if (reqQty > availCreatureQty) {
                     log.error("{} is only {} left, while you ask {}", creatureType, availCreatureQty, reqQty);
                 } else {
-                    var updatedPlayerResourceMap = checkResourceAvailableForCreatureHire(
+                    var updatedPlayerResourceMap = checkResourcesDemandsAndConsumeIfMet(
                             creatureResourcePriceMap,
                             playerResourcesMap);
                     var newSlot = new CreatureSlot();
@@ -203,7 +241,7 @@ public class TownService {
         return newSlotsList;
     }
 
-    private static Map<ResourceType, Integer> checkResourceAvailableForCreatureHire(
+    private static Map<ResourceType, Integer> checkResourcesDemandsAndConsumeIfMet(
             Map<ResourceType, Integer> reqResourcesMap,
             Map<ResourceType, Integer> availResourceMap) {
         var updatedResourceMap = new EnumMap<ResourceType, Integer>(ResourceType.class);

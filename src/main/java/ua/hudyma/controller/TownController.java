@@ -26,6 +26,16 @@ public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
 
+    @PatchMapping("/replaceSpell")
+    public ResponseEntity<String> studyAnotherSpell (
+            @RequestParam String townName,
+            @RequestParam String existingSpellName,
+            @RequestParam String newSpellName){
+        return ResponseEntity.ok(townService
+                .replaceTownSpell(townName,
+                        existingSpellName, newSpellName));
+    }
+
     @GetMapping("/getTownStatByFortification")
     public ResponseEntity<EnumMap<FortificationType, Integer>>
             getTownStatByFortification (Long playerId){

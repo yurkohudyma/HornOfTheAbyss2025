@@ -141,37 +141,7 @@ public class SpellService {
         return heroSpellBook;
     }
 
-    public String replaceTownSpell(String townName, String existingSpellName, String newSpellName) {
-        var town = townService.getTown(townName);
-        var spellMap = town.getMagicGuildSpellMap();
-        var spellEnum = SpellRegistry.fromCode(existingSpellName);
-        var spellLevel = spellEnum.getSpellLevel();
-        var specificLevelSpellSet = spellMap.get(spellLevel);
-        if (!specificLevelSpellSet.contains(existingSpellName)){
-            throw new SpellReplaceException("Spell" + existingSpellName + " is not in " + townName
-            + "'s mage-guild spell set");
-        }
-        var newSpellEnum = SpellRegistry.fromCode(newSpellName);
-        var newSpellLevel = newSpellEnum.getSpellLevel();
-        if (newSpellLevel != spellLevel){
-            throw new SpellReplaceException("Existing and new spell shall be of the same level");
-        }
-        checkResourceDemandsAndConsumeIfMet(town.getPlayer(), spellLevel);
-        return "";
-    }
 
-    private static void checkResourceDemandsAndConsumeIfMet(
-            Player player, Integer spellLevel) {
-        var resourceDemands = SpellReplaceDemands.values();
-        var demamdMap = Arrays
-                .stream(resourceDemands)
-                .filter(spell -> spell.ordinal() + 1 == spellLevel)
-                .findAny()
-                .orElseThrow(() -> new SpellCastException
-                        ("Requested spellLevel conversion error")).getResourceMap();
-        var playerResourceMap = player.getResourceMap();
-        //todo proceed demandMap to consume necessary resources;
-    }
 
     private int getSecondarySkillManaCostModifier(
             int spellLevel,
