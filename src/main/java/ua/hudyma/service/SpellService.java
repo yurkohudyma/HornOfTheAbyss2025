@@ -11,14 +11,12 @@ import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.*;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.exception.RequiredBuildingMissingException;
-import ua.hudyma.exception.SpellCastException;
-import ua.hudyma.exception.SpellPointsShortageException;
-import ua.hudyma.exception.TownSpellBookSetAlreadyGeneratedException;
+import ua.hudyma.exception.*;
 import ua.hudyma.util.FixedSizeMap;
 
 import java.security.SecureRandom;
@@ -144,6 +142,8 @@ public class SpellService {
         heroSpellBook.put(spellLevel, spellSet);
         return heroSpellBook;
     }
+
+
 
     private int getSecondarySkillManaCostModifier(
             int spellLevel,
