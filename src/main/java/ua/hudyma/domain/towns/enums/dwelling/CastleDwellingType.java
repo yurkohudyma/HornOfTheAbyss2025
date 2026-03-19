@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.CreatureType;
 
-import static ua.hudyma.domain.creatures.enums.CastleCreatureType.*;
-import static ua.hudyma.domain.creatures.enums.CastleEssentialCreatureType.*;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.*;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleEssentialCreatureType.*;
 
 @Getter
 @RequiredArgsConstructor

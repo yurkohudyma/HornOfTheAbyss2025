@@ -24,8 +24,8 @@ import ua.hudyma.exception.SpellCastException;
 
 import java.util.*;
 
-import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ARCHANGEL;
-import static ua.hudyma.domain.creatures.enums.CastleCreatureType.MARKSMAN;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.ARCHANGEL;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.MARKSMAN;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.DAMAGE;
 import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;

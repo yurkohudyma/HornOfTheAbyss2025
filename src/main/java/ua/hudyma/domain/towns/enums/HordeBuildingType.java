@@ -5,14 +5,12 @@ import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.enums.Faction;
 
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Set;
 
-import static ua.hudyma.domain.creatures.enums.CastleCreatureType.ROYAL_GRIFFIN;
-import static ua.hudyma.domain.creatures.enums.CastleEssentialCreatureType.GRIFFIN;
-import static ua.hudyma.domain.creatures.enums.RampartCreatureType.BATTLE_DWARF;
-import static ua.hudyma.domain.creatures.enums.RampartEssentialCreatureType.DWARF;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.ROYAL_GRIFFIN;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleEssentialCreatureType.GRIFFIN;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.RampartCreatureType.BATTLE_DWARF;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.RampartEssentialCreatureType.DWARF;
 import static ua.hudyma.enums.Faction.*;
 
 @Getter
