@@ -1,4 +1,4 @@
-package ua.hudyma.domain.creatures.enums;
+package ua.hudyma.domain.creatures.enums.creaturetypes;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

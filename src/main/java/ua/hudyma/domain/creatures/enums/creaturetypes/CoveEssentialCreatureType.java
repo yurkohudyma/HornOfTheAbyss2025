@@ -1,4 +1,4 @@
-package ua.hudyma.domain.creatures.enums;
+package ua.hudyma.domain.creatures.enums.creaturetypes;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,16 +8,33 @@ import ua.hudyma.resource.enums.ResourceType;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static ua.hudyma.resource.enums.ResourceType.GEMS;
-import static ua.hudyma.resource.enums.ResourceType.GOLD;
+import static ua.hudyma.resource.enums.ResourceType.*;
 
 @Getter
 @RequiredArgsConstructor
-public enum RampartCreatureType implements CreatureType {
-
-    BATTLE_DWARF (2, toResourceEnumMap(
+public enum CoveEssentialCreatureType implements CreatureType {
+    SEA_SERPENT(7, toResourceEnumMap(
             Map.of(
-                    GOLD, 150)));
+                    SULFUR, 1,
+                    GOLD, 2200))),
+    NIX(6, toResourceEnumMap(
+            Map.of(
+                    GOLD, 1000))),
+    SEA_WITCH(5, toResourceEnumMap(
+            Map.of(
+                    GOLD, 515))),
+    STORMBIRD(4,toResourceEnumMap(
+            Map.of(
+                    GOLD, 275))),
+    PIRATE(3, toResourceEnumMap(
+            Map.of(
+                    GOLD, 225))),
+    CREW_MATE(2, toResourceEnumMap(
+            Map.of(
+                    GOLD, 110))),
+    NYMPH (1, toResourceEnumMap(
+            Map.of(
+                    GOLD, 35)));
     private final Integer level;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
 
