@@ -18,6 +18,7 @@ import ua.hudyma.service.build.AbstractBuildService;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/towns")
@@ -37,7 +38,7 @@ public class TownController {
     }
 
     @GetMapping("/getTownStatByFortification")
-    public ResponseEntity<EnumMap<FortificationType, Integer>>
+    public ResponseEntity<Map<FortificationType, Integer>>
             getTownStatByFortification (Long playerId){
         return ResponseEntity.ok(townService
                 .getTownFortificationStatsCYCLE(playerId));

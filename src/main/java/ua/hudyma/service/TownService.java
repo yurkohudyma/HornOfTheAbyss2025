@@ -91,7 +91,7 @@ public class TownService {
 
     /** Declarative stylewise method     */
     @Transactional(readOnly = true)
-    public EnumMap<FortificationType, Long> getTownFortificationStats(Long playerId) {
+    public Map<FortificationType, Long> getTownFortificationStats(Long playerId) {
         var player = playerService.getPlayer(playerId);
         return player.getTownsList()
                 .stream()
@@ -103,7 +103,7 @@ public class TownService {
 
     /** Faster cycle algorythm   */
     @Transactional(readOnly = true)
-    public EnumMap<FortificationType, Integer> getTownFortificationStatsCYCLE(Long playerId) {
+    public Map<FortificationType, Integer> getTownFortificationStatsCYCLE(Long playerId) {
         var player = playerService.getPlayer(playerId);
         var townList = player.getTownsList();
         var map = new EnumMap<FortificationType, Integer>(FortificationType.class);

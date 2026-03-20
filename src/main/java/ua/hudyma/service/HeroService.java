@@ -38,8 +38,8 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class HeroService {
-    private final static int MISC_INV_MAP_SIZE = 5;
-    private final static Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
+    private static final int MISC_INV_MAP_SIZE = 5;
+    private static final Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
     private final HeroMapper heroMapper;
     private final HeroRepository heroRepository;
     private final PlayerService playerService;
@@ -92,7 +92,6 @@ public class HeroService {
     @Transactional
     public HeroRespDto syncHeroSkillsUponArtifactAttachment
             (String heroId, String artifactName) {
-
         var hero = getHero(heroId);
         var artifact = ArtifactProperties.valueOf(artifactName);
         var artifactAction = artifact.getArtifactAction();
@@ -138,17 +137,17 @@ public class HeroService {
                             "action in ARTIFACTS not supported");
             case ALL_AIR_SPELLS, ALL_EARTH_SPELLS, ALL_FIRE_SPELLS, ALL_WATER_SPELLS ->
                     log.info(" ::: attaching Tome of Magic");
+            default -> throw new IllegalArgumentException
+                    ("syncHeroSkillsUponArtifactAttachment : Case not implemented");
         }
-
         attachArtifactToHero(artifactName, hero);
         armyHeroService.syncArmySkillsWithHero(hero.getArmyList(), hero);
         return heroMapper.toDto(hero);
     }
 
     private static Map<HeroParams, Integer> getOrCreateParamMap(Hero hero) {
-
         return hero.getParametersMap() == null ?
-                new FixedSizeMap<>(new HashMap<>(), 4) :
+                new EnumMap<>(HeroParams.class) :
                 hero.getParametersMap();
     }
 
@@ -195,7 +194,6 @@ public class HeroService {
     }
 
     public void syncSpellPointsValues(Hero hero) {
-
         Map<HeroParams, Integer> paramMap = getOrCreateHeroParamsMap(hero);
         var intelligenceLevel = getIntelligenceLevel(hero);
         var knowledgeLevel = getKnowledgeLevel(hero);
@@ -204,7 +202,6 @@ public class HeroService {
     }
 
     public Map<HeroParams, Integer> getOrCreateHeroParamsMap(Hero hero) {
-
         var paramMap = hero.getParametersMap();
         if (paramMap == null) {
             paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
@@ -231,7 +228,6 @@ public class HeroService {
     }
 
     private static void detachArtifact(String artifactName, Hero hero) {
-
         var artifactSlot = ArtifactSlotDisposition.valueOf(artifactName).getArtifactSlot();
         var entityField = artifactSlot.getEntityField();
         var bodyMap = getOrCreateBodyInvMap(hero);
@@ -251,9 +247,9 @@ public class HeroService {
                     var value = entry.getValue();
                     if (value.name().equals(artifactName)) {
                         miscInvMap.remove(key);
+                        log.info(" ::: " + artifactName + " detached from " + key + " slot");
+                        return;
                     }
-                    log.info(" ::: " + artifactName + " detached from " + key + " slot");
-                    return;
                 }
                 throw new IllegalStateException("Artifact " + artifactName + " has not been DETACHED, " +
                         "entity Field of type [" + entityField + "] did not contain it");
@@ -369,7 +365,7 @@ public class HeroService {
             level = level == 0 ? 1 : level;
             var levelExpCoefficient = level * experience;
             var totalCoefficient =
-                            primarySkillCoefficient +
+                    primarySkillCoefficient +
                             secondarySkillCoefficient +
                             armyCoefficient +
                             levelExpCoefficient;
