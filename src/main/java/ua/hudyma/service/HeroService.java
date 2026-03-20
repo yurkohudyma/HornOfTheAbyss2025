@@ -48,7 +48,6 @@ public class HeroService {
     @SneakyThrows
     @Transactional
     public String createHero(HeroReqDto dto) {
-
         var hero = heroMapper.toEntity(dto);
         var player = playerService.getPlayer(dto.playerId());
         hero.setPlayer(player);
@@ -58,7 +57,6 @@ public class HeroService {
 
     @Transactional
     public HeroRespDto defPriSkillsEmptyBodyInvMapAndParamMap(String heroId) {
-
         var hero = getHero(heroId);
         var skillMap = hero.getPrimarySkillMap();
         for (Map.Entry<PrimarySkill, Integer> entry : skillMap.entrySet()) {
@@ -70,18 +68,15 @@ public class HeroService {
     }
 
     public HeroRespDto fetchHero(String code) {
-
         var hero = getHero(code);
         return heroMapper.toDto(hero);
     }
 
     public List<HeroRespDto> fetchHeroDtoList(List<Hero> heroList) {
-
         return heroMapper.toDtoList(heroList);
     }
 
     public Hero getHero(String heroCode) {
-
         return heroRepository.findByCode(heroCode)
                 .orElseThrow(getExceptionSupplier(
                         Hero.class,
@@ -153,7 +148,6 @@ public class HeroService {
 
     @Transactional
     public HeroRespDto syncHeroSkillsUponArtifactDetachment(String heroId, String artifactName) {
-
         var hero = getHero(heroId);
         var artifactProperties = ArtifactProperties.valueOf(artifactName);
         var artifactPropMap = artifactProperties.getActionData();
@@ -210,13 +204,11 @@ public class HeroService {
     }
 
     static int getKnowledgeLevel(Hero hero) {
-
         var knowledgeLevel = hero.getPrimarySkillMap().get(KNOWLEDGE);
         return knowledgeLevel <= 0 ? 1 : knowledgeLevel;
     }
 
     static float getIntelligenceLevel(Hero hero) {
-
         var secondarySkillMap = hero.getSecondarySkillMap();
         var intel = secondarySkillMap.get(INTELLIGENCE);
         if (intel == null) return 1;
@@ -260,7 +252,6 @@ public class HeroService {
 
     private static void attachArtifactToHero(
             String artifactName, Hero hero) {
-
         var newArtifactSlotDisposition = ArtifactSlotDisposition
                 .valueOf(artifactName);
         var newArtifactSlot = newArtifactSlotDisposition.getArtifactSlot();
@@ -290,7 +281,6 @@ public class HeroService {
     }
 
     private static ArtifactSlot detectFreeMiscSlot(Map<ArtifactSlot, ArtifactSlotDisposition> miscInvMap) {
-
         var set = EnumSet.copyOf(MISC_SLOTS_SET);
         set.removeAll(miscInvMap.keySet());
         if (set.isEmpty())
@@ -299,7 +289,6 @@ public class HeroService {
     }
 
     static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateMiscInvMap(Hero hero) {
-
         var miscInvMap = hero.getMiscInventoryMap();
         if (miscInvMap == null) {
             miscInvMap = new FixedSizeMap<>(new HashMap<>(), MISC_INV_MAP_SIZE);
@@ -309,7 +298,6 @@ public class HeroService {
     }
 
     private static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateBodyInvMap(Hero hero) {
-
         var bodyInvMap = hero
                 .getBodyInventoryMap();
         if (bodyInvMap == null) {
@@ -320,7 +308,6 @@ public class HeroService {
     }
 
     public void vanquishHero(Hero hero) {
-
         heroRepository.delete(hero);
     }
 
