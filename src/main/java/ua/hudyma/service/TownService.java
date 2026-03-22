@@ -59,15 +59,15 @@ public class TownService {
         var spellLevel = spellEnum.getSpellLevel();
         var specificLevelSpellSet = spellMap.get(spellLevel);
         if (!specificLevelSpellSet.contains(existingSpellName)){
-            throw new SpellReplaceException("Spell" + existingSpellName + " is not in " + townName
-                    + "'s mage-guild spell set");
+            throw new SpellReplaceException("Spell " + existingSpellName + " is not in " + townName
+                    + " magic spell set");
         }
         var newSpellEnum = SpellRegistry.fromCode(newSpellName);
         var newSpellLevel = newSpellEnum.getSpellLevel();
         if (newSpellLevel != spellLevel){
             throw new SpellReplaceException("Existing and new spell shall be of the same level");
         }
-        checkResourceDemandsAndConsumeIfMet(town.getPlayer(), spellLevel);
+        retrieveResourcesDemandsAndProceedConsuming(town.getPlayer(), spellLevel);
         specificLevelSpellSet.remove(existingSpellName);
         specificLevelSpellSet.add(newSpellName);
         spellMap.put(spellLevel, specificLevelSpellSet);
@@ -76,7 +76,7 @@ public class TownService {
         //todo refack for randomised selection of a new spell
     }
 
-    private static void checkResourceDemandsAndConsumeIfMet(
+    private static void retrieveResourcesDemandsAndProceedConsuming(
             Player player, Integer spellLevel) {
         var resourceDemands = SpellReplaceDemands.values();
         var demandMap = Arrays
@@ -255,6 +255,8 @@ public class TownService {
                 updatedResourceMap.put(resourceName, availResQty - reqResQty);
             }
         }
+        log.info("   ---> Previous resources MAP: {}", availResourceMap);
+        log.info("   ---> Updated resources MAP: {}", updatedResourceMap);
         return updatedResourceMap;
     }
 
