@@ -58,13 +58,13 @@ public class TownService {
         var spellEnum = SpellRegistry.fromCode(existingSpellName);
         var spellLevel = spellEnum.getSpellLevel();
         var specificLevelSpellSet = spellMap.get(spellLevel);
-        if (!specificLevelSpellSet.contains(existingSpellName)){
+        if (!specificLevelSpellSet.contains(existingSpellName)) {
             throw new SpellReplaceException("Spell " + existingSpellName + " is not in " + townName
                     + " magic spell set");
         }
         var newSpellEnum = SpellRegistry.fromCode(newSpellName);
         var newSpellLevel = newSpellEnum.getSpellLevel();
-        if (newSpellLevel != spellLevel){
+        if (newSpellLevel != spellLevel) {
             throw new SpellReplaceException("Existing and new spell shall be of the same level");
         }
         retrieveResourcesDemandsAndProceedConsuming(town.getPlayer(), spellLevel);
@@ -89,7 +89,9 @@ public class TownService {
         checkResourcesDemandsAndConsumeIfMet(demandMap, playerResourceMap);
     }
 
-    /** Declarative stylewise method     */
+    /**
+     * Declarative stylewise method
+     */
     @Transactional(readOnly = true)
     public Map<FortificationType, Long> getTownFortificationStats(Long playerId) {
         var player = playerService.getPlayer(playerId);
@@ -101,13 +103,15 @@ public class TownService {
                         counting()));
     }
 
-    /** Faster cycle algorythm   */
+    /**
+     * Faster cycle algorythm
+     */
     @Transactional(readOnly = true)
     public Map<FortificationType, Integer> getTownFortificationStatsCYCLE(Long playerId) {
         var player = playerService.getPlayer(playerId);
         var townList = player.getTownsList();
         var map = new EnumMap<FortificationType, Integer>(FortificationType.class);
-        for (Town town : townList){
+        for (Town town : townList) {
             map.merge(town.getFortificationType(), 1, Integer::sum);
         }
         return map;

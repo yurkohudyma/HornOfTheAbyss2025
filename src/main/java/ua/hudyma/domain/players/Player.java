@@ -44,14 +44,13 @@ public class Player implements BaseEntity {
     @Column(columnDefinition = "json", name = "resource_map")
     @ToString.Exclude
     private Map<ResourceType, Integer> resourceMap =
+            new EnumMap<>(ResourceType.class);
+    /*private Map<ResourceType, Integer> resourceMap =
             new FixedSizeMap<>(new HashMap<>(),
-                    ResourceType.values().length);
-    //todo may try to refactor into EnumMap<ResourceType, Integer>,
-    // but it needs extensive testing to prove it's safe
+                    ResourceType.values().length);*/
     //upon analysis of FixedSizeMap implementation, shysha says it's 95% safe
     //this is called after the issue of mismatch sorting of EnumMap<? extends Enum, ?>
     // and HashMap<? extends Enum, ?> has been occurred.
-
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "mines_map")

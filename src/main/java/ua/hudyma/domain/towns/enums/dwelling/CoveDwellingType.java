@@ -19,10 +19,11 @@ public enum CoveDwellingType implements AbstractDwellingType {
             Set.of()),
     WAREHOUSE (PIRATE, CORSAIR,
             Set.of(PIRATE, CORSAIR, SEA_DOG)),
-    //todo review game mechanics to introduce checking
-    // if (enum.getCreatureSet.isEmpty()) get essential or primary creature
-    // further get rid of essentialCreature and creature fields, putting all
-    // creatures into the set.
+    //todo щоб переробити три поля в одне - в сет - потрібно придумати,
+    // як диференціювати тип істот для даної конкретної будівлі.
+    // Можна створити єдину мапу Map<AbstractDwellingType, CreatureType> або
+    // запровадити окремі типи будівлі для кожного типу істот,
+    // тобто для піратів - Фрегат, Покращ. Фрегат і Склад.
 
     NEST (STORMBIRD, AYSSID,
             Set.of()),
