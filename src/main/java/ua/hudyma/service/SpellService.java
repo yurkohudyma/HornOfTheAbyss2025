@@ -11,7 +11,6 @@ import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
-import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.*;
@@ -27,6 +26,7 @@ import static ua.hudyma.domain.artifacts.enums.ArtifactProperties.*;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
+import static ua.hudyma.domain.spells.converter.SpellRegistry.resolveAllLevelSpells;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 import static ua.hudyma.service.HeroService.getIntelligenceLevel;
 import static ua.hudyma.service.HeroService.getKnowledgeLevel;
@@ -97,6 +97,8 @@ public class SpellService {
         }
         return hero.getParametersMap();
     }
+
+
 
     public Set<String> getAllSchoolSpells(String spellSchool) {
         var enumClass =
@@ -297,22 +299,5 @@ public class SpellService {
         return indexes.stream()
                 .map(spells::get)
                 .collect(Collectors.toSet());
-    }
-
-    private static List<String> resolveAllLevelSpells(int level) {
-        var spells = new ArrayList<String>();
-        spells.addAll(filterByLevel(EarthSpellSchool.values(), level));
-        spells.addAll(filterByLevel(AirSpellSchool.values(), level));
-        spells.addAll(filterByLevel(FireSpellSchool.values(), level));
-        spells.addAll(filterByLevel(WaterSpellSchool.values(), level));
-        return spells;
-    }
-
-    private static <T extends AbstractSpellSchool> List<String> filterByLevel(
-            T[] spells, int level) {
-        return Arrays.stream(spells)
-                .filter(spell -> spell.getSpellLevel() == level)
-                .map(String::valueOf)
-                .toList();
     }
 }

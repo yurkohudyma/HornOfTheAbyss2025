@@ -18,13 +18,7 @@ public enum CoveDwellingType implements AbstractDwellingType {
     SHACK (CREW_MATE, SEAMAN,
             Set.of()),
     WAREHOUSE (PIRATE, CORSAIR,
-            Set.of(PIRATE, CORSAIR, SEA_DOG)),
-    //todo щоб переробити три поля в одне - в сет - потрібно придумати,
-    // як диференціювати тип істот для даної конкретної будівлі.
-    // Можна створити єдину мапу Map<AbstractDwellingType, CreatureType> або
-    // запровадити окремі типи будівлі для кожного типу істот,
-    // тобто для піратів - Фрегат, Покращ. Фрегат і Склад.
-
+            Set.of(SEA_DOG)),
     NEST (STORMBIRD, AYSSID,
             Set.of()),
     TOWER_OF_THE_SEAS (SEA_WITCH, SORCERESS,

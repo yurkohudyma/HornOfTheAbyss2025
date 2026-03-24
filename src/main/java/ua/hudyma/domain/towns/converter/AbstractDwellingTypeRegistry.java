@@ -45,8 +45,15 @@ public class AbstractDwellingTypeRegistry {
             if (!subtype.isEnum()) continue;
             var enumConstants = subtype.getEnumConstants();
             for (AbstractDwellingType constant : enumConstants) {
-                if (constant.getCreature().equals(creatureType)) {
-                    return constant;
+                if (constant.getCreatureSet().isEmpty()) {
+                    if (constant.getCreature().equals(creatureType)) {
+                        return constant;
+                    }
+                }
+                else {
+                    if (constant.getCreatureSet().stream().findAny().orElseThrow().equals(creatureType)){
+                        return constant;
+                    }
                 }
             }
         }

@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static java.util.function.UnaryOperator.identity;
 import static java.util.stream.Collectors.*;
+import static ua.hudyma.domain.spells.converter.SpellRegistry.generateRandomSpell;
 import static ua.hudyma.service.ArmyService.ARMY_SLOT_MAX_QTY;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
@@ -50,9 +51,10 @@ public class TownService {
     private final CombatService combatService;
     private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
+    //private final SpellService spellService; generates circular
 
     @Transactional
-    public String replaceTownSpell(String townName, String existingSpellName, String newSpellName) {
+    public String replaceTownSpell(String townName, String existingSpellName) {
         var town = getTown(townName);
         var spellMap = town.getMagicGuildSpellMap();
         var spellEnum = SpellRegistry.fromCode(existingSpellName);
@@ -62,18 +64,13 @@ public class TownService {
             throw new SpellReplaceException("Spell " + existingSpellName + " is not in " + townName
                     + " magic spell set");
         }
-        var newSpellEnum = SpellRegistry.fromCode(newSpellName);
-        var newSpellLevel = newSpellEnum.getSpellLevel();
-        if (newSpellLevel != spellLevel) {
-            throw new SpellReplaceException("Existing and new spell shall be of the same level");
-        }
+        var randomlyGeneratedSpell = generateRandomSpell(spellLevel);
         retrieveResourcesDemandsAndProceedConsuming(town.getPlayer(), spellLevel);
         specificLevelSpellSet.remove(existingSpellName);
-        specificLevelSpellSet.add(newSpellName);
+        var spellName = randomlyGeneratedSpell.getName();
+        specificLevelSpellSet.add(spellName);
         spellMap.put(spellLevel, specificLevelSpellSet);
-        return existingSpellName + " was replaced by " + newSpellName + " in " + townName;
-
-        //todo refack for randomised selection of a new spell
+        return existingSpellName + " was replaced by " + spellName + " in " + townName;
     }
 
     private static void retrieveResourcesDemandsAndProceedConsuming(
@@ -278,7 +275,13 @@ public class TownService {
     private Creature getCreatureFromDwelling(String dwellingName) {
         var specificDwellingEnum = AbstractDwellingTypeRegistry
                 .fromCode(dwellingName);
-        var creatureEnum = specificDwellingEnum.getCreature();
+        CreatureType creatureEnum;
+        if (specificDwellingEnum.getCreatureSet().isEmpty()) {
+            creatureEnum = specificDwellingEnum.getCreature();
+        }
+        else {
+            creatureEnum = specificDwellingEnum.getCreatureSet().stream().findAny().orElseThrow();
+        }
         return creatureService
                 .fetchCreatureByType(creatureEnum);
     }

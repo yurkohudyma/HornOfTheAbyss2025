@@ -3,9 +3,16 @@ package ua.hudyma.domain.spells.converter;
 import org.reflections.Reflections;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
+import ua.hudyma.domain.spells.enums.AirSpellSchool;
+import ua.hudyma.domain.spells.enums.EarthSpellSchool;
+import ua.hudyma.domain.spells.enums.FireSpellSchool;
+import ua.hudyma.domain.spells.enums.WaterSpellSchool;
 import ua.hudyma.domain.spells.enums.properties.AbstractSpellProperty;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public class SpellRegistry {
@@ -82,5 +89,29 @@ public class SpellRegistry {
         }
         throw new IllegalArgumentException("No enum class matches name: " + spellSchool + " for "
                 + baseInterface.getSimpleName());
+    }
+    public static List<String> resolveAllLevelSpells(int level) {
+        var spells = new ArrayList<String>();
+        spells.addAll(filterByLevel(EarthSpellSchool.values(), level));
+        spells.addAll(filterByLevel(AirSpellSchool.values(), level));
+        spells.addAll(filterByLevel(FireSpellSchool.values(), level));
+        spells.addAll(filterByLevel(WaterSpellSchool.values(), level));
+        return spells;
+    }
+
+    private static <T extends AbstractSpellSchool> List<String> filterByLevel(
+            T[] spells, int level) {
+        return Arrays.stream(spells)
+                .filter(spell -> spell.getSpellLevel() == level)
+                .map(String::valueOf)
+                .toList();
+    }
+
+    public static AbstractSpellSchool generateRandomSpell(int spellLevel) {
+        var randomList = resolveAllLevelSpells(spellLevel);
+        return fromCode(randomList
+                        .get(new SecureRandom()
+                                .nextInt(randomList
+                                        .size())));
     }
 }
