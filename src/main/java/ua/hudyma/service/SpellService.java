@@ -15,6 +15,7 @@ import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.*;
 import ua.hudyma.domain.towns.Town;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.*;
 import ua.hudyma.util.FixedSizeMap;
 
@@ -45,8 +46,6 @@ public class SpellService {
             4, 2,
             5, 1
     );
-
-    //todo introduce Banned Spells
 
     @Transactional
     public String castSpell(String heroId, String spellName) {
@@ -98,8 +97,6 @@ public class SpellService {
         return hero.getParametersMap();
     }
 
-
-
     public Set<String> getAllSchoolSpells(String spellSchool) {
         var enumClass =
                 resolveSpellSchoolEnumClass(spellSchool);
@@ -144,8 +141,6 @@ public class SpellService {
         heroSpellBook.put(spellLevel, spellSet);
         return heroSpellBook;
     }
-
-
 
     private int getSecondarySkillManaCostModifier(
             int spellLevel,
@@ -255,12 +250,12 @@ public class SpellService {
         validateMageGuildExists(town, mageGuildLevel);
         var spellMap = initOrValidateSpellMap(town, mageGuildLevel);
         var allLevelSpells = resolveAllLevelSpells(mageGuildLevel);
-        int spellQty = SPELL_QTY_PER_LEVEL.get(mageGuildLevel);
-        if (spellQty > allLevelSpells.size()) {
+        int spellQtyPerLevel = SPELL_QTY_PER_LEVEL.get(mageGuildLevel);
+        if (spellQtyPerLevel > allLevelSpells.size()) {
             throw new IllegalStateException(
                     "Not enough spells for Mage Guild level " + mageGuildLevel);
         }
-        var generatedSpells = generateRandomSpells(allLevelSpells, spellQty);
+        var generatedSpells = generateRandomSpells(allLevelSpells, spellQtyPerLevel, town.getFaction());
         spellMap.put(mageGuildLevel, generatedSpells);
         return Set.copyOf(generatedSpells);
     }
@@ -291,13 +286,19 @@ public class SpellService {
         return spellMap;
     }
 
-    private Set<String> generateRandomSpells(List<String> spells, int qty) {
+    private Set<String> generateRandomSpells(List<String> allLevelSpells, int spellQtyPerLevel, Faction faction) {
         Set<Integer> indexes = new HashSet<>();
-        while (indexes.size() < qty) {
-            indexes.add(random.nextInt(spells.size()));
+        var bannerSpellSet = Arrays.stream(TownBannedSpells
+                .values())
+                .flatMap(t -> t.getBannedSpellsSet().stream())
+                .map(String::valueOf)
+                .collect(Collectors.toSet());
+        while (indexes.size() < spellQtyPerLevel) {
+            indexes.add(random.nextInt(allLevelSpells.size()));
         }
         return indexes.stream()
-                .map(spells::get)
+                .map(allLevelSpells::get)
+                .filter(spell -> !bannerSpellSet.contains(spell))
                 .collect(Collectors.toSet());
     }
 }

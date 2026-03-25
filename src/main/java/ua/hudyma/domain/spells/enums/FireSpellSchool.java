@@ -7,16 +7,18 @@ import ua.hudyma.domain.spells.AbstractSpellSchool;
 
 import java.util.List;
 
-import static ua.hudyma.domain.spells.enums.SpellAction.DAMAGE;
+import static ua.hudyma.domain.spells.enums.SpellAction.*;
 
 @Getter
 @RequiredArgsConstructor
 public enum FireSpellSchool implements AbstractSpellSchool {
+    BLOODLUST (1, BUF, 0, null, 1, List.of()),
+    CURSE (1, DEBUF, 0, null, 1, List.of()),
     ARMAGEDDON(4, DAMAGE, 24, null, 1, List.of()),
     //BASIC :All troops take ((Power x 50) + 30) points of damage.
     //ADV: All troops take ((Power x 50) + 60) points of damage.
     //EXP: All troops take ((Power x 50) + 120) points of damage.
-    SLAYER (4, SpellAction.BUF, 16, null, 1, List.of())
+    SLAYER (4, BUF, 16, null, 1, List.of())
     //BASIC : One friendly target unit's attack rating is increased by eight against behemoths, dragons, and hydras.
     //ADV: Same as Basic effect, except that attack bonus also affects devils and angels.
     //EXP: Same as Advanced effect, except attack bonus also affects titans.
