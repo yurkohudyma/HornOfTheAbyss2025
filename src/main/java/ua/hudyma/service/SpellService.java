@@ -244,35 +244,40 @@ public class SpellService {
     }
 
     @Transactional
-    public Set<String> randomiseSpellSet(String townName, int mageGuildLevel) {
-        validateMageGuildLevel(mageGuildLevel);
+    public Set<String> randomiseSpellSet(String townName) {
         var town = townService.getTown(townName);
-        validateMageGuildExists(town, mageGuildLevel);
-        var spellMap = initOrValidateSpellMap(town, mageGuildLevel);
-        var allLevelSpells = resolveAllLevelSpells(mageGuildLevel);
-        int spellQtyPerLevel = SPELL_QTY_PER_LEVEL.get(mageGuildLevel);
-        if (spellQtyPerLevel > allLevelSpells.size()) {
-            throw new IllegalStateException(
-                    "Not enough spells for Mage Guild level " + mageGuildLevel);
+        var mageGuildLevel = town.getCommonBuildingMap().get(MAGE_GUILD);
+        if (mageGuildLevel == null) throw new RequiredBuildingMissingException
+                ("No Mage-Guild found in " + townName);
+        Set<String> generatedSpells;
+        do {
+            var allLevelSpells = resolveAllLevelSpells(mageGuildLevel);
+            int spellQtyPerLevel = SPELL_QTY_PER_LEVEL.get(mageGuildLevel);
+            if (spellQtyPerLevel > allLevelSpells.size()) {
+                throw new IllegalStateException(
+                        "Not enough spells for Mage Guild level " + mageGuildLevel);
+            }
+            generatedSpells = generateRandomSpells(allLevelSpells, spellQtyPerLevel, town.getFaction());
+            var spellMap = initOrValidateSpellMap(town, mageGuildLevel);
+            spellMap.put(mageGuildLevel, generatedSpells);
         }
-        var generatedSpells = generateRandomSpells(allLevelSpells, spellQtyPerLevel, town.getFaction());
-        spellMap.put(mageGuildLevel, generatedSpells);
+        while (mageGuildLevel-- > 0);
         return Set.copyOf(generatedSpells);
     }
 
-    private void validateMageGuildLevel(int level) {
+    /*private void validateMageGuildLevel(int level) {
         if (level < 1 || level > 5) {
             throw new IllegalArgumentException("Unsupported Mage Guild level: " + level);
         }
-    }
+    }*/
 
-    private void validateMageGuildExists(Town town, int level) {
+    /*private void validateMageGuildExists(Town town, int level) {
         var buildings = town.getCommonBuildingMap();
         if (!buildings.containsKey(MAGE_GUILD) || buildings.get(MAGE_GUILD) < level) {
             throw new RequiredBuildingMissingException(
                     "Magic Guild of level " + level + " has NOT been built");
         }
-    }
+    }*/
 
     private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
         if (town.getMagicGuildSpellMap() == null) {
@@ -289,7 +294,7 @@ public class SpellService {
     private Set<String> generateRandomSpells(List<String> allLevelSpells, int spellQtyPerLevel, Faction faction) {
         Set<Integer> indexes = new HashSet<>();
         var bannerSpellSet = Arrays.stream(TownBannedSpells
-                .values())
+                        .values())
                 .filter(constant -> constant.name().equals(faction.name()))
                 .flatMap(t -> t.getBannedSpellsSet().stream())
                 .map(String::valueOf)

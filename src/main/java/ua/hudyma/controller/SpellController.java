@@ -16,9 +16,9 @@ class SpellController {
 
     @GetMapping
     public ResponseEntity<Set<String>> provideTownWithSpellSet(
-            @RequestParam String townName, @RequestParam int level) {
+            @RequestParam String townName) {
         return ResponseEntity.ok(spellService
-                .randomiseSpellSet(townName, level));
+                .randomiseSpellSet(townName));
     }
 
     @GetMapping("/town")
