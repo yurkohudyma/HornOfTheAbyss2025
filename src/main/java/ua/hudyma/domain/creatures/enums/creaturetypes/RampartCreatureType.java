@@ -8,15 +8,34 @@ import ua.hudyma.resource.enums.ResourceType;
 import java.util.EnumMap;
 import java.util.Map;
 
+import static ua.hudyma.resource.enums.ResourceType.CRYSTAL;
 import static ua.hudyma.resource.enums.ResourceType.GOLD;
 
 @Getter
 @RequiredArgsConstructor
 public enum RampartCreatureType implements CreatureType {
-
+    CENTAUR_CAPTAIN (1, toResourceEnumMap(
+            Map.of(
+                    GOLD, 90))),
     BATTLE_DWARF (2, toResourceEnumMap(
             Map.of(
-                    GOLD, 150)));
+                    GOLD, 150))),
+    GRAND_ELF (3, toResourceEnumMap(
+            Map.of(
+                    GOLD, 225))),
+    SILVER_PEGASUS (4, toResourceEnumMap(
+            Map.of(
+                    GOLD, 275))),
+    DENDROID_SOLDIER (5, toResourceEnumMap(
+            Map.of(
+                    GOLD, 425))),
+    WAR_UNICORN (6, toResourceEnumMap(
+            Map.of(
+                    GOLD, 950))),
+    GOLD_DRAGON (7, toResourceEnumMap(
+            Map.of(
+                    GOLD, 4000,
+                    CRYSTAL, 2)));
     private final Integer level;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
 
