@@ -290,6 +290,7 @@ public class SpellService {
         Set<Integer> indexes = new HashSet<>();
         var bannerSpellSet = Arrays.stream(TownBannedSpells
                 .values())
+                .filter(constant -> constant.name().equals(faction.name()))
                 .flatMap(t -> t.getBannedSpellsSet().stream())
                 .map(String::valueOf)
                 .collect(Collectors.toSet());
