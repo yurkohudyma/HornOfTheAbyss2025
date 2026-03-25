@@ -244,12 +244,13 @@ public class SpellService {
     }
 
     @Transactional
-    public Set<String> randomiseSpellSet(String townName) {
+    public Map<Integer, Set<String>> randomiseSpellSet(String townName) {
         var town = townService.getTown(townName);
         var mageGuildLevel = town.getCommonBuildingMap().get(MAGE_GUILD);
         if (mageGuildLevel == null) throw new RequiredBuildingMissingException
                 ("No Mage-Guild found in " + townName);
         Set<String> generatedSpells;
+        Map<Integer, Set<String>> spellMap;
         do {
             var allLevelSpells = resolveAllLevelSpells(mageGuildLevel);
             int spellQtyPerLevel = SPELL_QTY_PER_LEVEL.get(mageGuildLevel);
@@ -258,36 +259,23 @@ public class SpellService {
                         "Not enough spells for Mage Guild level " + mageGuildLevel);
             }
             generatedSpells = generateRandomSpells(allLevelSpells, spellQtyPerLevel, town.getFaction());
-            var spellMap = initOrValidateSpellMap(town, mageGuildLevel);
+            spellMap = initOrValidateSpellMap(town, mageGuildLevel);
             spellMap.put(mageGuildLevel, generatedSpells);
         }
-        while (mageGuildLevel-- > 0);
-        return Set.copyOf(generatedSpells);
+        while (--mageGuildLevel > 0);
+        return spellMap;
     }
 
-    /*private void validateMageGuildLevel(int level) {
-        if (level < 1 || level > 5) {
-            throw new IllegalArgumentException("Unsupported Mage Guild level: " + level);
-        }
-    }*/
-
-    /*private void validateMageGuildExists(Town town, int level) {
-        var buildings = town.getCommonBuildingMap();
-        if (!buildings.containsKey(MAGE_GUILD) || buildings.get(MAGE_GUILD) < level) {
-            throw new RequiredBuildingMissingException(
-                    "Magic Guild of level " + level + " has NOT been built");
-        }
-    }*/
-
     private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
-        if (town.getMagicGuildSpellMap() == null) {
-            town.setMagicGuildSpellMap(new HashMap<>());
-        }
         var spellMap = town.getMagicGuildSpellMap();
-        if (spellMap.containsKey(level) && !spellMap.get(level).isEmpty()) {
-            throw new TownSpellBookSetAlreadyGeneratedException(
-                    "Spells for level " + level + " in " + town.getName() + " already generated");
+        if (spellMap == null || spellMap.isEmpty()) {
+            town.setMagicGuildSpellMap(new HashMap<>());
+            return town.getMagicGuildSpellMap();
         }
+        else if (spellMap.containsKey(level) && !spellMap.get(level).isEmpty()) {
+                throw new TownSpellBookSetAlreadyGeneratedException(
+                        "Spells for level " + level + " in " + town.getName() + " already generated");
+            }
         return spellMap;
     }
 

@@ -15,7 +15,7 @@ class SpellController {
     private final SpellService spellService;
 
     @GetMapping
-    public ResponseEntity<Set<String>> provideTownWithSpellSet(
+    public ResponseEntity<Map<Integer, Set<String>>> provideTownWithSpellSet(
             @RequestParam String townName) {
         return ResponseEntity.ok(spellService
                 .randomiseSpellSet(townName));
