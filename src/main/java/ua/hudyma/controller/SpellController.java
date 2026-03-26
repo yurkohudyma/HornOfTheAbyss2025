@@ -15,10 +15,10 @@ class SpellController {
     private final SpellService spellService;
 
     @GetMapping
-    public ResponseEntity<Map<Integer, Set<String>>> provideTownWithSpellSet(
-            @RequestParam String townName) {
+    public ResponseEntity<Set<String>> provideTownWithSpellSet(
+            @RequestParam String townName, @RequestParam int mageGuildLevel) {
         return ResponseEntity.ok(spellService
-                .randomiseSpellSet(townName));
+                .randomiseSpellSet(townName, mageGuildLevel));
     }
 
     @GetMapping("/town")
