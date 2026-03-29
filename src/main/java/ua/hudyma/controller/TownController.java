@@ -30,11 +30,10 @@ public class TownController {
     @PatchMapping("/replaceSpell")
     public ResponseEntity<String> studyAnotherSpell (
             @RequestParam String townName,
-            @RequestParam String existingSpellName/*,
-            @RequestParam String newSpellName*/){
+            @RequestParam String existingSpellName){
         return ResponseEntity.ok(townService
                 .replaceTownSpell(townName,
-                        existingSpellName/*, newSpellName*/));
+                        existingSpellName));
     }
 
     @GetMapping("/getTownStatByFortification")

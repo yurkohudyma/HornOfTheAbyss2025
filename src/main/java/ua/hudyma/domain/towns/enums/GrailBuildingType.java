@@ -21,4 +21,8 @@ public enum GrailBuildingType implements AbstractBuildingType {
     SPIRIT_GUARDIAN (RAMPART),
     WARLORDS_MONUMENT(STRONGHOLD);
     private final Faction faction;
+
+    //todo implement GrailBuildingTypeProperties
+    // implement building logic for all Grail buildings
+    // i.e. insert Grail the artifact to concur
 }

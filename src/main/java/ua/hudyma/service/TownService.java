@@ -53,6 +53,10 @@ public class TownService {
     private final ArmyHeroService armyHeroService;
     //private final SpellService spellService; generates circular
 
+    //todo implement two-level dwelling building
+    // reaassign creatures to new dwellings accord.
+    // redo all logic correspongingly
+
     @Transactional
     public String replaceTownSpell(String townName, String existingSpellName) {
         var town = getTown(townName);
