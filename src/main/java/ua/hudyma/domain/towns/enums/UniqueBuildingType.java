@@ -14,13 +14,16 @@ public enum UniqueBuildingType implements AbstractBuildingType{
     BROTHERHOOD_OF_THE_SWORD(CASTLE, 0),
     LIGHTHOUSE (CASTLE, 0),
     STABLES (CASTLE, 300),
+    COLOSSUS (CASTLE, 0),
 
     //rampart
     TREASURY (RAMPART, 10),
+    SPIRIT_GUARDIAN(RAMPART, 0),
 
     //inferno
     CASTLE_GATE (INFERNO, 0),
-    ORDER_OF_FIRE(INFERNO, 1);
+    ORDER_OF_FIRE(INFERNO, 1),
+    SOUL_PRISON (INFERNO, 0);
     private final Faction faction;
     private final Integer value;
 }

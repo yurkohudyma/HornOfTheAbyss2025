@@ -9,6 +9,7 @@ import static ua.hudyma.domain.artifacts.enums.ArtifactAction.*;
 import static ua.hudyma.domain.creatures.enums.CreatureProperty.*;
 import static ua.hudyma.domain.creatures.enums.MovementType.FLYING;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;
+import static ua.hudyma.resource.enums.ResourceType.GOLD;
 
 @Getter
 @RequiredArgsConstructor
@@ -62,7 +63,10 @@ public enum ArtifactProperties {
 
     //backpack_inventory:
     SLEEPKEEPER(COMPLEX, Map.of()), //Immunity to mind spells.
-    HORN_OF_THE_ABYSS(COMPLEX, Map.of()); //After a stack of living creatures is slain, a stack of Fangarms will rise in their stead and will stay loyal to the hero after the battle concludes
+    HORN_OF_THE_ABYSS(COMPLEX, Map.of()), //After a stack of living creatures is slain, a stack of Fangarms will rise in their stead and will stay loyal to the hero after the battle concludes
+    GRAIL(BOOST_TOWN, Map.of(
+            GOLD.name(), 5000,
+            "ALL_DWELLING_BOOST", 0.5));
     private final ArtifactAction artifactAction;
     private final Map<String, Object> actionData;
 }

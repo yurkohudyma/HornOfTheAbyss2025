@@ -34,7 +34,8 @@ public enum ArtifactSlotDisposition {
 
     //backpack_inventory:
     SLEEPKEEPER(INVENTORY, null),
-    HORN_OF_THE_ABYSS(INVENTORY, null);
+    HORN_OF_THE_ABYSS(INVENTORY, null),
+    GRAIL(INVENTORY, null);
     private final ArtifactSlot artifactSlot;
     private final ArtifactSlot specificArtifactSlot;
 }

@@ -3,6 +3,9 @@ package ua.hudyma.service.build;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
+import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.dto.BuildReqDto;
 import ua.hudyma.domain.towns.enums.*;
@@ -43,7 +46,20 @@ public class CommonBuildService {
             if (resourceMap == null) {
                 throw new IllegalStateException("Available Resources Map is NULL");
             }
-            if (buildingType instanceof CommonBuildingType) {
+            if (buildingType instanceof GrailBuildingType){
+                var hero = detectHeroToCarryTheGrail(player);
+                var grailTown = detectTownForClaimingGrail(hero, player.getTownsList());
+                var grailType = Arrays.stream(GrailBuildingType.values())
+                        .filter(faction -> faction.getFaction().equals(town.getFaction()))
+                        .findAny()
+                        .orElseThrow(() -> new EnumConstantNotPresentException(
+                                GrailBuildingType.class, "Cannot find appropriate Grail-type Building"));
+                grailTown.getUniqueBuildingSet().add(grailType.toString());
+                hero.getBackpackInventoryList().remove(ArtifactSlotDisposition.GRAIL);
+                log.info("{} has been emerged in {}", grailType, town.getName());
+                //todo check the grailbuilding
+            }
+            else if (buildingType instanceof CommonBuildingType) {
                 if (commonBuildingMap.containsKey(buildingType)) {
                     existingBuildLevel = commonBuildingMap.get(buildingType);
                     throwExceptionWhenLevelMatchesOrZero(town, buildingType,
@@ -117,6 +133,22 @@ public class CommonBuildService {
                         + buildingType.getClass().getName());
             }
         }
+    }
+    private Hero detectHeroToCarryTheGrail(Player player) {
+        var heroesList = player.getHeroList();
+        for (Hero hero : heroesList){
+            var backpackInventory = hero.getBackpackInventoryList();
+            if (backpackInventory.contains(ArtifactSlotDisposition.GRAIL))
+                return hero;
+        }
+        throw new IllegalArgumentException("No hero found carrying GRAIL");
+    }
+    private Town detectTownForClaimingGrail(Hero hero, List<Town> townsList) {
+        for (Town town: townList){
+            if (town.getVisitingHero().equals(hero))
+                return town;
+        }
+        throw new IllegalArgumentException("No hero with Grail is visiting town");
     }
 
     /** CommonBuildingType */

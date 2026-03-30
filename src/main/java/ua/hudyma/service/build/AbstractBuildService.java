@@ -42,7 +42,9 @@ public class AbstractBuildService {
     private final DwellingBuildService dwellingBuildService;
     private static final Map<Class<?>, String> TOWN_BLD_CONTAINERS = Map.of(
             CommonBuildingType.class, "commonBuildingMap",
-            CastleDwellingType.class, "dwellingMap",
+            //CastleDwellingType.class, "dwellingMap",
+            AbstractDwellingType.class, "dwellingMap",
+            //test if that works as universal ancestor
             UniqueBuildingType.class, "uniqueBuildingSet",
             HordeBuildingType.class, "hordeBuildingSet",
             FortificationType.class, "fortificationType",
@@ -58,7 +60,7 @@ public class AbstractBuildService {
         } catch (Exception e) {
             clazz = resolveDwellingEnumType(type);
         }
-        var container = resolveTownBuidlingContainerByType(type, clazz);
+        var container = resolveTownBuildingContainerByType(type, clazz);
         resolveContainerEntityByStringAndExecuteDeletion(container, type, town);
         return String.format("Building %s has been demolished in %s", type, town.getName());
     }
@@ -75,7 +77,7 @@ public class AbstractBuildService {
         }
     }
 
-    private String resolveTownBuidlingContainerByType(
+    private String resolveTownBuildingContainerByType(
             String type, Class<?> clazz) {
         var container = TOWN_BLD_CONTAINERS.get(clazz);
         if (container == null) {
@@ -223,8 +225,8 @@ public class AbstractBuildService {
             AbstractDwellingType dwellingType,
             AbstractDwellingTypeProperties constantProperties) {
         if (dwellingType != null /*CastleDwellingType ||
-            dwellingType instanceof RampartDwellingType*/
-            && dwellingType instanceof AbstractDwellingType) {
+            dwellingType instanceof RampartDwellingType
+            && dwellingType instanceof AbstractDwellingType*/) {
             dwellingBuildService.build(new DwellReqDto(
                     town,
                     dwellingType,
@@ -232,10 +234,7 @@ public class AbstractBuildService {
                     player,
                     constantProperties));
         }
-        else {
-            throw new IllegalArgumentException("Only DwellingType is ACCEPTABLE, while type " +
-                    dwellingType + " IS not");
-        }
+        throw new IllegalArgumentException("Dwelling type is NULL, build process discarded");
     }
 
     private void resolveBuildingTypeAndInvokeSpecificFactoryService(
