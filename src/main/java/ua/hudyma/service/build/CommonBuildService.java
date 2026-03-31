@@ -143,7 +143,7 @@ public class CommonBuildService {
         }
         throw new IllegalArgumentException("No hero found carrying GRAIL");
     }
-    private Town detectTownForClaimingGrail(Hero hero, List<Town> townsList) {
+    private Town detectTownForClaimingGrail(Hero hero, List<Town> townList) {
         for (Town town: townList){
             if (town.getVisitingHero().equals(hero))
                 return town;
