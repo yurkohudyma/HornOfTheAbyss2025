@@ -12,30 +12,21 @@ import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleEssentialCrea
 @Getter
 @RequiredArgsConstructor
 public enum CastleDwellingType implements AbstractDwellingType {
-    GUARDHOUSE (PIKEMEN,
-            HALBERDIER,
-            Set.of()),
-    ARCHER_TOWER (ARCHER,
-            MARKSMAN,
-            Set.of()),
-    GRIFFIN_TOWER (GRIFFIN,
-            ROYAL_GRIFFIN,
-            Set.of()),
-    BARRACKS (SWORDSMAN,
-            CRUSADER,
-            Set.of()),
-    MONASTERY (MONK,
-            ZEALOT,
-            Set.of()),
-    TRAINING_GROUNDS (CAVALIER,
-            CHAMPION,
-            Set.of()),
-    PORTAL_OF_GLORY (ANGEL,
-            ARCHANGEL,
-            Set.of());
-    private final CreatureType essentialCreature;
+    GUARDHOUSE (PIKEMEN),
+    UPG_GUARDHOUSE (HALBERDIER),
+    ARCHER_TOWER (ARCHER),
+    UPG_ARCHER_TOWER (MARKSMAN),
+    GRIFFIN_TOWER (GRIFFIN),
+    UPG_GRIFFIN_TOWER (ROYAL_GRIFFIN),
+    BARRACKS (SWORDSMAN),
+    UPG_BARRACKS (CRUSADER),
+    MONASTERY (MONK),
+    UPG_MONASTERY (ZEALOT),
+    TRAINING_GROUNDS (CAVALIER),
+    UPG_TRAINING_GROUNDS (CHAMPION),
+    PORTAL_OF_GLORY (ANGEL),
+    UPG_PORTAL_OF_GLORY (ARCHANGEL);
     private final CreatureType creature;
-    private final Set<CreatureType> creatureSet;
 
     @Override
     public String getCode() {
@@ -45,15 +36,5 @@ public enum CastleDwellingType implements AbstractDwellingType {
     @Override
     public CreatureType getCreature() {
         return creature;
-    }
-
-    @Override
-    public CreatureType getEssentialCreature(){
-        return essentialCreature;
-    }
-
-    @Override
-    public Set<CreatureType> getCreatureSet(){
-        return creatureSet;
     }
 }

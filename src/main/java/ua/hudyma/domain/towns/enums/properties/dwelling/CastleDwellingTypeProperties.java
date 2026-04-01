@@ -21,31 +21,56 @@ public enum CastleDwellingTypeProperties implements AbstractDwellingTypeProperti
     GUARDHOUSE(toStringMap(
             Map.of(FortificationType.FORT.name(), 0)),
             toResourceEnumMap(
-                    Map.of(ORE, 5,
+                    Map.of(ORE, 10,
                             GOLD, 500))),
+    UPG_GUARDHOUSE(toStringMap(
+            Map.of(GUARDHOUSE.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(ORE, 5,
+                            GOLD, 1000))),
     ARCHER_TOWER(toStringMap(
-            Map.of(CastleDwellingType.GUARDHOUSE.name(), 0)),
+            Map.of(GUARDHOUSE.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             WOOD, 5,
                             ORE, 5,
-                            GOLD, 500))),
+                            GOLD, 1000))),
+    UPG_ARCHER_TOWER(toStringMap(
+            Map.of(ARCHER_TOWER.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD, 5,
+                            ORE, 5,
+                            GOLD, 1000))),
     GRIFFIN_TOWER(toStringMap(
             Map.of(CastleDwellingType.BARRACKS.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             ORE, 5,
                             GOLD, 1000))),
+    UPG_GRIFFIN_TOWER(toStringMap(
+            Map.of(GRIFFIN_TOWER.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            ORE, 5,
+                            GOLD, 1000))),
     BARRACKS(toStringMap(Map.of(
             CommonBuildingType.BLACKSMITH.name(), 0,
-            CastleDwellingType.GUARDHOUSE.name(), 0)),
+            GUARDHOUSE.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            ORE, 5,
+                            GOLD, 2000))),
+    UPG_BARRACKS(toStringMap(
+            Map.of(
+            BARRACKS.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             ORE, 5,
                             GOLD, 2000))),
     MONASTERY(toStringMap(Map.of(
             CommonBuildingType.MAGE_GUILD.name(), 1,
-            CastleDwellingType.BARRACKS.name(), 0)),
+            BARRACKS.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             WOOD, 5,
@@ -55,15 +80,42 @@ public enum CastleDwellingTypeProperties implements AbstractDwellingTypeProperti
                             SULFUR, 2,
                             GEMS, 2,
                             GOLD, 3000))),
+    UPG_MONASTERY(toStringMap(Map.of(
+            MONASTERY.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD, 2,
+                            ORE, 2,
+                            MERCURY, 2,
+                            CRYSTAL, 2,
+                            SULFUR, 2,
+                            GEMS, 2,
+                            GOLD, 1000))),
     TRAINING_GROUNDS(toStringMap(Map.of(
             UniqueBuildingType.STABLES.name(), 0,
-            CastleDwellingType.BARRACKS.name(), 0)),
+            BARRACKS.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             WOOD, 20,
                             GOLD, 5000))),
+    UPG_TRAINING_GROUNDS(toStringMap(
+            Map.of(
+            TRAINING_GROUNDS.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD, 10,
+                            GOLD, 3000))),
     PORTAL_OF_GLORY(toStringMap(
-            Map.of(CastleDwellingType.MONASTERY.getCode(), 0)),
+            Map.of(MONASTERY.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            MERCURY, 10,
+                            CRYSTAL, 10,
+                            SULFUR, 10,
+                            GEMS, 10,
+                            GOLD, 20000))),
+    UPG_PORTAL_OF_GLORY(toStringMap(
+            Map.of(PORTAL_OF_GLORY.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             MERCURY, 10,

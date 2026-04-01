@@ -24,15 +24,37 @@ public enum CoveDwellingTypeProperties implements AbstractDwellingTypeProperties
                     Map.of(ORE, 5,
                             WOOD, 5,
                             GOLD, 300))),
+    UPG_WATERFALL(toStringMap(
+            Map.of(WATERFALL.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(GOLD, 1000))),
     SHACK(toStringMap(
             Map.of(CoveDwellingType.WATERFALL.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             WOOD, 5,
                             GOLD, 1000))),
-    WAREHOUSE(toStringMap(
+    UPG_SHACK(toStringMap(
+            Map.of(CoveDwellingType.WATERFALL.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD, 10,
+                            GOLD, 1000))),
+    FRIGATE(toStringMap(
             Map.of(SHACK.name(), 0,
                     BLACKSMITH.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD,10,
+                            GOLD, 1000))),
+    UPG_FRIGATE(toStringMap(
+            Map.of(FRIGATE.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD,5,
+                            GOLD, 1500))),
+    WAREHOUSE(toStringMap(
+            Map.of(UPG_FRIGATE.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             ORE, 5,
@@ -49,13 +71,25 @@ public enum CoveDwellingTypeProperties implements AbstractDwellingTypeProperties
                             GEMS,2,
                             ORE, 5,
                             GOLD, 2000))),
+    UPG_NEST(toStringMap(Map.of(
+            NEST.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(CRYSTAL, 2,
+                            GEMS,2,
+                            GOLD, 1500))),
     TOWER_OF_THE_SEAS(toStringMap(Map.of(
             CommonBuildingType.MAGE_GUILD.name(), 1,
             SHACK.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             CRYSTAL, 5,
-                            SULFUR, 5,
+                            GOLD, 3000))),
+    UPG_TOWER_OF_THE_SEAS(toStringMap(Map.of(
+            CommonBuildingType.MAGE_GUILD.name(), 1,
+            TOWER_OF_THE_SEAS.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            CRYSTAL, 5,
                             GOLD, 2000))),
     NIX_FORT(toStringMap(Map.of(
             NEST.name(), 0)),
@@ -63,11 +97,27 @@ public enum CoveDwellingTypeProperties implements AbstractDwellingTypeProperties
                     Map.of(
                             WOOD, 5,
                             ORE, 10,
+                            GOLD, 4000))),
+    UPG_NIX_FORT(toStringMap(Map.of(
+            NIX_FORT.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD, 5,
+                            ORE, 5,
                             SULFUR, 5,
                             GOLD, 3000))),
     MAELSTROM(toStringMap(
-            Map.of(TOWER_OF_THE_SEAS.name(), 0,
+            Map.of(
+                    TOWER_OF_THE_SEAS.name(), 0,
                     NIX_FORT.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(
+                            WOOD, 15,
+                            CRYSTAL, 15,
+                            SULFUR, 10,
+                            GOLD, 15000))),
+    UPG_MAELSTROM(toStringMap(
+            Map.of(MAELSTROM.name(), 0)),
             toResourceEnumMap(
                     Map.of(
                             WOOD, 15,

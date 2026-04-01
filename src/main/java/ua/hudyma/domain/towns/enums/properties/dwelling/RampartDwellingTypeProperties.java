@@ -22,7 +22,14 @@ public enum RampartDwellingTypeProperties implements AbstractDwellingTypePropert
             Map.of(FortificationType.FORT.name(), 0)),
             toResourceEnumMap(
                     Map.of(WOOD, 5,
-                            GOLD, 1000)));
+                            GOLD, 1000))),
+    UPG_DWARF_COTTAGE(toStringMap(
+            Map.of(DWARF_COTTAGE.name(), 0)),
+            toResourceEnumMap(
+                    Map.of(WOOD, 5,
+                            GOLD, 1000)));;
+
+    //TODO populate dwellingtypoprops
 
     private final Map<String, Integer> requiredBuildingMap;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
