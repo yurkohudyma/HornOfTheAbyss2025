@@ -279,13 +279,7 @@ public class TownService {
     private Creature getCreatureFromDwelling(String dwellingName) {
         var specificDwellingEnum = AbstractDwellingTypeRegistry
                 .fromCode(dwellingName);
-        CreatureType creatureEnum;
-        if (specificDwellingEnum.getCreatureSet().isEmpty()) {
-            creatureEnum = specificDwellingEnum.getCreature();
-        }
-        else {
-            creatureEnum = specificDwellingEnum.getCreatureSet().stream().findAny().orElseThrow();
-        }
+        var creatureEnum = specificDwellingEnum.getCreature();
         return creatureService
                 .fetchCreatureByType(creatureEnum);
     }
