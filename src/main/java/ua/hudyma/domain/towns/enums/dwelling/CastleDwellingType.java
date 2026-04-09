@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.creatures.CreatureType;
 
-import java.util.Set;
-
 import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.*;
 import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleEssentialCreatureType.*;
 
