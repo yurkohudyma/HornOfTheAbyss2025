@@ -47,8 +47,6 @@ public class SpellService {
             5, 1
     );
 
-    //todo introduce Banned Spells
-
     @Transactional
     public String castSpell(String heroId, String spellName) {
         var hero = heroService.getHero(heroId);

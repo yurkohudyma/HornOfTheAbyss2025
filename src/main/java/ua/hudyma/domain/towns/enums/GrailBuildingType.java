@@ -43,7 +43,6 @@ public enum GrailBuildingType implements AbstractBuildingType {
     private final EnumMap<ArtifactAction, Object> propertiesMap;
 
     //todo populate the rest of GrailBuilding properties
-    // implement building logic for all Grail buildings
 
     private static EnumMap<ArtifactAction, Object> toEnumMap(
             Map<ArtifactAction, Object> properties) {

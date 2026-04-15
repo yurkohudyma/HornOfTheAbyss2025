@@ -11,6 +11,4 @@ import java.util.Set;
 public interface AbstractDwellingType {
     String getCode();
     CreatureType getCreature();
-    CreatureType getEssentialCreature();
-    Set<CreatureType> getCreatureSet();
 }
