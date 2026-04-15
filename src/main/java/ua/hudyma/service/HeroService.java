@@ -45,6 +45,8 @@ public class HeroService {
     private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
 
+    //todo implement generationOfHeroesForRandomMap
+
     @SneakyThrows
     @Transactional
     public String createHero(HeroReqDto dto) {
