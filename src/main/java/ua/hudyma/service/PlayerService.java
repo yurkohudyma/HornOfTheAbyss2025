@@ -6,10 +6,12 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
+import ua.hudyma.domain.players.enums.PlayerColour;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.enums.Faction;
@@ -18,14 +20,19 @@ import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.util.IdGenerator;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
 import static ua.hudyma.enums.Faction.RAMPART;
 import static ua.hudyma.resource.enums.ResourceType.*;
+import static ua.hudyma.util.IdGenerator.getRandomEnum;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -33,7 +40,9 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class PlayerService {
+
     private final PlayerRepository playerRepository;
+
     private final PlayerMapper playerMapper;
 
     @Transactional
@@ -181,4 +190,23 @@ public class PlayerService {
     */
         return "No rampart towns with treasuries have been found";
     }
+    public List<PlayerRespDto> generateRandomPlayers(Integer playerNum) {
+        //todo resolve issue with colours duplication
+        playerNum = playerNum > 7 ? 7 : playerNum;
+        List<Player> playerList = Stream
+                .generate(generateRandomPlayer())
+                .limit(playerNum)
+                .toList();
+        return playerMapper.toDtoList(playerList);
+    }
+
+    private Supplier<Player> generateRandomPlayer() {
+        return () -> {
+            var player = new Player();
+            player.setName(IdGenerator.generateId(0,10));
+            player.setPlayerColour(getRandomEnum(PlayerColour.class));
+            return player;
+        };
+    }
+
 }
