@@ -9,6 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.players.enums.PlayerColour;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
@@ -29,6 +30,9 @@ public class Player implements BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    private PlayerColour playerColour;
 
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(8)

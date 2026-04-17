@@ -15,6 +15,7 @@ public class PlayerMapper extends BaseMapper<PlayerRespDto, Player, PlayerReqDto
     @Override
     public PlayerRespDto toDto(Player player) {
         return new PlayerRespDto(player.getName(),
+                player.getPlayerColour(),
                 heroMapper
                         .toDtoList(player.getHeroList()));
     }

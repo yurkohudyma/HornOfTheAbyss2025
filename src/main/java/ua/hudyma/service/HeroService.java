@@ -57,6 +57,13 @@ public class HeroService {
         return getReturnMessage(hero, "name");
     }
 
+    public HeroRespDto createRandomHero (){
+        var hero = new Hero();
+        hero.setPlayer(playerService.generateRandomPlayersEntity(1).get(0));
+        hero.setName(IdGenerator.generateName());
+        return heroMapper.toDto(hero);
+    }
+
     @Transactional
     public HeroRespDto defPriSkillsEmptyBodyInvMapAndParamMap(String heroId) {
         var hero = getHero(heroId);

@@ -12,6 +12,8 @@ public class IdGenerator {
     private final static List<String> gsmCodesList = List.of("67", "68", "50", "96", "98", "95", "99");
     private final static SecureRandom secureRandom = new SecureRandom();
     private final static String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    private final static String consonants = "bcdfghjklmnpqrstvwxyz";
+    private final static String vowels = "aeiou";
 
     /** YouTube Channel  */
     public static String generateChannelId(
@@ -147,6 +149,23 @@ public class IdGenerator {
         T[] values = enumClass.getEnumConstants();
         int index = secureRandom.nextInt(values.length);
         return values[index];
+    }
+
+    public static String generateName() {
+        var name = new StringBuilder();
+        var capitalLetter = (consonants.charAt(secureRandom.nextInt(consonants.length()))+"").toUpperCase();
+        name.append(capitalLetter);
+        var nameLength = randomiseNameLength();
+        nameLength = nameLength < 3 ? randomiseNameLength() : nameLength;
+        var lengthModifier = nameLength % 2 == 0 ? 0 : 1;
+        for (int i = 0; i < nameLength / 2 + lengthModifier; i++){
+            name.append(vowels.charAt(secureRandom.nextInt(vowels.length())));
+            name.append(consonants.charAt(secureRandom.nextInt(consonants.length())));
+        }
+        return name.toString();
+    }
+    private static int randomiseNameLength() {
+        return secureRandom.nextInt(10);
     }
 
     public static Integer generateRandomStartingExperience() {

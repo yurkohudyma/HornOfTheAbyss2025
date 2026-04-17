@@ -3,6 +3,7 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
@@ -10,6 +11,7 @@ import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.service.PlayerService;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -17,6 +19,11 @@ import java.util.Map;
 @RequestMapping("/players")
 public class PlayerController {
     private final PlayerService playerService;
+
+    @GetMapping("/generateRandom")
+    public ResponseEntity<List<PlayerRespDto>> generateRandomGHeroes (@RequestParam Integer playerNum){
+        return ResponseEntity.ok(playerService.generateRandomPlayers(playerNum));
+    }
 
     @GetMapping("/mines")
     public ResponseEntity<Map<MineType, Integer>> getMines (
