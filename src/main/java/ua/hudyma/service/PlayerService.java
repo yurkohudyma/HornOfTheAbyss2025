@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
@@ -147,6 +148,11 @@ public class PlayerService {
         return incomeMap;
     }
 
+    /**
+        On the first day of the week, it produces extra gold equal to 10%
+        of the player's total gold they had on the seventh day of the last
+        week (the day prior to generating this extra income)
+    */
     @Transactional
     public String calculateTreasuriesWeeklyInterestIncomeIfAny() {
         //need to check if it's 7th day of the week
@@ -183,30 +189,19 @@ public class PlayerService {
             }
         }
 
-    /*
-        On the first day of the week, it produces extra gold equal to 10%
-        of the player's total gold they had on the seventh day of the last
-        week (the day prior to generating this extra income)
-    */
         return "No rampart towns with treasuries have been found";
     }
     public List<PlayerRespDto> generateRandomPlayers(Integer playerNum) {
-        //todo resolve issue with colours duplication
-        playerNum = playerNum > 7 ? 7 : playerNum;
-        List<Player> playerList = Stream
-                .generate(generateRandomPlayer())
-                .limit(playerNum)
+        var playerList = IntStream.range(0, playerNum)
+                .mapToObj(this::generatePlayerWithColour)
                 .toList();
         return playerMapper.toDtoList(playerList);
     }
 
-    private Supplier<Player> generateRandomPlayer() {
-        return () -> {
-            var player = new Player();
-            player.setName(IdGenerator.generateId(0,10));
-            player.setPlayerColour(getRandomEnum(PlayerColour.class));
-            return player;
-        };
+    private Player generatePlayerWithColour(int colourIndex) {
+        var player = new Player();
+        player.setName(IdGenerator.generateId(0, 10));
+        player.setPlayerColour(PlayerColour.values()[colourIndex]);
+        return player;
     }
-
 }
