@@ -198,9 +198,15 @@ public class PlayerService {
         return playerMapper.toDtoList(playerList);
     }
 
+    public List<Player> generateRandomPlayersEntity(Integer playerNum) {
+        return IntStream.range(0, playerNum)
+                .mapToObj(this::generatePlayerWithColour)
+                .toList();
+    }
+
     private Player generatePlayerWithColour(int colourIndex) {
         var player = new Player();
-        player.setName(IdGenerator.generateId(0, 10));
+        player.setName(IdGenerator.generateName());
         player.setPlayerColour(PlayerColour.values()[colourIndex]);
         return player;
     }

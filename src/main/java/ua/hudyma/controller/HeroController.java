@@ -13,6 +13,11 @@ import ua.hudyma.service.HeroService;
 public class HeroController {
     private final HeroService heroService;
 
+    @GetMapping("/getRandom")
+    public ResponseEntity<HeroRespDto> getRandomHero (){
+        return ResponseEntity.ok(heroService.createRandomHero());
+    }
+
     @GetMapping("/getBest")
     public ResponseEntity<HeroRespDto> getMostPowerfulHero (Long playerId){
         return ResponseEntity.ok(heroService.getMostPowerfullHero(playerId));
