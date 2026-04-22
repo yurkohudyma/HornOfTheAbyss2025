@@ -43,8 +43,6 @@ public class HeroService {
     private final PlayerService playerService;
     private final ArmyHeroService armyHeroService;
 
-    //todo implement generationOfHeroesForRandomMap
-
     @SneakyThrows
     @Transactional
     public String createHero(HeroReqDto dto) {
@@ -55,17 +53,12 @@ public class HeroService {
         return getReturnMessage(hero, "name");
     }
 
-    public HeroRespDto createRandomHeroForDto(){
+    public HeroRespDto createRandomHero(){
         var hero = new Hero();
-        hero.setPlayer(playerService.generateRandomPlayersEntity(1).get(0));
+        hero.setPlayer(playerService
+                .generateRandomPlayer());
         hero.setName(IdGenerator.generateName());
         return heroMapper.toDto(hero);
-    }
-
-    public Hero createRandomHero(){
-        var hero = new Hero();
-        hero.setName(IdGenerator.generateName());
-        return hero;
     }
 
     @Transactional

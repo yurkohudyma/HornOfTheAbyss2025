@@ -21,8 +21,10 @@ public class PlayerController {
     private final PlayerService playerService;
 
     @GetMapping("/generateRandom")
-    public ResponseEntity<List<PlayerRespDto>> generateRandomGHeroes (@RequestParam Integer playerNum){
-        return ResponseEntity.ok(playerService.generateRandomPlayers(playerNum));
+    public ResponseEntity<List<PlayerRespDto>> generateRandom
+            (@RequestParam Integer qty){
+        return ResponseEntity.ok(playerService
+                .generateRandomPlayers(qty));
     }
 
     @GetMapping("/mines")

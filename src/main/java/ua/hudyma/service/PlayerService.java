@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
@@ -19,10 +20,7 @@ import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.IdGenerator;
 
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
@@ -37,7 +35,6 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 public class PlayerService {
 
     private final PlayerRepository playerRepository;
-
     private final PlayerMapper playerMapper;
 
     //private final HeroService heroService; incurs circular
@@ -188,30 +185,36 @@ public class PlayerService {
         return "No rampart towns with treasuries have been found";
     }
 
-    @Transactional
-    public List<PlayerRespDto> generateRandomPlayers(Integer playerNum) {
-        var playerList = IntStream.range(0, playerNum)
+    //@Transactional(readOnly = true)
+    public List<PlayerRespDto> generateRandomPlayers(Integer qty) {
+        qty = qty < 1 ? 1 : qty;
+        qty = qty > 7 ? 7 : qty;
+        var playerList = IntStream.range(0, qty)
                 .mapToObj(this::generatePlayerWithColour)
                 .toList();
         return playerMapper.toDtoList(playerList);
     }
 
-    public List<Player> generateRandomPlayersEntity(Integer playerNum) {
-        return IntStream.range(0, playerNum)
-                .mapToObj(this::generatePlayerWithColour)
-                .toList();
+    public Player generateRandomPlayer() {
+        return generatePlayerWithColour(0);
     }
-
-    //todo invoke heroService (not from here, otherwise circular will occur) to get random hero (one per player)
 
     private Player generatePlayerWithColour(int colourIndex) {
         var player = new Player();
         player.setName(IdGenerator.generateName());
         player.setPlayerColour(PlayerColour.values()[colourIndex]);
-        /*var hero = heroService.createRandomHero();
-        player.getHeroList().add(hero);
-        hero.setPlayer(player);*/
+        var hero = createRandomHero();
+        var heroList = new ArrayList<Hero>();
+        heroList.add(hero);
+        player.setHeroList(heroList);
+        hero.setPlayer(player);
         return player;
+    }
+
+    public Hero createRandomHero(){
+        var hero = new Hero();
+        hero.setName(IdGenerator.generateName());
+        return hero;
     }
 
 }
