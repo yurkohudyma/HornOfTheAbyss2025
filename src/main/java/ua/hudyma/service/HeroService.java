@@ -15,7 +15,6 @@ import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
-import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
@@ -30,7 +29,6 @@ import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.INTELLIGENCE;
-import static ua.hudyma.util.IdGenerator.generateRandomStartingExperience;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -57,11 +55,17 @@ public class HeroService {
         return getReturnMessage(hero, "name");
     }
 
-    public HeroRespDto createRandomHero (){
+    public HeroRespDto createRandomHeroForDto(){
         var hero = new Hero();
         hero.setPlayer(playerService.generateRandomPlayersEntity(1).get(0));
         hero.setName(IdGenerator.generateName());
         return heroMapper.toDto(hero);
+    }
+
+    public Hero createRandomHero(){
+        var hero = new Hero();
+        hero.setName(IdGenerator.generateName());
+        return hero;
     }
 
     @Transactional

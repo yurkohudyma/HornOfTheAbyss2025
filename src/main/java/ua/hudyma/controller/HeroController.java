@@ -15,7 +15,7 @@ public class HeroController {
 
     @GetMapping("/getRandom")
     public ResponseEntity<HeroRespDto> getRandomHero (){
-        return ResponseEntity.ok(heroService.createRandomHero());
+        return ResponseEntity.ok(heroService.createRandomHeroForDto());
     }
 
     @GetMapping("/getBest")
