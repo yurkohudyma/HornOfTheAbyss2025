@@ -13,10 +13,7 @@ import ua.hudyma.domain.players.enums.PlayerColour;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
-import ua.hudyma.util.FixedSize;
-import ua.hudyma.util.FixedSizeListDeserializer;
-import ua.hudyma.util.FixedSizeMap;
-import ua.hudyma.util.IdGenerator;
+import ua.hudyma.util.*;
 
 import java.util.*;
 
@@ -38,23 +35,17 @@ public class Player implements BaseEntity {
     @FixedSize(8)
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL)
     @ToString.Exclude
-    private List<Hero> heroList;
+    private List<Hero> heroList = new FixedSizeList<>();
 
     @OneToMany(mappedBy = "player")
     @ToString.Exclude
-    private List<Town> townsList;
+    private List<Town> townsList = new ArrayList<>();
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "resource_map")
     @ToString.Exclude
     private Map<ResourceType, Integer> resourceMap =
             new EnumMap<>(ResourceType.class);
-    /*private Map<ResourceType, Integer> resourceMap =
-            new FixedSizeMap<>(new HashMap<>(),
-                    ResourceType.values().length);*/
-    //upon analysis of FixedSizeMap implementation, shysha says it's 95% safe
-    //this is called after the issue of mismatch sorting of EnumMap<? extends Enum, ?>
-    // and HashMap<? extends Enum, ?> has been occurred.
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "mines_map")

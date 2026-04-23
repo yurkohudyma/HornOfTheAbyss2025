@@ -204,9 +204,8 @@ public class PlayerService {
         player.setName(IdGenerator.generateName());
         player.setPlayerColour(PlayerColour.values()[colourIndex]);
         var hero = createRandomHero();
-        var heroList = new ArrayList<Hero>();
-        heroList.add(hero);
-        player.setHeroList(heroList);
+        //var heroList = new ArrayList<Hero>();
+        player.getHeroList().add(hero);
         hero.setPlayer(player);
         return player;
     }

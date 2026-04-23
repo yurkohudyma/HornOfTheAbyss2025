@@ -39,9 +39,16 @@ public class FixedSizeList<T> implements List<T> {
         return delegate.contains(o);
     }
 
-    @Override
+
+    /** listIterator().add(...) will override custom implementation */
+    /*@Override
     public Iterator<T> iterator() {
         return delegate.iterator();
+    }*/
+
+    @Override
+    public Iterator<T> iterator() {
+        return Collections.unmodifiableList(delegate).iterator();
     }
 
     @Override
@@ -78,7 +85,6 @@ public class FixedSizeList<T> implements List<T> {
         if (delegate.size() + c.size() > maxSize) {
             throw new IllegalStateException("List size limit exceeded: " + maxSize);
         }
-
         return delegate.addAll(c);
     }
 
@@ -87,7 +93,6 @@ public class FixedSizeList<T> implements List<T> {
         if (delegate.size() + c.size() > maxSize) {
             throw new IllegalStateException("List size limit exceeded: " + maxSize);
         }
-
         return delegate.addAll(index, c);
     }
 
@@ -149,8 +154,21 @@ public class FixedSizeList<T> implements List<T> {
         return delegate.listIterator(index);
     }
 
-    @Override
+
+
+
+    /** Дає доступ до необмеженого сабліста, який:
+     не перевіряє maxSize
+     мутує оригінальний список
+     потенційна діра */
+
+    /*@Override
     public List<T> subList(int fromIndex, int toIndex) {
         return delegate.subList(fromIndex, toIndex);
+    }*/
+
+    @Override
+    public List<T> subList(int fromIndex, int toIndex) {
+        throw new UnsupportedOperationException("subList is not supported");
     }
 }
