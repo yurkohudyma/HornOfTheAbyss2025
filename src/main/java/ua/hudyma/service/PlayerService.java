@@ -6,6 +6,9 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.creatures.Creature;
+import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
@@ -36,6 +39,7 @@ public class PlayerService {
 
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
+    private final ArmyService armyService;
 
     //private final HeroService heroService; incurs circular
 
@@ -190,30 +194,35 @@ public class PlayerService {
         qty = qty < 1 ? 1 : qty;
         qty = qty > 7 ? 7 : qty;
         var playerList = IntStream.range(0, qty)
-                .mapToObj(this::generatePlayerWithColour)
+                .mapToObj(this::generatePlayer)
                 .toList();
         return playerMapper.toDtoList(playerList);
     }
 
     public Player generateRandomPlayer() {
-        return generatePlayerWithColour(0);
+        return generatePlayer(0);
     }
 
-    private Player generatePlayerWithColour(int colourIndex) {
+    private Player generatePlayer(int colourIndex) {
         var player = new Player();
         player.setName(IdGenerator.generateName());
         player.setPlayerColour(PlayerColour.values()[colourIndex]);
         var hero = createRandomHero();
-        //var heroList = new ArrayList<Hero>();
+        var army = armyService.generateRandomArmy();
         player.getHeroList().add(hero);
         hero.setPlayer(player);
         return player;
     }
 
-    public Hero createRandomHero(){
+    public Hero createRandomHero() {
         var hero = new Hero();
         hero.setName(IdGenerator.generateName());
+        assignRandomHeroSkill();
         return hero;
+    }
+
+    private void assignRandomHeroSkill() {
+        //todo implement
     }
 
 }

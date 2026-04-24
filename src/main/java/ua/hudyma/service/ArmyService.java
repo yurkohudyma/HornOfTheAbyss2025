@@ -95,6 +95,11 @@ public class ArmyService {
         return "Armies have been swapped";
     }
 
+    public List<CreatureSlot> generateRandomArmy() {
+        //todo implement
+        return List.of();
+    }
+
     public CreatureType getLowestCreature(String heroId) {
         var hero = heroService.getHero(heroId);
         var heroArmy = hero.getArmyList();

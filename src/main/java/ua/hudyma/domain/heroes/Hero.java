@@ -90,4 +90,6 @@ public class Hero implements BaseEntity {
             new HashMap<>();
     private int experience = generateRandomStartingExperience();
     private int level = 1;
+
+    //todo introduce Hero Specialty
 }
