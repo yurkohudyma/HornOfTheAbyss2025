@@ -20,14 +20,18 @@ public class HeroController {
     }
 
     @GetMapping("/getBest")
-    public ResponseEntity<HeroRespDto> getMostPowerfulHero (Long playerId){
-        return ResponseEntity.ok(heroService.getMostPowerfullHero(playerId));
+    public ResponseEntity<HeroRespDto> getMostPowerfulHero (
+            @RequestParam Long playerId){
+        return ResponseEntity.ok(heroService
+                .getMostPowerfullHero(playerId));
     }
 
     @GetMapping("/gainExperience")
     public ResponseEntity<String> gainExperience (
-            @RequestParam String heroId, @RequestParam Integer experience){
-        return ResponseEntity.ok(heroService.gainExperience(heroId, experience));
+            @RequestParam String heroId,
+            @RequestParam Integer experience){
+        return ResponseEntity.ok(heroService
+                .gainExperience(heroId, experience));
     }
     @PostMapping
     public ResponseEntity<String> createHero (

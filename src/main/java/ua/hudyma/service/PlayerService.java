@@ -6,10 +6,9 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.hudyma.domain.creatures.Creature;
-import ua.hudyma.domain.creatures.CreatureType;
-import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.dto.HeroSpecialty;
+import ua.hudyma.domain.heroes.enums.HeroSpecialtyType;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
@@ -23,7 +22,10 @@ import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.IdGenerator;
 
-import java.util.*;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
@@ -39,8 +41,7 @@ public class PlayerService {
 
     private final PlayerRepository playerRepository;
     private final PlayerMapper playerMapper;
-    private final ArmyService armyService;
-
+    //private final ArmyService armyService; incurs circular
     //private final HeroService heroService; incurs circular
 
     @Transactional
@@ -208,7 +209,8 @@ public class PlayerService {
         player.setName(IdGenerator.generateName());
         player.setPlayerColour(PlayerColour.values()[colourIndex]);
         var hero = createRandomHero();
-        var army = armyService.generateRandomArmy();
+        // var army = armyService.generateRandomArmy(); //todo implement
+        // hero.setArmyList(army);
         player.getHeroList().add(hero);
         hero.setPlayer(player);
         return player;
@@ -217,12 +219,29 @@ public class PlayerService {
     public Hero createRandomHero() {
         var hero = new Hero();
         hero.setName(IdGenerator.generateName());
-        assignRandomHeroSkill();
+        assignRandomHeroSpecialty(hero);
         return hero;
     }
 
-    private void assignRandomHeroSkill() {
+    private void assignRandomHeroSpecialty(Hero hero) {
         //todo implement
+        var randomSpecialtyType = IdGenerator
+                .getRandomEnum(HeroSpecialtyType.class);
+        String specialtyProperty = populateSpecialtyWithProperty(randomSpecialtyType);
+        hero.setHeroSpecialty(new HeroSpecialty(randomSpecialtyType, specialtyProperty));
+
+    }
+    private String populateSpecialtyWithProperty(HeroSpecialtyType randomSpecialtyType) {
+        //todo implement
+        return switch (randomSpecialtyType){
+            case SECONDARY_SKILL -> "";
+            case SPEED -> "";
+            case SPELL -> "";
+            case UPGRADE -> "";
+            case CREATURE -> "";
+            case RESOURCE -> "";
+            case WAR_MACHINE -> "";
+        };
     }
 
 }

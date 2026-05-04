@@ -7,5 +7,5 @@ public enum HeroSpecialtyType {
     SPEED, //All creatures receive +2 speed.
     SPELL, // Casts spell with increased effect
     UPGRADE, //  	Can upgrade creatures to 3rd level
-    WAR_MACHINE; // Increases the Attack and Defense skills of any Ballista by 30% Horn of the Abyss for every 5 levels (rounded up).
+    WAR_MACHINE; // Increases the Attack and Defense skills of any Ballista by 30% for every 5 levels (rounded up).
 }
