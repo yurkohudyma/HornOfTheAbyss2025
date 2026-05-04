@@ -1,5 +1,6 @@
 package ua.hudyma.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
@@ -9,6 +10,7 @@ import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
@@ -21,6 +23,8 @@ import ua.hudyma.dto.BattleResultDto;
 import ua.hudyma.dto.SpellAttackResultDto;
 import ua.hudyma.dto.SpellCastCombatReqDto;
 import ua.hudyma.exception.SpellCastException;
+import ua.hudyma.repository.HeroRepository;
+import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
 
@@ -31,16 +35,19 @@ import static ua.hudyma.domain.creatures.enums.ModifiableSkill.HEALTH;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.POWER;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
+import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class CombatService {
-    private final HeroService heroService;
+    //private final HeroService heroService; circular
     private final CreatureService creatureService;
     private final BattlefieldService battlefieldService;
-    private final ArmyService armyService;
+    //private final ArmyService armyService; circular
     private final ArmyHeroService armyHeroService;
+
+    private final HeroRepository heroRepository;
 
     public void initTownBattle(Hero hero, Town town) {
         throw new IllegalStateException
@@ -52,11 +59,19 @@ public class CombatService {
         return "Battlefield has been SUCC initialised";
     }
 
+    public Hero getHero(String heroCode) {
+        return heroRepository.findByCode(heroCode)
+                .orElseThrow(getExceptionSupplier(
+                        Hero.class,
+                        heroCode,
+                        EntityNotFoundException::new, false));
+    }
+
     @Transactional
     @SneakyThrows
     public BattleResultDto engageBattle(String attackerId, String defenderId) {
-        var attacker = heroService.getHero(attackerId);
-        var defender = heroService.getHero(defenderId);
+        var attacker = getHero(attackerId);
+        var defender = getHero(defenderId);
         if (attacker.getPlayer().equals(defender.getPlayer())) {
             throw new UnsupportedOperationException
                     ("Cannot combat between heroes of the same Player");
@@ -102,12 +117,12 @@ public class CombatService {
 
     @Transactional
     public SpellAttackResultDto spellCast(SpellCastCombatReqDto dto) {
-        var attacker = heroService.getHero(dto.attackerId());
+        var attacker = getHero(dto.attackerId());
         var spell = dto.spell();
         checkHeroLearntSpell(spell, attacker.getSpellBook());
-        var defender = heroService.getHero(dto.defenderId());
+        var defender = getHero(dto.defenderId());
         var defenderArmy = defender.getArmyList();
-        var defenderSlot = armyService.getSlot(defenderArmy, dto.defendingSlotId());
+        var defenderSlot = getSlot(defenderArmy, dto.defendingSlotId());
         var spellSchool = dto.spellSchool();
         var spellSchoolEnumClass =
                 resolveSpellSchoolEnumClass(spellSchool);
@@ -116,7 +131,7 @@ public class CombatService {
         var spellAction = spellEnum.getSpellAction();
         var spellProperty = SpellRegistry.fromCodeProperty(spell);
         var manaCost = spellEnum.getManaCost();
-        var parametersMap = heroService.getOrCreateHeroParamsMap(attacker);
+        var parametersMap = getOrCreateHeroParamsMap(attacker);
         var heroSpellPoints = parametersMap.get(CUR_SPELL_POINTS);
         var secondarySkillMap = attacker.getSecondarySkillMap();
         var heroPowerValue = attacker.getPrimarySkillMap().get(POWER);
@@ -148,6 +163,24 @@ public class CombatService {
             case MISC, BUF, DEBUF, ADVENTURE -> throw new SpellCastException
                     ("MISC, BUF, DEBUF, ADVENTURE not implemented");
         };
+    }
+
+    public CreatureSlot getSlot(List<CreatureSlot> army, String dto) {
+        return army
+                .stream()
+                .filter(s -> s.getSlotId()
+                        .equals(dto))
+                .findFirst()
+                .orElseThrow(getExceptionSupplier(CreatureSlot.class,
+                        dto, EntityNotFoundException::new, false));
+    }
+
+    public Map<HeroParams, Integer> getOrCreateHeroParamsMap(Hero hero) {
+        var paramMap = hero.getParametersMap();
+        if (paramMap == null) {
+            paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
+        }
+        return paramMap;
     }
 
     private static void checkHeroLearntSpell(String spell, Map<Integer, Set<String>> spellBook) {

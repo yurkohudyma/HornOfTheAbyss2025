@@ -45,4 +45,9 @@ public class CreatureService {
                 .orElseThrow(getExceptionSupplier(Creature.class, id,
                         EntityNotFoundException::new, false));
     }
+    public String getRandomCreature() {
+        throw new IllegalArgumentException("CreatureService ::: getRandomCreature Not implemented");
+        //todo implement
+    }
+
 }

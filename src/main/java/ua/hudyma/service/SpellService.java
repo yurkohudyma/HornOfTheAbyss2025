@@ -1,5 +1,6 @@
 package ua.hudyma.service;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import ua.hudyma.domain.spells.enums.*;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.*;
+import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.FixedSizeMap;
 
 import java.security.SecureRandom;
@@ -31,13 +33,14 @@ import static ua.hudyma.domain.spells.converter.SpellRegistry.resolveAllLevelSpe
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 import static ua.hudyma.service.HeroService.getIntelligenceLevel;
 import static ua.hudyma.service.HeroService.getKnowledgeLevel;
+import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class SpellService {
     private final TownService townService;
-    private final HeroService heroService;
+    //private final HeroService heroService; circular
     private final SecureRandom random = new SecureRandom();
     private static final Map<Integer, Integer> SPELL_QTY_PER_LEVEL = Map.of(
             1, 5,
@@ -47,9 +50,19 @@ public class SpellService {
             5, 1
     );
 
+    private final HeroRepository heroRepository;
+
+    public Hero getHero(String heroCode) {
+        return heroRepository.findByCode(heroCode)
+                .orElseThrow(getExceptionSupplier(
+                        Hero.class,
+                        heroCode,
+                        EntityNotFoundException::new, false));
+    }
+
     @Transactional
     public String castSpell(String heroId, String spellName) {
-        var hero = heroService.getHero(heroId);
+        var hero = getHero(heroId);
         var spellBook = hero.getSpellBook();
         var enumSchool = SpellRegistry.fromCode(spellName);
         var enumProperty = SpellRegistry.fromCodeProperty(spellName);
@@ -97,8 +110,6 @@ public class SpellService {
         return hero.getParametersMap();
     }
 
-
-
     public Set<String> getAllSchoolSpells(String spellSchool) {
         var enumClass =
                 resolveSpellSchoolEnumClass(spellSchool);
@@ -129,7 +140,7 @@ public class SpellService {
      */
     @Transactional
     public Map<Integer, Set<String>> learnSpell(String heroId, String spell) {
-        var hero = heroService.getHero(heroId);
+        var hero = getHero(heroId);
         var enumSchool = SpellRegistry.fromCode(spell);
         var spellLevel = enumSchool.getSpellLevel();
         var heroWisdomlevel = getHeroMaxSpellLevel(hero
@@ -143,8 +154,6 @@ public class SpellService {
         heroSpellBook.put(spellLevel, spellSet);
         return heroSpellBook;
     }
-
-
 
     private int getSecondarySkillManaCostModifier(
             int spellLevel,
@@ -202,7 +211,7 @@ public class SpellService {
     }
 
     public Map<Integer, Set<String>> getHeroSpellbook(String heroId) {
-        return heroService.getHero(heroId).getSpellBook();
+        return getHero(heroId).getSpellBook();
     }
 
     public Map<Integer, Set<String>> getTownSpells(String townName) {
@@ -212,7 +221,7 @@ public class SpellService {
     @Transactional
     public Map<Integer, Set<String>> learnTownSpells(
             String heroId, String townName) {
-        var hero = heroService.getHero(heroId);
+        var hero = getHero(heroId);
         var town = townService.getTown(townName);
         if (hero.getSpellBook() == null) {
             hero.setSpellBook(new HashMap<>());

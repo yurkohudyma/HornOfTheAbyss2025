@@ -1,5 +1,6 @@
 package ua.hudyma.service;
 
+import io.hypersistence.utils.spring.repository.BaseJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,6 +19,7 @@ import ua.hudyma.domain.spells.enums.SpellReplaceDemands;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
+import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
@@ -25,7 +27,8 @@ import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.*;
 import ua.hudyma.mapper.TownMapper;
-import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.repository.HeroRepository;
+import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.MessageProcessor;
@@ -34,8 +37,8 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.function.UnaryOperator.identity;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 import static ua.hudyma.domain.spells.converter.SpellRegistry.generateRandomSpell;
 import static ua.hudyma.service.ArmyService.ARMY_SLOT_MAX_QTY;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -47,10 +50,13 @@ public class TownService {
     private final CreatureService creatureService;
     private final TownRepository townRepository;
     private final TownMapper townMapper;
-    private final HeroService heroService;
+    //private final HeroService heroService; //generates circular
     private final CombatService combatService;
-    private final PlayerService playerService;
+    //private final PlayerService playerService; //generates circular
     private final ArmyHeroService armyHeroService;
+    private final HeroRepository heroRepository;
+
+    private final PlayerRepository playerRepository;
     //private final SpellService spellService; generates circular
 
     //todo test two-level dwelling building
@@ -93,7 +99,7 @@ public class TownService {
      */
     @Transactional(readOnly = true)
     public Map<FortificationType, Long> getTownFortificationStats(Long playerId) {
-        var player = playerService.getPlayer(playerId);
+        var player = getPlayer(playerId);
         return player.getTownsList()
                 .stream()
                 .collect(groupingBy(
@@ -107,13 +113,22 @@ public class TownService {
      */
     @Transactional(readOnly = true)
     public Map<FortificationType, Integer> getTownFortificationStatsCYCLE(Long playerId) {
-        var player = playerService.getPlayer(playerId);
+        var player = getPlayer(playerId);
         var townList = player.getTownsList();
         var map = new EnumMap<FortificationType, Integer>(FortificationType.class);
         for (Town town : townList) {
             map.merge(town.getFortificationType(), 1, Integer::sum);
         }
         return map;
+    }
+
+    public Player getPlayer(Long playerId) {
+        return playerRepository
+                .findById(playerId)
+                .orElseThrow(getExceptionSupplier(
+                        Player.class,
+                        playerId,
+                        EntityNotFoundException::new, false));
     }
 
     @SneakyThrows
@@ -132,7 +147,7 @@ public class TownService {
     @Transactional
     public String allocateVisitingHero(String heroId, String townName) {
         var town = getTown(townName);
-        var incomingHero = heroService.getHero(heroId);
+        var incomingHero = getHero(heroId);
         var visitingHero = town.getVisitingHero();
         if (town.getPlayer() != incomingHero.getPlayer()) {
             combatService.initTownBattle(incomingHero, town);
@@ -155,10 +170,17 @@ public class TownService {
         }
         return String.format("Hero %s is now visiting %s", incomingHero.getName(), town.getName());
     }
+    public Hero getHero(String heroCode) {
+        return heroRepository.findByCode(heroCode)
+                .orElseThrow(getExceptionSupplier(
+                        Hero.class,
+                        heroCode,
+                        EntityNotFoundException::new, false));
+    }
 
     @Transactional
     public List<TownGenerCreaturesReport> generateWeeklyCreatures(Long playerId) {
-        var player = playerService.getPlayer(playerId);
+        var player = getPlayer(playerId);
         var townList = player.getTownsList();
         var list = new ArrayList<TownGenerCreaturesReport>();
         for (Town town : townList) {
@@ -196,7 +218,7 @@ public class TownService {
         var player = town.getPlayer();
         if (!player.getTownsList().contains(town)) throw new IllegalStateException
                 (townName + " does NOT belong to " + player.getName());
-        var hero = heroService.getHero(dto.heroId());
+        var hero = getHero(dto.heroId());
         var heroArmy = hero.getArmyList();
         if (heroArmy.size() == ARMY_SLOT_MAX_QTY) {
             throw new ArmyFreeSlotOverflowException("No free slots for hiring creatures");
