@@ -22,6 +22,7 @@ public class HeroMapper extends BaseMapper<HeroRespDto, Hero, HeroReqDto> {
                 hero.getCode(),
                 hero.getFaction(),
                 hero.getSubfaction(),
+                hero.getHeroSpecialty(),
                 hero.getPrimarySkillMap(),
                 hero.getParametersMap(),
                 hero.getSecondarySkillMap(),

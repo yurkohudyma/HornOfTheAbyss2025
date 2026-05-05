@@ -232,7 +232,6 @@ public class PlayerService {
     }
 
     private void assignRandomHeroSpecialty(Hero hero) {
-        //todo implement
         var randomSpecialtyType = getRandomEnum(HeroSpecialtyType.class);
         var specialtyProperty = populateSpecialtyWithProperty(randomSpecialtyType);
         hero.setHeroSpecialty(new HeroSpecialty(randomSpecialtyType, specialtyProperty));

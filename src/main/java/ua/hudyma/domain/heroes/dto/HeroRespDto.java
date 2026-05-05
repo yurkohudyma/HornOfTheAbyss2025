@@ -14,6 +14,7 @@ public record HeroRespDto(
         String code,
         HeroFaction faction,
         HeroSubfaction subfaction,
+        HeroSpecialty heroSpecialty,
         Map<PrimarySkill, Integer> primarySkillMap,
         Map<HeroParams, Integer> parametersMap, Map<SecondarySkill, SkillLevel> secondarySkillMap,
         Map<ArtifactSlot, ArtifactSlotDisposition> bodyInventoryMap,
