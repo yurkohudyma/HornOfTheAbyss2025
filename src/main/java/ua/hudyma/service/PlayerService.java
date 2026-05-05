@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.HeroSpecialty;
+import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.domain.heroes.enums.HeroSpecialtyType;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.players.Player;
@@ -18,6 +19,7 @@ import ua.hudyma.domain.players.enums.PlayerColour;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.HallType;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
@@ -25,7 +27,6 @@ import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.IdGenerator;
 
-import java.security.SecureRandom;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
 import static ua.hudyma.enums.Faction.RAMPART;
 import static ua.hudyma.resource.enums.ResourceType.GOLD;
 import static ua.hudyma.util.IdGenerator.getRandomEnum;
+import static ua.hudyma.util.IdGenerator.getThreadLocalRandomIndex;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -227,29 +229,32 @@ public class PlayerService {
     public Hero createRandomHero() {
         var hero = new Hero();
         hero.setName(IdGenerator.generateName());
+        var randomFaction = IdGenerator.getRandomEnum(HeroFaction.class);
+        hero.setFaction(randomFaction);
         assignRandomHeroSpecialty(hero);
         return hero;
     }
 
     private void assignRandomHeroSpecialty(Hero hero) {
         var randomSpecialtyType = getRandomEnum(HeroSpecialtyType.class);
-        var specialtyProperty = populateSpecialtyWithProperty(randomSpecialtyType);
+        var specialtyProperty = populateSpecialtyWithProperty(randomSpecialtyType, hero.getFaction());
         hero.setHeroSpecialty(new HeroSpecialty(randomSpecialtyType, specialtyProperty));
 
     }
-    private Object populateSpecialtyWithProperty(HeroSpecialtyType randomSpecialtyType) {
+    private Object populateSpecialtyWithProperty(HeroSpecialtyType randomSpecialtyType, HeroFaction faction) {
         return switch (randomSpecialtyType){
             case SECONDARY_SKILL -> getRandomEnum(SecondarySkill.class).name();
             case SPEED -> 2;
             case SPELL -> {
-                var index = ThreadLocalRandom.current().nextInt(1,5);
+                var index = getThreadLocalRandomIndex(1,5);
                 yield SpellRegistry.generateRandomSpell(index);
             }
             case UPGRADE -> ""; //Enchanters from Monks/Zealots/Magi/Arch Magi. ###  Sea Dogs from Pirates and Corsairs. ###  Sharpshooters from Archers/Marksmen/Wood Elves/Grand Elves
-            case CREATURE -> creatureService.getRandomCreature(); //todo implement // Increases Speed of creatures and their Attack and Defense skills for every x levels (rounded up)
+            case CREATURE -> creatureService.getRandomCreature(faction); // Increases Speed of creatures and their Attack and Defense skills for every x levels (rounded up)
             case RESOURCE -> getRandomEnum(ResourceType.class).name();
             case WAR_MACHINE -> getRandomEnum(WarMachine.class).name();
         };
     }
+
 
 }

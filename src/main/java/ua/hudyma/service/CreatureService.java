@@ -7,10 +7,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
+import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.mapper.CreatureMapper;
 import ua.hudyma.repository.CreatureRepository;
+import ua.hudyma.util.IdGenerator;
 import ua.hudyma.util.MessageProcessor;
 
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -45,9 +48,10 @@ public class CreatureService {
                 .orElseThrow(getExceptionSupplier(Creature.class, id,
                         EntityNotFoundException::new, false));
     }
-    public String getRandomCreature() {
-        throw new IllegalArgumentException("CreatureService ::: getRandomCreature Not implemented");
-        //todo implement
+    public String getRandomCreature(HeroFaction heroFaction) {
+        var faction = heroFaction.getFaction();
+        var allFactionCreatures = CreatureTypeRegistry.getAllCreaturesByFaction(faction, true);
+        return allFactionCreatures[IdGenerator.getThreadLocalRandomIndex(0, allFactionCreatures.length)].getCode();
     }
 
 }

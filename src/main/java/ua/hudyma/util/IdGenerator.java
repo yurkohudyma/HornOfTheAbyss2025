@@ -4,6 +4,7 @@ import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -19,6 +20,10 @@ public class IdGenerator {
     public static String generateChannelId(
     ) {
         return "UC" + generateAlphaNumericId(22);
+    }
+
+    public static int getThreadLocalRandomIndex(int origin, int bound) {
+        return ThreadLocalRandom.current().nextInt(origin, bound);
     }
 
     private static String generateAlphaNumericId(int size) {
