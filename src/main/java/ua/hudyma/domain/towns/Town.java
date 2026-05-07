@@ -27,48 +27,61 @@ public class Town implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(unique = true)
     private String name;
+
     @OneToOne
     @JoinColumn(name = "visitor_hero_id")
     private Hero visitingHero;
+
     @OneToOne
     @JoinColumn(name = "garrison_hero_id")
     private Hero garrisonHero;
+
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
+
     @Enumerated(EnumType.STRING)
     private Alignment alignment;
+
     @Enumerated(EnumType.STRING)
     private Faction faction;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "garrison")
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(7)
     @ToString.Exclude
     private List<CreatureSlot> garrisonArmy;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "magic_guild_spell_map")
     @ToString.Exclude
     private Map<Integer, Set<String>> magicGuildSpellMap;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "common_building_map")
     @ToString.Exclude
     private Map<CommonBuildingType, Integer> commonBuildingMap =
             new EnumMap<>(CommonBuildingType.class);
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "dwelling_map")
     @ToString.Exclude
     private Map<String, Integer> dwellingMap = new HashMap<>();
+
     @Enumerated(EnumType.STRING)
     private HallType hallType = HallType.VILLAGE_HALL;
+
     @Enumerated(EnumType.STRING)
     private FortificationType fortificationType;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "unique_buildings")
-    private Set<String> uniqueBuildingSet =
-            new HashSet<>();
+    private Set<String> uniqueBuildingSet =  new HashSet<>();
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "horde_buildings")
     private Set<String> hordeBuildingSet = new HashSet<>();

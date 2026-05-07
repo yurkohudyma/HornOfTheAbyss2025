@@ -1,6 +1,5 @@
 package ua.hudyma.service;
 
-import io.hypersistence.utils.spring.repository.BaseJpaRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -22,8 +21,12 @@ import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
+import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.CoveDwellingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
+import ua.hudyma.enums.Alignment;
 import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.*;
 import ua.hudyma.mapper.TownMapper;
@@ -31,11 +34,14 @@ import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.util.IdGenerator;
 import ua.hudyma.util.MessageProcessor;
 
 import javax.annotation.Nonnull;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
@@ -47,13 +53,19 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 @RequiredArgsConstructor
 @Log4j2
 public class TownService {
+
     private final CreatureService creatureService;
+
     private final TownRepository townRepository;
+
     private final TownMapper townMapper;
+
     //private final HeroService heroService; //generates circular
     private final CombatService combatService;
+
     //private final PlayerService playerService; //generates circular
     private final ArmyHeroService armyHeroService;
+
     private final HeroRepository heroRepository;
 
     private final PlayerRepository playerRepository;
@@ -424,4 +436,30 @@ public class TownService {
         var faction = town.getFaction();
         return CreatureTypeRegistry.getAllCreaturesByFaction(faction, essential);
     }
+
+    public List<TownRespDto> createRandomTowns(int qty) {
+        return Stream.generate(this::createRandomTown).limit(qty).map(townMapper::toDto).toList();
+    }
+    private Town createRandomTown() {
+        var town = new Town();
+        town.setName(IdGenerator.generateName());
+        var alignment = IdGenerator.getRandomEnum(Alignment.class);
+        town.setAlignment(alignment);
+        var alignmentFactionsArray = alignment.getFaction().toArray();
+        var randomFaction = (Faction) alignmentFactionsArray
+                [IdGenerator.getThreadLocalRandomIndex(0, alignmentFactionsArray.length)];
+        town.setFaction(randomFaction);
+        var player = new Player();
+        player.setName(IdGenerator.generateName());
+        town.setPlayer(player);
+        var dwellingMap = new HashMap<String, Integer>();
+        AbstractDwellingType firstLevelDwelling = CastleDwellingType.GUARDHOUSE;
+        //todo retrieve dynamic faction-specific dwelling type
+        dwellingMap.put(firstLevelDwelling.getCode(), 1);
+        AbstractDwellingType secondLevelDwelling = CoveDwellingType.SHACK;
+        dwellingMap.put(secondLevelDwelling.getCode(), 2);
+        town.setDwellingMap(dwellingMap);
+        return town;
+    }
+
 }

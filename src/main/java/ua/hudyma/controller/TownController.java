@@ -27,6 +27,11 @@ public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
 
+    @GetMapping("/createRandom")
+    public ResponseEntity<List<TownRespDto>> getRandomTowns(@RequestParam int qty){
+        return ResponseEntity.ok(townService.createRandomTowns(qty));
+    }
+
     @PatchMapping("/replaceSpell")
     public ResponseEntity<String> studyAnotherSpell (
             @RequestParam String townName,
