@@ -22,8 +22,6 @@ import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
-import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
-import ua.hudyma.domain.towns.enums.dwelling.CoveDwellingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Alignment;
@@ -34,12 +32,12 @@ import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.repository.TownRepository;
 import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.service.build.DwellingBuildService;
 import ua.hudyma.util.IdGenerator;
 import ua.hudyma.util.MessageProcessor;
 
 import javax.annotation.Nonnull;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,6 +67,8 @@ public class TownService {
     private final HeroRepository heroRepository;
 
     private final PlayerRepository playerRepository;
+
+    private DwellingBuildService dwellingBuildService;
     //private final SpellService spellService; generates circular
 
     //todo test two-level dwelling building
@@ -453,10 +453,11 @@ public class TownService {
         player.setName(IdGenerator.generateName());
         town.setPlayer(player);
         var dwellingMap = new HashMap<String, Integer>();
-        AbstractDwellingType firstLevelDwelling = CastleDwellingType.GUARDHOUSE;
-        //todo retrieve dynamic faction-specific dwelling type
+        var firstLevelDwelling = AbstractDwellingTypeRegistry
+                .findDwellingByFaction(randomFaction, 1);
         dwellingMap.put(firstLevelDwelling.getCode(), 1);
-        AbstractDwellingType secondLevelDwelling = CoveDwellingType.SHACK;
+        var secondLevelDwelling = AbstractDwellingTypeRegistry
+                .findDwellingByFaction(randomFaction, 2);
         dwellingMap.put(secondLevelDwelling.getCode(), 2);
         town.setDwellingMap(dwellingMap);
         return town;

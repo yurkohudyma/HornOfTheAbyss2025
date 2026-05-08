@@ -2,7 +2,9 @@ package ua.hudyma.domain.towns.converter;
 
 import org.reflections.Reflections;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
+import ua.hudyma.enums.Faction;
 
 import java.util.Set;
 
@@ -52,5 +54,17 @@ public class AbstractDwellingTypeRegistry {
             }
         throw new IllegalArgumentException(
                 "No dwelling type found for creature " + creatureType);
+    }
+
+    public static AbstractDwellingType findDwellingByFaction(Faction faction, int level){
+        for (Class<? extends AbstractDwellingType> subtype : ENUM_TYPES) {
+            if (!subtype.isEnum()) continue;
+            var normalisedFaction = CreatureTypeRegistry.normalizeFactionEnumName(faction.name());
+            if (subtype.getSimpleName().startsWith(normalisedFaction)) {
+                return subtype.getEnumConstants()[level];
+            }
+        }
+        throw new IllegalArgumentException("Specific dwelling type for faction "
+                + faction + " has not been implemented yet");
     }
 }

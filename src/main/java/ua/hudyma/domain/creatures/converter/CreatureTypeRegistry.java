@@ -95,7 +95,7 @@ public class CreatureTypeRegistry {
         throw new IllegalArgumentException("Creatures of " + faction + " not found");
     }
 
-    private static String normalizeFactionEnumName(String faction) {
+    public static String normalizeFactionEnumName(String faction) {
         if (faction == null || faction.isBlank()) {
             throw new IllegalArgumentException("Faction cannot be null or blank");
         }

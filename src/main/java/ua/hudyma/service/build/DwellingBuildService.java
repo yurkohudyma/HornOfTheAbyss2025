@@ -9,6 +9,7 @@ import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.properties.dwelling.CastleDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.properties.dwelling.RampartDwellingTypeProperties;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
@@ -21,7 +22,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static ua.hudyma.domain.towns.enums.FortificationType.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -201,4 +201,5 @@ public class DwellingBuildService {
                 Map.Entry::getValue
         ));
     }
+
 }
