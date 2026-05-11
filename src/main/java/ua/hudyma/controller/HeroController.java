@@ -3,7 +3,9 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.heroes.dto.CalcSpecialtyReq;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
+import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.service.HeroService;
 
@@ -17,6 +19,18 @@ public class HeroController {
     public ResponseEntity<HeroRespDto> getRandomHero (){
         return ResponseEntity.ok(heroService
                 .createRandomHero());
+    }
+
+    @PatchMapping("/setSpecialty")
+    public ResponseEntity<HeroRespDto> setSpecialty(
+            @RequestBody HeroReqSpecialty dto){
+        return ResponseEntity.ok(heroService.setSpecialty(dto));
+    }
+
+    @PostMapping("/calcSpecialtyResult")
+    public ResponseEntity<Double> calcSpecialtyResult(
+            @RequestBody CalcSpecialtyReq dto){
+        return ResponseEntity.ok(heroService.calcSpecialtyResult(dto));
     }
 
     @GetMapping("/getBest")

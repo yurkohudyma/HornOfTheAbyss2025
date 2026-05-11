@@ -11,9 +11,9 @@ import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
-import ua.hudyma.domain.heroes.dto.HeroReqDto;
-import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
+import ua.hudyma.domain.heroes.enums.HeroSpecialtyType;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
@@ -397,5 +397,24 @@ public class HeroService {
                 .stream()
                 .map(CreatureSlot::getQuantity)
                 .reduce(0, Integer::sum);
+    }
+    @Transactional
+    public HeroRespDto setSpecialty(HeroReqSpecialty dto) {
+        var hero = getHero(dto.heroCode());
+        var specialtyType = dto.specialtyType();
+        var heroSpecialty = new HeroSpecialty(specialtyType, dto.property());
+        hero.setHeroSpecialty(heroSpecialty);
+        return heroMapper.toDto(hero);
+    }
+
+    public Double calcSpecialtyResult(CalcSpecialtyReq dto) {
+        var heroSpecialtyType = dto.heroSpecialtyType();
+        var heroLevel = dto.heroLevel();
+        return switch (heroSpecialtyType){
+            case CREATURE, SPEED, UPGRADE, WAR_MACHINE -> 0d;
+            case RESOURCE -> 1d;
+            case SPELL, SECONDARY_SKILL -> 1 + heroLevel * 0.05;
+            //todo amend other calculations
+        };
     }
 }
