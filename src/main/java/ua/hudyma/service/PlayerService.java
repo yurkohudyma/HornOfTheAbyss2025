@@ -6,9 +6,6 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
-import ua.hudyma.domain.creatures.dto.CreatureSlot;
-import ua.hudyma.domain.creatures.enums.creaturetypes.CoveCreatureType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.HeroSpecialty;
 import ua.hudyma.domain.heroes.enums.HeroFaction;
@@ -25,12 +22,12 @@ import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
-import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.util.IdGenerator;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
@@ -50,11 +47,11 @@ public class PlayerService {
 
     private final PlayerMapper playerMapper;
 
-    //private final ArmyService armyService; incurs circular
+    //private final ArmyService armyService; incurs circular via HeroService
     //private final HeroService heroService; incurs circular
     private final SpellService spellService;
-
     private final CreatureService creatureService;
+    private final RandomService randomService;
 
     @Transactional
     public String addResources(ResourcesReqDto dto) {
@@ -121,42 +118,6 @@ public class PlayerService {
                         EntityNotFoundException::new, false));
     }
 
-    public Map<MineType, Integer> getMines(Long playerId) {
-        var player = getPlayer(playerId);
-        return player.getMinesMap();
-    }
-
-    @Transactional
-    public String addMine(MineType mineType, Long playerId) {
-        var player = getPlayer(playerId);
-        var mineMap = fetchOrCreateMineMap(player);
-        mineMap.merge(mineType, 1, Integer::sum);
-        player.setMinesMap(mineMap);
-        return mineType + " succ acquired by " + player.getName();
-    }
-
-    private static Map<MineType, Integer> fetchOrCreateMineMap(Player player) {
-        return player.getMinesMap() == null ?
-                new EnumMap<>(MineType.class) :
-                player.getMinesMap();
-    }
-
-    public Map<ResourceType, Integer> getMinesWeeklyIncome(Long playerId) {
-        var player = getPlayer(playerId);
-        var mineMap = player.getMinesMap();
-        if (mineMap == null || mineMap.isEmpty()) {
-            throw new IllegalStateException("Mine Map is empty, no income");
-        }
-        var incomeMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
-        for (Map.Entry<MineType, Integer> entry : mineMap.entrySet()) {
-            var mineType = entry.getKey();
-            var mineQty = entry.getValue();
-            var resourceType = mineType.getResourceType();
-            var resourceRateIncome = mineType.getWeeklyProductionRate();
-            incomeMap.put(resourceType, mineQty * resourceRateIncome);
-        }
-        return incomeMap;
-    }
 
     /**
      * On the first day of the week, it produces extra gold equal to 10%
@@ -202,86 +163,10 @@ public class PlayerService {
         return "No rampart towns with treasuries have been found";
     }
 
-    //@Transactional(readOnly = true)
-    public List<PlayerRespDto> generateRandomPlayers(Integer qty) {
-        qty = qty < 1 ? 1 : qty;
-        qty = qty > 7 ? 7 : qty;
-        var playerList = IntStream.range(0, qty)
-                .mapToObj(this::generatePlayer)
-                .toList();
-        return playerMapper.toDtoList(playerList);
-    }
 
-    public Player generateRandomPlayer() {
-        return generatePlayer(0);
-    }
+    
 
-    private Player generatePlayer(int colourIndex) {
-        var player = new Player();
-        player.setName(IdGenerator.generateName());
-        player.setPlayerColour(PlayerColour.values()[colourIndex]);
-        var hero = createRandomHero();
-        var army = generateRandomArmy(hero.getFaction()); //todo implement
-        hero.setArmyList(army);
-        player.getHeroList().add(hero);
-        hero.setPlayer(player);
-        return player;
-    }
-    private List<CreatureSlot> generateRandomArmy(HeroFaction heroFaction) {
-        if (heroFaction == null) {
-            throw new IllegalArgumentException("HeroFaction is null");
-        }
-        var allFactionCreatures = CreatureTypeRegistry.getAllCreaturesByFaction(heroFaction.getFaction(), true);
-        var armyList = new ArrayList<CreatureSlot>();
-        var levelCounter = new AtomicInteger(1);
-        var quantityCounter = new AtomicInteger(30);
-        while (levelCounter.get() < 4) {
-            var creatures = Arrays
-                    .stream(allFactionCreatures)
-                    .filter(creatureType -> creatureType.getLevel() == levelCounter.getAndIncrement())
-                    .map(creatureType -> new CreatureSlot(
-                            creatureType,
-                            getThreadLocalRandomIndex(
-                                    quantityCounter.get() - 10,
-                                    quantityCounter.getAndUpdate(i -> i - 10))))
-                    .findAny()
-                    .orElse(new CreatureSlot(CoveCreatureType.HASPID, 1));
-            armyList.add(creatures);
-        }
-        return armyList;
-    }
 
-    public Hero createRandomHero() {
-        var hero = new Hero();
-        hero.setName(IdGenerator.generateName());
-        var randomFaction = IdGenerator.getRandomEnum(HeroFaction.class);
-        hero.setFaction(randomFaction);
-        assignRandomHeroSpecialty(hero);
-        return hero;
-    }
-
-    private void assignRandomHeroSpecialty(Hero hero) {
-        var randomSpecialtyType = getRandomEnum(HeroSpecialtyType.class);
-        var specialtyProperty = populateSpecialtyWithProperty(randomSpecialtyType, hero.getFaction());
-        hero.setHeroSpecialty(new HeroSpecialty(randomSpecialtyType, specialtyProperty));
-
-    }
-    private Object populateSpecialtyWithProperty(HeroSpecialtyType randomSpecialtyType, HeroFaction faction) {
-        return switch (randomSpecialtyType) {
-            case SECONDARY_SKILL -> getRandomEnum(SecondarySkill.class).name();
-            case SPEED -> 2;
-            case SPELL -> {
-                var index = getThreadLocalRandomIndex(1, 5);
-                yield SpellRegistry.generateRandomSpell(index);
-            }
-            case UPGRADE ->
-                    ""; //Enchanters from Monks/Zealots/Magi/Arch Magi. ###  Sea Dogs from Pirates and Corsairs. ###  Sharpshooters from Archers/Marksmen/Wood Elves/Grand Elves
-            case CREATURE ->
-                    creatureService.getRandomCreature(faction); // Increases Speed of creatures and their Attack and Defense skills for every x levels (rounded up)
-            case RESOURCE -> getRandomEnum(ResourceType.class).name();
-            case WAR_MACHINE -> getRandomEnum(WarMachine.class).name();
-        };
-    }
 
 
 }

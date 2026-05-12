@@ -3,22 +3,33 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.heroes.dto.CalcSpecialtyReq;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.service.HeroService;
+import ua.hudyma.service.RandomService;
+import ua.hudyma.util.IdGenerator;
 
 @RestController
 @RequestMapping("/heroes")
 @RequiredArgsConstructor
 public class HeroController {
     private final HeroService heroService;
+    private final RandomService randomService;
+
+    public String getRandomCreature(HeroFaction heroFaction) {
+        var faction = heroFaction.getFaction();
+        var allFactionCreatures = CreatureTypeRegistry.getAllCreaturesByFaction(faction, true);
+        return allFactionCreatures[IdGenerator.getThreadLocalRandomIndex(0, allFactionCreatures.length)].getCode();
+    }
 
     @GetMapping("/getRandom")
-    public ResponseEntity<HeroRespDto> getRandomHero (){
-        return ResponseEntity.ok(heroService
-                .createRandomHero());
+    public ResponseEntity<HeroRespDto> createRandomHero (){
+        return ResponseEntity.ok(randomService
+                .createRandomHeroDto());
     }
 
     @PatchMapping("/setSpecialty")
@@ -28,7 +39,7 @@ public class HeroController {
     }
 
     @PostMapping("/calcSpecialtyResult")
-    public ResponseEntity<Double> calcSpecialtyResult(
+    public ResponseEntity<Integer> calcSpecialtyResult(
             @RequestBody CalcSpecialtyReq dto){
         return ResponseEntity.ok(heroService.calcSpecialtyResult(dto));
     }

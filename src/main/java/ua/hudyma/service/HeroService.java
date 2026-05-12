@@ -12,9 +12,7 @@ import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.*;
-import ua.hudyma.domain.heroes.enums.ArtifactSlot;
-import ua.hudyma.domain.heroes.enums.HeroSpecialtyType;
-import ua.hudyma.domain.heroes.enums.PrimarySkill;
+import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
@@ -51,14 +49,6 @@ public class HeroService {
         hero.setPlayer(player);
         heroRepository.save(hero);
         return getReturnMessage(hero, "name");
-    }
-
-    public HeroRespDto createRandomHero(){
-        var hero = new Hero();
-        hero.setPlayer(playerService
-                .generateRandomPlayer());
-        hero.setName(IdGenerator.generateName());
-        return heroMapper.toDto(hero);
     }
 
     @Transactional
@@ -222,6 +212,14 @@ public class HeroService {
             case BASIC -> 1.2f;
             case ADVANCED -> 1.35f;
             case EXPERT -> 1.5f;
+        };
+    }
+
+    private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel){
+        return switch (skillLevel){
+            case BASIC -> 0;
+            case ADVANCED -> 1;
+            case EXPERT -> 2;
         };
     }
 
@@ -407,13 +405,20 @@ public class HeroService {
         return heroMapper.toDto(hero);
     }
 
-    public Double calcSpecialtyResult(CalcSpecialtyReq dto) {
+    public Integer calcSpecialtyResult(CalcSpecialtyReq dto) {
         var heroSpecialtyType = dto.heroSpecialtyType();
         var heroLevel = dto.heroLevel();
-        return switch (heroSpecialtyType){
-            case CREATURE, SPEED, UPGRADE, WAR_MACHINE -> 0d;
-            case RESOURCE -> 1d;
-            case SPELL, SECONDARY_SKILL -> 1 + heroLevel * 0.05;
+        return (int) switch (heroSpecialtyType){
+            case CREATURE, UPGRADE, WAR_MACHINE -> 0;
+            case SPEED -> 2;
+            case RESOURCE, SPELL -> 1;
+            case SECONDARY_SKILL -> {
+                var skillLevel = dto.skillLevel();
+                var secSkillArrayIndex = getSecondarySkillModifierNumber(skillLevel);
+                var secondarySkill = SecondarySkill.valueOf(dto.specialtyProperty());
+                var modifier = secondarySkill.getSkillLevelModifiers()[secSkillArrayIndex];
+                yield Math.round(modifier * (1 + heroLevel * 0.05));
+            }
             //todo amend other calculations
         };
     }

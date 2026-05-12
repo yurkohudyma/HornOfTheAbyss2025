@@ -11,18 +11,23 @@ import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
+import ua.hudyma.domain.creatures.enums.creaturetypes.CoveCreatureType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
+import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.exception.MinimalUnitOperationException;
 import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
+import static ua.hudyma.util.IdGenerator.getThreadLocalRandomIndex;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -37,6 +42,8 @@ public class ArmyService {
     private final ArmyHeroService armyHeroService;
 
     static final Integer ARMY_SLOT_MAX_QTY = 7;
+
+
 
     @Transactional
     public String compressArmy(String heroId) {
@@ -93,11 +100,6 @@ public class ArmyService {
         acceptor.setArmyList(donor.getArmyList());
         donor.setArmyList(bufferArmy);
         return "Armies have been swapped";
-    }
-
-    public List<CreatureSlot> generateRandomArmy() {
-        //todo implement
-        return List.of();
     }
 
     public CreatureType getLowestCreature(String heroId) {

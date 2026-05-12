@@ -48,10 +48,4 @@ public class CreatureService {
                 .orElseThrow(getExceptionSupplier(Creature.class, id,
                         EntityNotFoundException::new, false));
     }
-    public String getRandomCreature(HeroFaction heroFaction) {
-        var faction = heroFaction.getFaction();
-        var allFactionCreatures = CreatureTypeRegistry.getAllCreaturesByFaction(faction, true);
-        return allFactionCreatures[IdGenerator.getThreadLocalRandomIndex(0, allFactionCreatures.length)].getCode();
-    }
-
 }

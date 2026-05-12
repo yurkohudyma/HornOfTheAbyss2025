@@ -1,4 +1,4 @@
-package ua.hudyma.controller;
+package ua.hudyma.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +7,8 @@ import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
+import ua.hudyma.mapper.HeroMapper;
+import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.resource.enums.MineType;
 import ua.hudyma.resource.enums.ResourceType;
 import ua.hudyma.service.PlayerService;
@@ -18,31 +20,34 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RequestMapping("/players")
 public class PlayerController {
+
     private final PlayerService playerService;
+    private final ResourceService resourceService;
+    private final RandomService randomService;
 
     @GetMapping("/generateRandom")
     public ResponseEntity<List<PlayerRespDto>> generateRandom
             (@RequestParam Integer qty){
-        return ResponseEntity.ok(playerService
+        return ResponseEntity.ok(randomService
                 .generateRandomPlayers(qty));
     }
 
     @GetMapping("/mines")
     public ResponseEntity<Map<MineType, Integer>> getMines (
             @RequestParam Long playerId){
-        return ResponseEntity.ok(playerService.getMines(playerId));
+        return ResponseEntity.ok(resourceService.getMines(playerId));
     }
 
     @GetMapping("/addMine")
     public ResponseEntity<String> addMine(
             @RequestParam MineType mineType, @RequestParam Long playerId){
-        return ResponseEntity.ok(playerService.addMine(mineType, playerId));
+        return ResponseEntity.ok(resourceService.addMine(mineType, playerId));
     }
 
     @GetMapping("/minesWeeklyIncome")
     public ResponseEntity<Map<ResourceType, Integer>> getMinesWeeklyReport
             (@RequestParam Long playerId){
-        return ResponseEntity.ok(playerService
+        return ResponseEntity.ok(resourceService
                 .getMinesWeeklyIncome(playerId));
     }
 
