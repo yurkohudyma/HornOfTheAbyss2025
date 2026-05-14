@@ -24,8 +24,20 @@ import static ua.hudyma.enums.Faction.*;
 @Getter
 @RequiredArgsConstructor
 public enum GrailBuildingType implements AbstractBuildingType {
-    AURORA_BOREALIS (CONFLUX, toEnumMap(Map.of())),
-    CARNIVOROUS_PLANT (FORTRESS, toEnumMap(Map.of())),
+    AURORA_BOREALIS (CONFLUX, toEnumMap(Map.of(
+            /**
+             * Fills the town's Mage Guild with all spells up
+             * to the level of the currently built Mage Guild,
+             * but does not include spells that are never
+             * available for Conflux.
+             */
+            ALL_SPELLS, Map.of(
+                    "limit_by_current_mageguild_level",
+                    "exclude_town_forbidden_spells")))),
+    CARNIVOROUS_PLANT (FORTRESS, toEnumMap(Map.of(
+            BOOST, Map.of(
+                    ATTACK, "10, defending_only",
+                    DEFENSE, "10, defending_only")))),
     COLOSSUS (CASTLE, toEnumMap(Map.of(
             BOOST, Map.of (
                     MORALE, 2)))),
@@ -71,8 +83,6 @@ public enum GrailBuildingType implements AbstractBuildingType {
 
     private final Faction faction;
     private final EnumMap<ArtifactAction, Object> propertiesMap;
-
-    //todo populate the rest of GrailBuilding properties
 
     private static EnumMap<ArtifactAction, Object> toEnumMap(
             Map<ArtifactAction, Object> properties) {
