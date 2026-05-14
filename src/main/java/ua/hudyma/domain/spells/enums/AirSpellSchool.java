@@ -23,6 +23,7 @@ public enum AirSpellSchool implements AbstractSpellSchool {
             null,
             1,
             List.of()),
+    LIGHTING_BOLT(2, SpellAction.DAMAGE, 10, POWER, 25, List.of(10f, 20f, 50f)),
     PRECISION(2, SpellAction.BUF, 16, //real is 8
             null, 1, List.of()),
     VISIONS(2, SpellAction.MISC, 0, null, 1, List.of()),
