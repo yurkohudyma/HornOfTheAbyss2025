@@ -3,14 +3,19 @@ package ua.hudyma.service.build;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.TownBannedSpells;
+import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.GrailBuildingType;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.MethodNotImplementedException;
 import ua.hudyma.service.SpellService;
 import ua.hudyma.service.TownService;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
 
@@ -37,6 +42,7 @@ public class GrailBuildingService {
      };
     }
 
+    //@Transactional
     private String buildConflux(String townName) {
         var town = townService.getTown(townName);
         if (town.getUniqueBuildingSet().contains(AURORA_BOREALIS)){
@@ -48,20 +54,33 @@ public class GrailBuildingService {
             return "Grail gives no benefit until you build a mage guild";
         }
         var mageGuildLevel = commonBuildingMap.get(CommonBuildingType.MAGE_GUILD);
-        var bannedTownSpells = TownBannedSpells
+        var allSpellsLimitedByLevelMap = getAllSpecificLevelSpellsMap(mageGuildLevel, town);
+        town.getMagicGuildSpellMap().putAll(allSpellsLimitedByLevelMap); //todo not tested
+        town.getUniqueBuildingSet().add(AURORA_BOREALIS.name());
+        return AURORA_BOREALIS + " successfully built in " + townName;
+    }
+    private static List<String> getTownBannedSpeelSet(Town town) {
+        return TownBannedSpells
                 .valueOf(town
                         .getFaction()
                         .toString())
                 .getBannedSpellsSet().stream()
-                .map(String::valueOf).toList();
-        var allSpellsLimitedByLevel = SpellRegistry
-                .resolveAllLevelSpells(mageGuildLevel)
-                .stream()
-                .filter(bannedSpell -> !bannedTownSpells.contains(bannedSpell))
+                .map(String::valueOf)
                 .toList();
-        //town.getMagicGuildSpellMap().putAll(allSpellsLimitedByLevel); //todo refactor allSpells into map <Level, Set>
-        town.getUniqueBuildingSet().add(AURORA_BOREALIS.name());
-        return AURORA_BOREALIS + " successfully built in " + townName;
+    }
+    private Map<Integer, Set<String>> getAllSpecificLevelSpellsMap(Integer mageGuildLevel, Town town) {
+        var spellsMap = new HashMap<Integer, Set<String>>();
+        var townBannedspellSet = getTownBannedSpeelSet(town);
+        while (mageGuildLevel-- > 0) {
+            var specificLevelSpellSet = SpellRegistry
+                    .resolveAllLevelSpells(mageGuildLevel)
+                    .stream()
+                    .filter(bannedSpell -> !townBannedspellSet.contains(bannedSpell))
+                    .map(String::valueOf)
+                    .collect(Collectors.toSet());
+            spellsMap.put(mageGuildLevel, specificLevelSpellSet);
+        }
+        return spellsMap;
     }
 
 }
