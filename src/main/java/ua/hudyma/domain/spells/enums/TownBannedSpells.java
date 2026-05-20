@@ -22,7 +22,7 @@ public enum TownBannedSpells {
     DUNGEON (Set.of()),
     STRONGHOLD (Set.of()),
     FORTRESS (Set.of()),
-    CONFLUX (Set.of()),
+    CONFLUX (Set.of(CURSE, DEATH_RIPPLE, ANIMATE_DEAD, ARMAGEDDON)),
     COVE (Set.of()),
     FACTORY (Set.of()),
     BULWARK (Set.of());

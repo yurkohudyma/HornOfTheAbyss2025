@@ -4,13 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.towns.dto.AbstractBuildReqDto;
+import ua.hudyma.domain.towns.enums.GrailBuildingType;
 import ua.hudyma.service.build.AbstractBuildService;
+import ua.hudyma.service.build.GrailBuildingService;
 
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
 public class BuildController {
     private final AbstractBuildService abstractBuildService;
+    private final GrailBuildingService grailBuildingService;
 
     @GetMapping("/build/detect")
     public ResponseEntity<String> detect(
@@ -36,5 +39,12 @@ public class BuildController {
             @RequestParam String buildingType, @RequestParam String townName){
         return ResponseEntity.ok(abstractBuildService
                 .destroyBuilding(buildingType, townName));
+    }
+
+    @GetMapping("/buildGrail")
+    public ResponseEntity<String> buildGrail(
+            @RequestParam GrailBuildingType grailType,
+            @RequestParam String townName){
+        return ResponseEntity.ok(grailBuildingService.buildGrailBuilding(grailType, townName));
     }
 }

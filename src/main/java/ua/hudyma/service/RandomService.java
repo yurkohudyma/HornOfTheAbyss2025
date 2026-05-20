@@ -127,7 +127,7 @@ public class RandomService {
         player.setName(IdGenerator.generateName());
         player.setPlayerColour(PlayerColour.values()[colourIndex]);
         var hero = createRandomHero();
-        var army = generateRandomArmy(hero.getFaction()); //todo implement
+        var army = generateRandomArmy(hero.getFaction());
         hero.setArmyList(army);
         player.getHeroList().add(hero);
         hero.setPlayer(player);

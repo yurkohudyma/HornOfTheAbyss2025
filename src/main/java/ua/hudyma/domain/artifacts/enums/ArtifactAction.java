@@ -13,5 +13,6 @@ public enum ArtifactAction {
     ALL_WATER_SPELLS,
     ALL_AIR_SPELLS,
     ALL_EARTH_SPELLS,
+    ALL_SPELLS,
     IGNORE_SPELL
 }

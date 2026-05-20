@@ -29,7 +29,7 @@ public enum GrailBuildingType implements AbstractBuildingType {
              * Fills the town's Mage Guild with all spells up
              * to the level of the currently built Mage Guild,
              * but does not include spells that are never
-             * available for Conflux.
+             * available for Conflux. //todo implement logic
              */
             ALL_SPELLS, Map.of(
                     "limit_by_current_mageguild_level",
