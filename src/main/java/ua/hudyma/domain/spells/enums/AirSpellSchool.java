@@ -27,15 +27,20 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     PRECISION(2, SpellAction.BUF, 16, //real is 8
             null, 1, List.of()),
     VISIONS(2, SpellAction.MISC, 0, null, 1, List.of()),
-    SUMMON_AIR_ELEMENTAL(5,SUMMON, 25, POWER,
+    SUMMON_AIR_ELEMENTAL(5, SUMMON, 25, POWER,
             1,
             List.of(2f, 2.5f, 3f));
 
     private final int spellLevel;
+
     private final SpellAction spellAction;
+
     private final Integer manaCost;
+
     private final PrimarySkill spellPrimarySkill;
+
     private final Integer modifierCoefficient;
+
     private final List<Float> modifiedValuesList;
 
     @Override

@@ -57,7 +57,8 @@ public class CommonBuildService {
                 grailTown.getUniqueBuildingSet().add(grailType.toString());
                 hero.getBackpackInventoryList().remove(ArtifactSlotDisposition.GRAIL);
                 log.info("{} has been emerged in {}", grailType, town.getName());
-                //todo check the grailbuilding
+                //there is specific and synthetic method for implementing grail building and
+                // executing its benefits (GrailBuildService)
             }
             else if (buildingType instanceof CommonBuildingType) {
                 if (commonBuildingMap.containsKey(buildingType)) {

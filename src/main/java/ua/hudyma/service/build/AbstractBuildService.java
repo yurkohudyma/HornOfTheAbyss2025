@@ -224,9 +224,7 @@ public class AbstractBuildService {
             Town town,
             AbstractDwellingType dwellingType,
             AbstractDwellingTypeProperties constantProperties) {
-        if (dwellingType != null /*CastleDwellingType ||
-            dwellingType instanceof RampartDwellingType
-            && dwellingType instanceof AbstractDwellingType*/) {
+        if (dwellingType != null) {
             dwellingBuildService.build(new DwellReqDto(
                     town,
                     dwellingType,

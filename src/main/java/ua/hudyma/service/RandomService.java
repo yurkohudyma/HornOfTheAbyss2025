@@ -16,6 +16,9 @@ import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.enums.PlayerColour;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
+import ua.hudyma.domain.towns.Town;
+import ua.hudyma.domain.towns.enums.CommonBuildingType;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.mapper.PlayerMapper;
@@ -24,6 +27,7 @@ import ua.hudyma.util.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
@@ -132,6 +136,16 @@ public class RandomService {
         player.getHeroList().add(hero);
         hero.setPlayer(player);
         return player;
+    }
+
+    public Town createRandomTown(Faction faction) {
+        var town = new Town();
+        town.setFaction(faction);
+        var commonBuildMap = new EnumMap<CommonBuildingType, Integer>(CommonBuildingType.class);
+        commonBuildMap.put(CommonBuildingType.MAGE_GUILD, 5);
+        town.setCommonBuildingMap(commonBuildMap);
+        town.setName("Random " + faction + " town");
+        return town;
     }
 
 }
