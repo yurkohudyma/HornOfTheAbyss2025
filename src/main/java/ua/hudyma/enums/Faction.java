@@ -2,6 +2,7 @@ package ua.hudyma.enums;
 
 public enum Faction {
     CASTLE,
+    BULWARK,
     RAMPART,
     TOWER,
     INFERNO,

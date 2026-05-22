@@ -24,6 +24,11 @@ import static ua.hudyma.enums.Faction.*;
 @Getter
 @RequiredArgsConstructor
 public enum GrailBuildingType implements AbstractBuildingType {
+
+
+    //https://heroes.thelazy.net/index.php/Grail#Grail_Buildings
+
+
     AURORA_BOREALIS (CONFLUX, toEnumMap(Map.of(
             /**
              * Fills the town's Mage Guild with all spells up
@@ -34,6 +39,9 @@ public enum GrailBuildingType implements AbstractBuildingType {
             ALL_SPELLS, Map.of(
                     "limit_by_current_mageguild_level",
                     "exclude_town_forbidden_spells")))),
+    SPIRITS_OF_THE_FOREBEARS (BULWARK, toEnumMap(Map.of(
+            BOOST, Map.of(
+                    DEFENSE, "20, defending_only")))),
     CARNIVOROUS_PLANT (FORTRESS, toEnumMap(Map.of(
             BOOST, Map.of(
                     ATTACK, "10, defending_only",
@@ -46,6 +54,7 @@ public enum GrailBuildingType implements AbstractBuildingType {
                     GROWTH, Map.of (
                             InfernoCreatureType.FAMILIAR,
                             Map.of (15, "external_dwellings_not_included")))))),
+    //todo implement DEITY_OF_FIRE
     GUARDIAN_OF_EARTH (DUNGEON, toEnumMap(Map.of(
             BOOST, Map.of (
                     POWER, "12, defending_only")))),
@@ -74,12 +83,14 @@ public enum GrailBuildingType implements AbstractBuildingType {
     SOUL_PRISON (NECROPOLIS, toEnumMap(Map.of(
             BOOST_OTH_PARAM, Map.of (
                     NECROMANCY, "20%")))),
+    //todo implement SOUL_PRISON
     SPIRIT_GUARDIAN (RAMPART, toEnumMap(Map.of(
             BOOST, Map.of(
-                    LUCK, 2)))), //todo implement SPIRIT_GUARDIAN
+                    LUCK, 2)))),
     WARLORDS_MONUMENT(STRONGHOLD, toEnumMap(
             Map.of(BOOST, Map.of(
                     ATTACK, "20, defending_only"))));
+    // this parameter is adjusted dynamically when hero is invoked into battle by other hero
 
     private final Faction faction;
     private final EnumMap<ArtifactAction, Object> propertiesMap;

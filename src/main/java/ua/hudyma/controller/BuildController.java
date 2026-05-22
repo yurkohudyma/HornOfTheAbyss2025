@@ -40,11 +40,4 @@ public class BuildController {
         return ResponseEntity.ok(abstractBuildService
                 .destroyBuilding(buildingType, townName));
     }
-
-    @GetMapping("/buildGrail")
-    public ResponseEntity<String> buildGrail(
-            @RequestParam GrailBuildingType grailType,
-            @RequestParam String townName){
-        return ResponseEntity.ok(grailBuildingService.buildGrailBuilding(grailType, townName));
-    }
 }

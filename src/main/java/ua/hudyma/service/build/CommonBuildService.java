@@ -21,12 +21,15 @@ import java.util.stream.Collectors;
 
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MARKETPLACE;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.RESOURCE_SILO;
+import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class CommonBuildService {
+
+    private final GrailBuildingService grailBuildingService;
 
     public void build(BuildReqDto dto) {
         var town = dto.town();
@@ -54,11 +57,14 @@ public class CommonBuildService {
                         .findAny()
                         .orElseThrow(() -> new EnumConstantNotPresentException(
                                 GrailBuildingType.class, "Cannot find appropriate Grail-type Building"));
+                if (town.getUniqueBuildingSet().contains(buildingType)){
+                    throw new BuildingAlreadyExistsException
+                            ("Grail building " + buildingType + " already exists in " +  town.getName());
+                }
                 grailTown.getUniqueBuildingSet().add(grailType.toString());
                 hero.getBackpackInventoryList().remove(ArtifactSlotDisposition.GRAIL);
                 log.info("{} has been emerged in {}", grailType, town.getName());
-                //there is specific and synthetic method for implementing grail building and
-                // executing its benefits (GrailBuildService)
+                grailBuildingService.buildGrailBuilding(grailType, grailTown);
             }
             else if (buildingType instanceof CommonBuildingType) {
                 if (commonBuildingMap.containsKey(buildingType)) {
