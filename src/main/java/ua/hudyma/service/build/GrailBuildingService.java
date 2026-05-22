@@ -70,8 +70,8 @@ public class GrailBuildingService {
             magicGuildSpellMap = new HashMap<>();
         magicGuildSpellMap.putAll(allSpellsLimitedByLevelMap);
         town.getUniqueBuildingSet().add(AURORA_BOREALIS.name());
-        System.out.println(magicGuildSpellMap);
-        return AURORA_BOREALIS + " successfully built in " + townName;
+        log.info(magicGuildSpellMap);
+        return AURORA_BOREALIS + " successfully built in " + town.getName();
     }
     private static List<String> getTownBannedSpellSet(Town town) {
         return TownBannedSpells
@@ -92,8 +92,7 @@ public class GrailBuildingService {
                     .filter(bannedSpell -> !townBannedspellSet.contains(bannedSpell))
                     .map(String::valueOf)
                     .collect(Collectors.toSet());
-            spellsMap.put(mageGuildLevel, specificLevelSpellSet);
-            --mageGuildLevel;
+            spellsMap.put(mageGuildLevel--, specificLevelSpellSet);
         }
         return spellsMap;
     }
