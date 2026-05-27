@@ -13,7 +13,7 @@ import ua.hudyma.service.build.GrailBuildingService;
 @RequiredArgsConstructor
 public class BuildController {
     private final AbstractBuildService abstractBuildService;
-    private final GrailBuildingService grailBuildingService;
+    //private final GrailBuildingService grailBuildingService;
 
     @GetMapping("/build/detect")
     public ResponseEntity<String> detect(

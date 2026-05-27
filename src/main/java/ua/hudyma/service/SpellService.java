@@ -253,6 +253,7 @@ public class SpellService {
             case BASIC -> 3;
             case ADVANCED -> 4;
             case EXPERT -> 5;
+            case CUSTOM -> throw new IllegalArgumentException("Not applicable for MaxSpellLevel definition");
         };
     }
 

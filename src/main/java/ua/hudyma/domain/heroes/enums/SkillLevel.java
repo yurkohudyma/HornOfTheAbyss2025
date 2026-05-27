@@ -6,5 +6,5 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum SkillLevel {
-    BASIC, ADVANCED, EXPERT;
+    BASIC, ADVANCED, EXPERT, CUSTOM
 }

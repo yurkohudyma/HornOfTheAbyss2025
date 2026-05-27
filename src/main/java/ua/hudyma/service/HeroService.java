@@ -212,6 +212,7 @@ public class HeroService {
             case BASIC -> 1.2f;
             case ADVANCED -> 1.35f;
             case EXPERT -> 1.5f;
+            case CUSTOM -> throw new IllegalArgumentException("Not applicable for "+INTELLIGENCE);
         };
     }
 
@@ -220,6 +221,7 @@ public class HeroService {
             case BASIC -> 0;
             case ADVANCED -> 1;
             case EXPERT -> 2;
+            case CUSTOM -> throw new IllegalArgumentException("Not applicable for HeroSpecialty");
         };
     }
 

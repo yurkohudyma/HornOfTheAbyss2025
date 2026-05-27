@@ -24,7 +24,7 @@ public enum SecondarySkill {
     LUCK (new int[]{1, 2, 3}),
     MYSTICISM (new int[]{5, 10, 15}),
     NAVIGATION (new int[]{50, 100, 150}),
-    NECROMANCY (new int[]{5, 10, 15}),
+    NECROMANCY (new int[]{5, 10, 15, 20}), //20% for soul_prison_effect
     OFFENSE (new int[]{10, 20, 30}),
     PATHFINDING (new int[]{25, 50, 75}),
     RESISTANCE (new int[]{5, 10, 20}),

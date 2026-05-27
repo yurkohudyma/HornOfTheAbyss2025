@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.heroes.HeroParams;
+import ua.hudyma.domain.heroes.enums.SecondarySkill;
+import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.TownBannedSpells;
 import ua.hudyma.domain.towns.Town;
@@ -19,6 +21,8 @@ import ua.hudyma.service.TownService;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ua.hudyma.domain.heroes.enums.SecondarySkill.NECROMANCY;
+import static ua.hudyma.domain.heroes.enums.SkillLevel.CUSTOM;
 import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
 import static ua.hudyma.enums.Faction.BULWARK;
 
@@ -34,11 +38,11 @@ public class GrailBuildingService {
      switch (grailType){
          case AURORA_BOREALIS -> buildConflux (town);
          case SPIRIT_GUARDIAN -> buildRampart(town);
+         case SOUL_PRISON -> buildNecropolis(town);
          case CARNIVOROUS_PLANT,
               SPIRITS_OF_THE_FOREBEARS,
               LODESTAR,
               SKYSHIP,
-              SOUL_PRISON,
               COLOSSUS,
               GUARDIAN_OF_EARTH,
               DEITY_OF_FIRE,
@@ -46,6 +50,20 @@ public class GrailBuildingService {
               WARLORDS_MONUMENT -> throw new MethodNotImplementedException("Try later");
      };
     }
+    private void buildNecropolis(Town town) {
+        var player = town.getPlayer();
+        var heroes = player.getHeroList();
+        heroes
+                .stream()
+                .filter(hero -> hero.getSecondarySkillMap().containsKey(NECROMANCY))
+                .forEach(hero -> hero.getSecondarySkillMap()
+                        .put(NECROMANCY, CUSTOM));
+
+        //apply secondarySkillCoefficient for SecSkill calculation
+        /*final int secondarySkillCoefficient = NECROMANCY
+                .getSkillLevelModifiers()[CUSTOM.ordinal()];*/
+    }
+
     private void buildRampart(Town town) {
         var player = town.getPlayer();
         var heroes = player.getHeroList();
