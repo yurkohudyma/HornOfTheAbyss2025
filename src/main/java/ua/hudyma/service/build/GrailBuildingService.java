@@ -4,27 +4,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.heroes.HeroParams;
-import ua.hudyma.domain.heroes.enums.SecondarySkill;
-import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.TownBannedSpells;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.GrailBuildingType;
-import ua.hudyma.enums.Faction;
-import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.MethodNotImplementedException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.service.RandomService;
 import ua.hudyma.service.TownService;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.NECROMANCY;
 import static ua.hudyma.domain.heroes.enums.SkillLevel.CUSTOM;
-import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
-import static ua.hudyma.enums.Faction.BULWARK;
+import static ua.hudyma.domain.towns.enums.GrailBuildingType.*;
 
 @Service
 @RequiredArgsConstructor
@@ -39,17 +37,23 @@ public class GrailBuildingService {
          case AURORA_BOREALIS -> buildConflux (town);
          case SPIRIT_GUARDIAN -> buildRampart(town);
          case SOUL_PRISON -> buildNecropolis(town);
+         case DEITY_OF_FIRE -> buildInferno(town);
          case CARNIVOROUS_PLANT,
               SPIRITS_OF_THE_FOREBEARS,
               LODESTAR,
               SKYSHIP,
               COLOSSUS,
               GUARDIAN_OF_EARTH,
-              DEITY_OF_FIRE,
               LIGHTNING_ROD,
               WARLORDS_MONUMENT -> throw new MethodNotImplementedException("Try later");
      };
     }
+    private void buildInferno(Town town) {
+        //todo implement DEITY_OF_FIRE
+        //створити інстанс ентіті creature в базі даних
+        //зробити костиль при наборі істот (імпів), якщо є грааль, то встановити модифіковане число GROWTH 15
+    }
+
     private void buildNecropolis(Town town) {
         var player = town.getPlayer();
         var heroes = player.getHeroList();

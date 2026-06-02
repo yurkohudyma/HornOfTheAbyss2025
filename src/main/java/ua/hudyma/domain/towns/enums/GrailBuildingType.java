@@ -83,7 +83,6 @@ public enum GrailBuildingType implements AbstractBuildingType {
     SOUL_PRISON (NECROPOLIS, toEnumMap(Map.of(
             BOOST_OTH_PARAM, Map.of (
                     NECROMANCY, "20%")))),
-    //todo implement SOUL_PRISON
     SPIRIT_GUARDIAN (RAMPART, toEnumMap(Map.of(
             BOOST, Map.of(
                     LUCK, 2)))),
