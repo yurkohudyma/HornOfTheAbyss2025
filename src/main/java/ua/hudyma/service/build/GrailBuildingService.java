@@ -29,8 +29,8 @@ import static ua.hudyma.domain.towns.enums.GrailBuildingType.*;
 @Log4j2
 public class GrailBuildingService {
 
-    private final TownService townService;
-    private final RandomService randomService;
+    //private final TownService townService;
+    //private final RandomService randomService;
 
     public void buildGrailBuilding(GrailBuildingType grailType, Town town) {
      switch (grailType){
@@ -50,8 +50,9 @@ public class GrailBuildingService {
     }
     private void buildInferno(Town town) {
         //todo implement DEITY_OF_FIRE
-        //створити інстанс ентіті creature в базі даних
-        //зробити костиль при наборі істот (імпів), якщо є грааль, то встановити модифіковане число GROWTH 15
+        //створити інстанс ентіті creature в базі даних => DONE
+        //створити інстанс inferno town в базі даних
+        //зробити костиль при наборі істот (імпів), якщо є грааль, то встановити модифіковане число GROWTH +15
     }
 
     private void buildNecropolis(Town town) {
