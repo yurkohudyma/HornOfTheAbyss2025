@@ -11,8 +11,6 @@ import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
-import ua.hudyma.domain.creatures.enums.creaturetypes.InfernoCreatureType;
-import ua.hudyma.domain.creatures.enums.creaturetypes.InfernoEssentialCreatureType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
@@ -195,7 +193,7 @@ public class TownService {
     }
 
     @Transactional
-    public List<TownGenerCreaturesReport> generateWeeklyCreatures(Long playerId) {
+    public List<TownGenerCreaturesReport> generateAllTownsWeeklyCreatures(Long playerId) {
         var player = getPlayer(playerId);
         var townList = player.getTownsList();
         var list = new ArrayList<TownGenerCreaturesReport>();
@@ -212,8 +210,9 @@ public class TownService {
         var reportMap = new HashMap<CreatureType, Integer>();
         for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()) {
             var dwellingName = entry.getKey();
-            var creature = getCreatureFromDwelling(dwellingName);
-            if (creature == null) continue;
+            var creatureOpt = getCreatureFromDwelling(dwellingName);
+            if (creatureOpt.isEmpty()) continue;
+            var creature = creatureOpt.get();
             reportMap.put(creature.getCreatureType(), entry.getValue());
         }
         reportMap = getValueSortedMap(reportMap);
@@ -312,7 +311,7 @@ public class TownService {
         return town.getDwellingMap().values().stream().anyMatch(a -> a > 0);
     }
 
-    private Creature getCreatureFromDwelling(String dwellingName) {
+    private Optional<Creature> getCreatureFromDwelling(String dwellingName) {
         var specificDwellingEnum = AbstractDwellingTypeRegistry
                 .fromCode(dwellingName);
         var creatureEnum = specificDwellingEnum.getCreature();
@@ -331,8 +330,9 @@ public class TownService {
         var reportMap = new HashMap<CreatureType, Integer>();
         for (Map.Entry<String, Integer> entry : townDwellingMap.entrySet()) {
             var dwellingName = entry.getKey();
-            var creature = getCreatureFromDwelling(dwellingName);
-            if (creature == null) continue;
+            var creatureOpt = getCreatureFromDwelling(dwellingName);
+            if (creatureOpt.isEmpty()) continue;
+            var creature = creatureOpt.get();
             var creatureGrowth = retrieveCreatureGrowth(creature);
             var hordeCreatureBoost = 0;
             if (!townHordeBuildingList.isEmpty()) {
@@ -478,6 +478,11 @@ public class TownService {
         dwellingMap.put(secondLevelDwelling.getCode(), 2);
         town.setDwellingMap(dwellingMap);
         return town;
+    }
+
+    public TownGenerCreaturesReport generateWeeklyCreatures(String townName) {
+        var town = getTown(townName);
+        return retrieveTownDwellingsAndGenerateCreatures(town);
     }
 
 }

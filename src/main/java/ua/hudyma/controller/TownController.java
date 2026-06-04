@@ -65,11 +65,20 @@ public class TownController {
                 .getAvailCreaturesForHire(townName));
     }
 
-    @GetMapping("/generateWeeklyCreatures")
+    @GetMapping("/generateWeeklyCreaturesAllTowns")
     public ResponseEntity<List<TownGenerCreaturesReport>>
     generateAllTownsWeeklyCreatures (@RequestParam Long playerId){
         return ResponseEntity.ok(townService
-                .generateWeeklyCreatures(playerId));
+                .generateAllTownsWeeklyCreatures(playerId));
+
+        //todo for player 1 throws Creature SWORDSMAN NOT found
+    }
+
+    @GetMapping("/generateWeeklyCreatures")
+    public ResponseEntity<TownGenerCreaturesReport>
+    generateWeeklyCreatures (@RequestParam String townName) {
+        return ResponseEntity.ok(townService
+                .generateWeeklyCreatures(townName));
     }
 
     @PostMapping

@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MARKETPLACE;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.RESOURCE_SILO;
-import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -50,8 +49,9 @@ public class CommonBuildService {
                 throw new IllegalStateException("Available Resources Map is NULL");
             }
             if (buildingType instanceof GrailBuildingType){
-                var hero = detectHeroToCarryTheGrail(player);
-                var grailTown = detectTownForClaimingGrail(hero, player.getTownsList());
+                //var hero = detectHeroToCarryTheGrail(player); //todo temporarily
+                //var grailTown = detectTownForClaimingGrail(hero, player.getTownsList()); //todo temporarily
+                var grailTown = town; //todo temporarily to build grail in any selected town
                 var grailType = Arrays.stream(GrailBuildingType.values())
                         .filter(faction -> faction.getFaction().equals(town.getFaction()))
                         .findAny()
@@ -62,9 +62,9 @@ public class CommonBuildService {
                             ("Grail building " + buildingType + " already exists in " +  town.getName());
                 }
                 grailTown.getUniqueBuildingSet().add(grailType.toString());
-                hero.getBackpackInventoryList().remove(ArtifactSlotDisposition.GRAIL);
+                //hero.getBackpackInventoryList().remove(ArtifactSlotDisposition.GRAIL); //todo temporarily
                 log.info("{} has been emerged in {}", grailType, town.getName());
-                grailBuildingService.buildGrailBuilding(grailType, grailTown);
+                grailBuildingService.build(grailType, grailTown);
             }
             else if (buildingType instanceof CommonBuildingType) {
                 if (commonBuildingMap.containsKey(buildingType)) {

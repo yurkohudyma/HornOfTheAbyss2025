@@ -13,5 +13,5 @@ public enum CreatureProperty {
     LAND_MOVEMENT,
     SEA_MOVEMENT,
     BONUS,
-    RESIST_SPELL
+    RESISTS_SPELL
 }

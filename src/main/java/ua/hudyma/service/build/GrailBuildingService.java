@@ -30,7 +30,7 @@ public class GrailBuildingService {
     //private final TownService townService;
     //private final RandomService randomService;
 
-    public void buildGrailBuilding(GrailBuildingType grailType, Town town) {
+    public void build(GrailBuildingType grailType, Town town) {
      switch (grailType){
          case AURORA_BOREALIS -> buildConflux (town);
          case SPIRIT_GUARDIAN -> buildRampart(town);

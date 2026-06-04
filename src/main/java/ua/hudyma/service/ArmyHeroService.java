@@ -40,7 +40,7 @@ public class ArmyHeroService {
                             (ModifiableSkill.class);
                     var skillEnums = ModifiableSkill.values();
                     var regularCreatureSkillMap =
-                            creatureService.fetchCreatureByType(armyslot.getType())
+                            creatureService.fetchCreatureByType(armyslot.getType()).get()
                                     .getCreatureSkillMap();
                     for (ModifiableSkill skill : skillEnums) {
                         var regularSkillValue = regularCreatureSkillMap

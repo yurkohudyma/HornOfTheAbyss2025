@@ -9,6 +9,8 @@ import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.service.CreatureService;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/creatures")
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class CreatureController {
     }
 
     @GetMapping("/by")
-    public ResponseEntity<Creature> fetchCreatureByType
+    public ResponseEntity<Optional<Creature>> fetchCreatureByType
             (@RequestParam CreatureType type){
         return ResponseEntity.ok(creatureService
                 .fetchCreatureByType(type));

@@ -16,6 +16,8 @@ import ua.hudyma.repository.CreatureRepository;
 import ua.hudyma.util.IdGenerator;
 import ua.hudyma.util.MessageProcessor;
 
+import java.util.Optional;
+
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -36,10 +38,10 @@ public class CreatureService {
         return creatureMapper.toDto(getCreature(id));
     }
 
-    public Creature fetchCreatureByType(CreatureType type) {
-        return creatureRepository.findByCreatureType(type)
-                .orElseThrow(getExceptionSupplier(Creature.class, type,
-                EntityNotFoundException::new, false));
+    public Optional<Creature> fetchCreatureByType(CreatureType type) {
+        return creatureRepository.findByCreatureType(type);
+                /*.orElseThrow(getExceptionSupplier(Creature.class, type,
+                EntityNotFoundException::new, false));*/
     }
 
     private Creature getCreature(Long id) {

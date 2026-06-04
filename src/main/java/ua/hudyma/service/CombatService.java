@@ -207,8 +207,8 @@ public class CombatService {
 
     private Creature resolveSummonableCreature(String spellName) {
         return switch (spellName) {
-            case "SUMMON_EARTH_ELEMENTAL" -> creatureService.fetchCreatureByType(ARCHANGEL);
-            case "SUMMON_AIR_ELEMENTAL" -> creatureService.fetchCreatureByType(MARKSMAN);
+            case "SUMMON_EARTH_ELEMENTAL" -> creatureService.fetchCreatureByType(ARCHANGEL).get();
+            case "SUMMON_AIR_ELEMENTAL" -> creatureService.fetchCreatureByType(MARKSMAN).get();
             default -> throw new SpellCastException("Creature Summon NOT implemented");
         };
     }
@@ -435,7 +435,7 @@ public class CombatService {
 
     private boolean slotContainsShootingCreature(CreatureSlot slot) {
         var attackType = creatureService
-                .fetchCreatureByType(slot.getType())
+                .fetchCreatureByType(slot.getType()).get()
                 .getAttackType();
         return attackType == AttackType.SHOOTING ||
                 attackType == AttackType.FIREBALL_STYLE;
