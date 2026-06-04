@@ -7,7 +7,7 @@ public record CalcSpecialtyReq(
         Long heroLevel,
         HeroSpecialtyType heroSpecialtyType,
         SkillLevel skillLevel,
-        String specialtyProperty //spell name, secondary skill name or warmachine type
+        String specialtyProperty //spell townName, secondary skill townName or warmachine type
 ) {
 
 }

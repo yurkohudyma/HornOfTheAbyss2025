@@ -96,7 +96,7 @@ public class PlayerService {
     public String createPlayer(PlayerReqDto dto) {
         var player = playerMapper.toEntity(dto);
         playerRepository.save(player);
-        return getReturnMessage(player, "name");
+        return getReturnMessage(player, "townName");
     }
 
     @Transactional

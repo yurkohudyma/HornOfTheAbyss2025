@@ -124,9 +124,9 @@ public class DwellingBuildService {
             var demandedBuildingType = entry.getKey();
             var demandedBuildingLevel = entry.getValue() == null ? 0 : entry.getValue();
             boolean containsKey = allTownBuildingMap.containsKey(demandedBuildingType);
-//            if (demandedBuildingType.equals(FORT.name()) &&
-//                    (allTownBuildingMap.containsKey(CITADEL.name()) ||
-//                     allTownBuildingMap.containsKey(CASTLE.name()))){
+//            if (demandedBuildingType.equals(FORT.townName()) &&
+//                    (allTownBuildingMap.containsKey(CITADEL.townName()) ||
+//                     allTownBuildingMap.containsKey(CASTLE.townName()))){
 //
 //                log.info(":: FORT is demanded, while CITADEL or CASTLE has been erected");
 //                //todo issues: при спробі збудувати dwarf_cottage мало місце позитивне

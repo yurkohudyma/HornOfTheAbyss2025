@@ -10,9 +10,17 @@ import java.util.EnumMap;
 @Getter
 @RequiredArgsConstructor
 public enum InfernoEssentialCreatureType implements CreatureType {
-    DEVIL (7, emptyMap()),
+    DEVIL(7, emptyMap()),
+    EFREETE(6, emptyMap()),
+    PIT_FIEND(5, emptyMap()),
+    DEMON(4, emptyMap()),
+    HELL_HOUND(3, emptyMap()),
+    GOG(2, emptyMap()),
     IMP(1, emptyMap());
+
+    //todo populate resources demand
     private final Integer level;
+
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
 
     @Override

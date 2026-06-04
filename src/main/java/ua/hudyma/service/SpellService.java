@@ -135,7 +135,7 @@ public class SpellService {
      * wisdom secondary skill
      *
      * @param heroId - String hero code
-     * @param spell  - UPPERCASED spell name
+     * @param spell  - UPPERCASED spell townName
      * @return spellBook
      */
     @Transactional

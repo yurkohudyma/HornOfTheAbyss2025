@@ -51,7 +51,7 @@ public class GrailBuildingService {
     private void buildInferno(Town town) {
         //todo implement DEITY_OF_FIRE
         //створити інстанс ентіті creature в базі даних => DONE
-        //створити інстанс inferno town в базі даних
+        //створити інстанс inferno town в базі даних => DONE
         //зробити костиль при наборі істот (імпів), якщо є грааль, то встановити модифіковане число GROWTH +15
     }
 

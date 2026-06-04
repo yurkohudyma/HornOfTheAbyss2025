@@ -57,7 +57,7 @@ public class CreatureTypeRegistry {
                 return (Class<? extends Enum<?>>) subtype;
             }
         }
-        throw new IllegalArgumentException("No enum class matches name: " + type + " for "
+        throw new IllegalArgumentException("No enum class matches townName: " + type + " for "
                 + baseInterface.getSimpleName());
     }
 

@@ -148,7 +148,7 @@ public class TownService {
         var town = townMapper.toEntity(dto);
         townRepository.save(town);
         return MessageProcessor
-                .getReturnMessage(town, "name");
+                .getReturnMessage(town, "townName");
     }
 
     public TownRespDto fetchTown(String name) {

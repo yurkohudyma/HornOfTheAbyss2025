@@ -48,7 +48,7 @@ public class HeroService {
         var player = playerService.getPlayer(dto.playerId());
         hero.setPlayer(player);
         heroRepository.save(hero);
-        return getReturnMessage(hero, "name");
+        return getReturnMessage(hero, "townName");
     }
 
     @Transactional

@@ -87,7 +87,7 @@ public class SpellRegistry {
                 return (Class<? extends Enum<?>>) subtype;
             }
         }
-        throw new IllegalArgumentException("No enum class matches name: " + spellSchool + " for "
+        throw new IllegalArgumentException("No enum class matches townName: " + spellSchool + " for "
                 + baseInterface.getSimpleName());
     }
     public static List<String> resolveAllLevelSpells(int level) {
