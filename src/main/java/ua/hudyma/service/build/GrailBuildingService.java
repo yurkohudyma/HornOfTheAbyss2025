@@ -11,8 +11,6 @@ import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.GrailBuildingType;
 import ua.hudyma.exception.MethodNotImplementedException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
-import ua.hudyma.service.RandomService;
-import ua.hudyma.service.TownService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.stream.Collectors;
 
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.NECROMANCY;
 import static ua.hudyma.domain.heroes.enums.SkillLevel.CUSTOM;
-import static ua.hudyma.domain.towns.enums.GrailBuildingType.*;
+import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
 
 @Service
 @RequiredArgsConstructor
@@ -86,7 +84,7 @@ public class GrailBuildingService {
                     ("Grail gives no benefit until you build a mage guild");
         }
         var mageGuildLevel = commonBuildingMap.get(CommonBuildingType.MAGE_GUILD);
-        var allSpellsLimitedByLevelMap = getAllSpecificLevelSpellsMap(mageGuildLevel, town);
+        var allSpellsLimitedByLevelMap = getAllSpellsMapForSpecificLevel(mageGuildLevel, town);
         var magicGuildSpellMap = town.getMagicGuildSpellMap();
         if (magicGuildSpellMap == null)
             magicGuildSpellMap = new HashMap<>();
@@ -105,7 +103,7 @@ public class GrailBuildingService {
                 .toList();
     }
 
-    private Map<Integer, Set<String>> getAllSpecificLevelSpellsMap(Integer mageGuildLevel, Town town) {
+    private Map<Integer, Set<String>> getAllSpellsMapForSpecificLevel(Integer mageGuildLevel, Town town) {
         var spellsMap = new HashMap<Integer, Set<String>>();
         var townBannedspellSet = getTownBannedSpellSet(town);
         while (mageGuildLevel > 0) {

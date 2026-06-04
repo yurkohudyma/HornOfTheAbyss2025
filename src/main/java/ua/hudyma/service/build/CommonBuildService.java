@@ -35,7 +35,7 @@ public class CommonBuildService {
         var town = dto.town();
         var buildingType = dto.buildingType();
         var buildingLevel = dto.buildingLevel();
-        var player = dto.player();
+        var player = town.getPlayer();
         var constantProperties = dto.constantProperties();
         var commonBuildingMap = town.getCommonBuildingMap();
         if (commonBuildingMap == null) {
@@ -57,7 +57,7 @@ public class CommonBuildService {
                         .findAny()
                         .orElseThrow(() -> new EnumConstantNotPresentException(
                                 GrailBuildingType.class, "Cannot find appropriate Grail-type Building"));
-                if (town.getUniqueBuildingSet().contains(buildingType)){
+                if (town.getUniqueBuildingSet().contains(((GrailBuildingType) buildingType).name())){
                     throw new BuildingAlreadyExistsException
                             ("Grail building " + buildingType + " already exists in " +  town.getName());
                 }
@@ -145,6 +145,7 @@ public class CommonBuildService {
         var heroesList = player.getHeroList();
         for (Hero hero : heroesList){
             var backpackInventory = hero.getBackpackInventoryList();
+            if (backpackInventory == null) continue;
             if (backpackInventory.contains(ArtifactSlotDisposition.GRAIL))
                 return hero;
         }

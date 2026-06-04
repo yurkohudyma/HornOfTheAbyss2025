@@ -9,6 +9,5 @@ public record BuildReqDto(
         Town town,
         AbstractBuildingType buildingType,
         int buildingLevel,
-        Player player,
         AbstractBuildingTypeProperties constantProperties) {
 }

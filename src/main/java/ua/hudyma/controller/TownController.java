@@ -1,6 +1,5 @@
 package ua.hudyma.controller;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +14,6 @@ import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
 
-import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +46,7 @@ public class TownController {
     }
 
     @GetMapping("/getAllTownCreatureTypes")
-    public ResponseEntity<CreatureType[]> getAllTownBasicCreatures (
+    public ResponseEntity<CreatureType[]> getAllTownEssentialCreatures(
             @RequestParam String townName, @RequestParam boolean essential){
         return ResponseEntity.ok(townService
                 .getAllCreaturesTypes(townName, essential));
@@ -62,7 +59,7 @@ public class TownController {
     }
 
     @GetMapping("/getTownCreaturesForHire")
-    public ResponseEntity<TownGenerCreaturesReport> getTownGenCreaturesForHire
+    public ResponseEntity<TownGenerCreaturesReport> getAvailCreaturesForHire
             (@RequestParam String townName){
         return ResponseEntity.ok(townService
                 .getAvailCreaturesForHire(townName));

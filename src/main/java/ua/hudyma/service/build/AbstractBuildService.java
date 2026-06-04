@@ -35,11 +35,17 @@ import static ua.hudyma.domain.towns.enums.HallType.CAPITOL;
 @RequiredArgsConstructor
 @Log4j2
 public class AbstractBuildService {
+
     private final TownService townService;
-    private final PlayerService playerService;
+
+    //private final PlayerService playerService;
+
     private final CommonBuildService commonBuildService;
+
     private final TownMapper townMapper;
+
     private final DwellingBuildService dwellingBuildService;
+
     private static final Map<Class<?>, String> TOWN_BLD_CONTAINERS = Map.of(
             CommonBuildingType.class, "commonBuildingMap",
             //CastleDwellingType.class, "dwellingMap",
@@ -100,13 +106,13 @@ public class AbstractBuildService {
 
     @Transactional
     public String build(AbstractBuildReqDto dto) {
-        var player = playerService.getPlayer(dto.playerId());
         var buildingLevel = dto.buildingLevel();
         if (buildingLevel > 5) {
             throw new IllegalArgumentException
                     ("Building LEVEL is limited by 5, while provided = " + buildingLevel);
         }
         var town = townService.getTown(dto.townName());
+        var player = town.getPlayer();
         checkTownBelongsToPlayer(player, town);
         var buildingType = resolve(dto.buildingType());
         if (buildingType.equals(CAPITOL))
@@ -119,7 +125,7 @@ public class AbstractBuildService {
                 getTypeSpecificConstantProperties(
                         modifiedPropertiesName, enumTypeClass);
         resolveBuildingTypeAndInvokeSpecificFactoryService
-                (player, buildingLevel, town, buildingType, constantProperties);
+                (buildingLevel, town, buildingType, constantProperties);
         var msg = buildingLevel > 0 ? String.format
                 ("%s Level %d has been erected in %s",
                         buildingType, buildingLevel, town.getName()) :
@@ -140,13 +146,13 @@ public class AbstractBuildService {
 
     @Transactional
     public String buildDwelling(AbstractBuildReqDto dto) {
-        var player = playerService.getPlayer(dto.playerId());
         var buildingLevel = dto.buildingLevel();
         if (buildingLevel > 5) {
             throw new IllegalArgumentException
                     ("Building LEVEL is limited by 5, while provided = " + buildingLevel);
         }
         var town = townService.getTown(dto.townName());
+        var player = town.getPlayer();
         checkTownBelongsToPlayer(player, town);
         var dwellingType = resolveDwellingType(dto.buildingType());
         var enumTypeClass = resolveDwellingEnumType
@@ -188,6 +194,8 @@ public class AbstractBuildService {
             return HordeBuildingTypeProperties.valueOf(propertyName);
         } else if (enumTypeClass.equals(UniqueBuildingType.class)) {
             return UniqueBuildingTypeProperties.valueOf(propertyName);
+        } else if (enumTypeClass.equals(GrailBuildingType.class)) {
+            return null;
         } else throw new IllegalArgumentException("Unknown AbstractBuildingType propertyName: "
                 + propertyName);
     }
@@ -236,7 +244,6 @@ public class AbstractBuildService {
     }
 
     private void resolveBuildingTypeAndInvokeSpecificFactoryService(
-            Player player,
             int buildingLevel,
             Town town,
             AbstractBuildingType buildingType,
@@ -250,12 +257,15 @@ public class AbstractBuildService {
                     town,
                     buildingType,
                     buildingLevel,
-                    player,
                     constantProperties));
         } else if (buildingType instanceof AbstractDwellingType) {
             throw new IllegalArgumentException("Dwelling type not acceptable");
         } else if (buildingType instanceof GrailBuildingType) {
-            throw new IllegalArgumentException("GrailBuildingType not ACCEPTABLE");
+            commonBuildService.build(new BuildReqDto(
+                    town,
+                    buildingType,
+                    0,
+                    null));
         }
     }
 
@@ -281,4 +291,5 @@ public class AbstractBuildService {
             return buildingType + "_L" + buildingLevel;
         return buildingType;
     }
+
 }

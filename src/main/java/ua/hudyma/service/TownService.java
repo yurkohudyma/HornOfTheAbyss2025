@@ -11,6 +11,8 @@ import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
+import ua.hudyma.domain.creatures.enums.creaturetypes.InfernoCreatureType;
+import ua.hudyma.domain.creatures.enums.creaturetypes.InfernoEssentialCreatureType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
@@ -20,8 +22,8 @@ import ua.hudyma.domain.towns.converter.AbstractDwellingTypeRegistry;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.domain.towns.enums.FortificationType;
+import ua.hudyma.domain.towns.enums.GrailBuildingType;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
-import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.enums.Alignment;
@@ -43,6 +45,8 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.InfernoCreatureType.FAMILIAR;
+import static ua.hudyma.domain.creatures.enums.creaturetypes.InfernoEssentialCreatureType.IMP;
 import static ua.hudyma.domain.spells.converter.SpellRegistry.generateRandomSpell;
 import static ua.hudyma.service.ArmyService.ARMY_SLOT_MAX_QTY;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -335,7 +339,8 @@ public class TownService {
                 hordeCreatureBoost = getHordeBuildingCreatureBoost
                         (creature, townHordeBuildingList);
             }
-            int modifiedValue = creatureGrowth + hordeCreatureBoost;
+            int grailModifiedValue = increaseCreatureBoostIfSpecificGrailBuilt(town, creature.getCreatureType());
+            int modifiedValue = creatureGrowth + hordeCreatureBoost + grailModifiedValue;
             entry.setValue(entry.getValue() + modifiedValue);
             reportMap.put(creature.getCreatureType(), modifiedValue);
             townDwellingMap.put(entry.getKey(), entry.getValue());
@@ -343,6 +348,15 @@ public class TownService {
         }
         return new TownGenerCreaturesReport
                 (town.getName(), reportMap);
+    }
+    private static int increaseCreatureBoostIfSpecificGrailBuilt(Town town, CreatureType creatureType) {
+        if (town.getFaction() != Faction.INFERNO)
+            return 0;
+        if (!town.getUniqueBuildingSet().contains(GrailBuildingType.DEITY_OF_FIRE.name()))
+            return 0;
+        if (creatureType == IMP || creatureType == FAMILIAR)
+            return 15;
+        return 0;
     }
 
     @Nonnull
@@ -369,9 +383,12 @@ public class TownService {
                 continue;
             }
             if (creatureTypesSet.contains(creature.getCreatureType())) {
-                var hordeCreature = creatureTypesSet.stream()
+                var hordeCreature = creatureTypesSet
+                        .stream()
                         .filter(creat -> creat
-                                .equals(creature.getCreatureType())).findAny().orElseThrow();
+                                .equals(creature.getCreatureType()))
+                        .findAny()
+                        .orElseThrow();
                 return hordeCreature.creatureBoost();
             }
         }
