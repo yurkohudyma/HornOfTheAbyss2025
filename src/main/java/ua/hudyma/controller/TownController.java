@@ -13,6 +13,7 @@ import ua.hudyma.dto.TownHireCreaturesReqDto;
 import ua.hudyma.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
+import ua.hudyma.service.build.GrailBuildingService;
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class TownController {
     private final TownService townService;
     private final AbstractBuildService abstractBuildService;
+    private final GrailBuildingService grailBuildingService;
 
     @GetMapping("/createRandom")
     public ResponseEntity<List<TownRespDto>> getRandomTowns(@RequestParam int qty){
@@ -70,8 +72,6 @@ public class TownController {
     generateAllTownsWeeklyCreatures (@RequestParam Long playerId){
         return ResponseEntity.ok(townService
                 .generateAllTownsWeeklyCreatures(playerId));
-
-        //todo for player 1 throws Creature SWORDSMAN NOT found
     }
 
     @GetMapping("/generateWeeklyCreatures")
@@ -106,11 +106,16 @@ public class TownController {
                 .swapHeroesInTown(townName));
     }
 
-
     @GetMapping("/getResourceDemand")
     public ResponseEntity<ResourceDemandRespDto> getResourceDemand
             (@RequestParam String type, @RequestParam Integer level){
         return ResponseEntity.ok(abstractBuildService
                 .getResourceDemand(type, level));
+    }
+
+    @GetMapping("/calculateGrailSpellDamage") // i.e. LIGHTNING_ROD
+    public ResponseEntity<Integer> calculateGrailSpellDamage
+            (@RequestParam String townName){
+        return ResponseEntity.ok(grailBuildingService.calculateGrailSpellDamage(townName));
     }
 }

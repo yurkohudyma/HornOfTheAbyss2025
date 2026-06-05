@@ -25,7 +25,6 @@ import static ua.hudyma.enums.Faction.*;
 @RequiredArgsConstructor
 public enum GrailBuildingType implements AbstractBuildingType {
 
-
     //https://heroes.thelazy.net/index.php/Grail#Grail_Buildings
 
 
@@ -54,11 +53,11 @@ public enum GrailBuildingType implements AbstractBuildingType {
                     GROWTH, Map.of (
                             InfernoCreatureType.FAMILIAR,
                             Map.of (15, "external_dwellings_not_included")))))),
-    //todo implement DEITY_OF_FIRE
     GUARDIAN_OF_EARTH (DUNGEON, toEnumMap(Map.of(
             BOOST, Map.of (
                     POWER, "12, defending_only")))),
     LIGHTNING_ROD (FACTORY, toEnumMap(Map.of(
+            //todo calculate damage
             /**
              * Strikes all enemies with lightning at the first round of every battle.             *
              * Damage is based on town building count.             *

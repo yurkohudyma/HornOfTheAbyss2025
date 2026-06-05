@@ -11,6 +11,7 @@ import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.GrailBuildingType;
 import ua.hudyma.exception.MethodNotImplementedException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
+import ua.hudyma.service.TownService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -27,30 +28,28 @@ import static ua.hudyma.domain.towns.enums.GrailBuildingType.AURORA_BOREALIS;
 @Log4j2
 public class GrailBuildingService {
 
-    //private final TownService townService;
+    private final TownService townService;
     //private final RandomService randomService;
 
     public void build(GrailBuildingType grailType, Town town) {
-     switch (grailType){
-         case AURORA_BOREALIS -> buildConflux (town);
-         case SPIRIT_GUARDIAN -> buildRampart(town);
-         case SOUL_PRISON -> buildNecropolis(town);
-         case DEITY_OF_FIRE -> buildInferno(town);
-         case CARNIVOROUS_PLANT,
-              SPIRITS_OF_THE_FOREBEARS,
-              LODESTAR,
-              SKYSHIP,
-              COLOSSUS,
-              GUARDIAN_OF_EARTH,
-              LIGHTNING_ROD,
-              WARLORDS_MONUMENT -> throw new MethodNotImplementedException("Try later");
-     };
+        switch (grailType) {
+            case AURORA_BOREALIS -> buildConflux(town);
+            case SPIRIT_GUARDIAN -> buildRampart(town);
+            case SOUL_PRISON -> buildNecropolis(town);
+            case DEITY_OF_FIRE -> buildInferno(town);
+            case CARNIVOROUS_PLANT,
+                 SPIRITS_OF_THE_FOREBEARS,
+                 LODESTAR,
+                 SKYSHIP,
+                 COLOSSUS,
+                 GUARDIAN_OF_EARTH,
+                 LIGHTNING_ROD,
+                 WARLORDS_MONUMENT -> throw new MethodNotImplementedException("Try later");
+        }
+        ;
     }
     private void buildInferno(Town town) {
-        //todo implement DEITY_OF_FIRE
-        //створити інстанс ентіті creature в базі даних => DONE
-        //створити інстанс inferno town в базі даних => DONE
-        //зробити костиль при наборі істот (імпів), якщо є грааль, то встановити модифіковане число GROWTH +15
+
     }
 
     private void buildNecropolis(Town town) {
@@ -71,15 +70,17 @@ public class GrailBuildingService {
         var player = town.getPlayer();
         var heroes = player.getHeroList();
         heroes.forEach(hero ->
-            hero.getParametersMap().merge(HeroParams.LUCK, 2, Integer::sum)
+                hero.getParametersMap().merge(HeroParams.LUCK, 2, Integer::sum)
         );
         log.info("All heroes' luck successfully boosted 2 point up");
     }
-    /** For main part of grail-building refer to <b>build</b> method in {@link CommonBuildService} */
+    /**
+     * For main part of grail-building refer to <b>build</b> method in {@link CommonBuildService}
+     */
 
     private void buildConflux(Town town) {
         var commonBuildingMap = town.getCommonBuildingMap();
-        if (!commonBuildingMap.containsKey(CommonBuildingType.MAGE_GUILD)){
+        if (!commonBuildingMap.containsKey(CommonBuildingType.MAGE_GUILD)) {
             throw new RequiredBuildingMissingException
                     ("Grail gives no benefit until you build a mage guild");
         }
@@ -116,6 +117,17 @@ public class GrailBuildingService {
             spellsMap.put(mageGuildLevel--, specificLevelSpellSet);
         }
         return spellsMap;
+    }
+
+    public Integer calculateGrailSpellDamage(String townName) {
+        var town = townService.getTown(townName);
+        var buildingQty =
+                town.getCommonBuildingMap().size() +
+                town.getUniqueBuildingSet().size() +
+                town.getDwellingMap().size() +
+                town.getHordeBuildingSet().size();
+        var result = (35 + buildingQty) * 7;
+        return Math.min(result, 168);
     }
 
 }
