@@ -2,7 +2,7 @@ package ua.hudyma.domain.towns.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Set;
 
 import static ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType.GRIFFIN_TOWER;
 import static ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType.DWARF_COTTAGE;
-import static ua.hudyma.resource.enums.ResourceType.GOLD;
+import static ua.hudyma.domain.resource.enums.ResourceType.GOLD;
 
 @Getter
 @RequiredArgsConstructor

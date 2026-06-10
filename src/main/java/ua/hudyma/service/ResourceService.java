@@ -5,8 +5,8 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.players.Player;
-import ua.hudyma.resource.enums.MineType;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.MineType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.Map;

@@ -1,9 +1,9 @@
-package ua.hudyma.resource.enums;
+package ua.hudyma.domain.resource.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import static ua.hudyma.resource.enums.ResourceType.*;
+import static ua.hudyma.domain.resource.enums.ResourceType.*;
 
 @Getter
 @RequiredArgsConstructor

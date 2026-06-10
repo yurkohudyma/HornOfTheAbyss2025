@@ -2,22 +2,16 @@ package ua.hudyma.domain.towns.enums.properties.dwelling;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.FortificationType;
-import ua.hudyma.domain.towns.enums.UniqueBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
-import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import static ua.hudyma.domain.creatures.enums.creaturetypes.RampartEssentialCreatureType.CENTAUR;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
-import static ua.hudyma.domain.towns.enums.dwelling.RampartDwellingType.DWARF_COTTAGE;
-import static ua.hudyma.resource.enums.ResourceType.*;
-
+import static ua.hudyma.domain.resource.enums.ResourceType.*;
 @Getter
 @RequiredArgsConstructor
 public enum RampartDwellingTypeProperties implements AbstractDwellingTypeProperties {

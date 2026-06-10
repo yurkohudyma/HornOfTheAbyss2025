@@ -1,4 +1,4 @@
-package ua.hudyma.resource.enums;
+package ua.hudyma.domain.resource.enums;
 
 public enum ResourceType {
     GOLD,

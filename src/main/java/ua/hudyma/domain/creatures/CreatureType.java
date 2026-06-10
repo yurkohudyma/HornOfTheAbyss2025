@@ -3,7 +3,7 @@ package ua.hudyma.domain.creatures;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import ua.hudyma.domain.creatures.converter.CreatureTypeDeserializer;
 import ua.hudyma.domain.creatures.converter.CreatureTypeKeyDeserializer;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 

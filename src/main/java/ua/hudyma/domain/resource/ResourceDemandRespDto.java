@@ -1,8 +1,8 @@
-package ua.hudyma.resource;
+package ua.hudyma.domain.resource;
 
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.enums.Faction;
-import ua.hudyma.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.EnumSet;

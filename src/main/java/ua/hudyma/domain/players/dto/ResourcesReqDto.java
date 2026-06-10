@@ -1,6 +1,6 @@
 package ua.hudyma.domain.players.dto;
 
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.Map;
 

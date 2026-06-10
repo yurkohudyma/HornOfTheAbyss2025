@@ -3,7 +3,6 @@ package ua.hudyma.domain.players;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -11,13 +10,11 @@ import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.enums.PlayerColour;
 import ua.hudyma.domain.towns.Town;
-import ua.hudyma.resource.enums.MineType;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.MineType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.util.*;
 
 import java.util.*;
-
-import static ua.hudyma.util.IdGenerator.generateRandomStartingExperience;
 
 @Entity
 @Table(name = "players")

@@ -20,8 +20,7 @@ import ua.hudyma.domain.towns.enums.properties.dwelling.RampartDwellingTypePrope
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
 import ua.hudyma.mapper.TownMapper;
-import ua.hudyma.resource.ResourceDemandRespDto;
-import ua.hudyma.service.PlayerService;
+import ua.hudyma.domain.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 
 import java.util.Arrays;

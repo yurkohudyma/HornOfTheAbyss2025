@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.enums.Faction;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -12,7 +12,7 @@ import java.util.Map;
 
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.*;
 import static ua.hudyma.enums.Faction.*;
-import static ua.hudyma.resource.enums.ResourceType.*;
+import static ua.hudyma.domain.resource.enums.ResourceType.*;
 
 @Getter
 @RequiredArgsConstructor

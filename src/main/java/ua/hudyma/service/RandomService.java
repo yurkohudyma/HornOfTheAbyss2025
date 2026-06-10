@@ -22,7 +22,7 @@ import ua.hudyma.enums.Faction;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.mapper.PlayerMapper;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.util.IdGenerator;
 
 import java.util.ArrayList;

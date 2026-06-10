@@ -31,7 +31,7 @@ import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.repository.TownRepository;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.service.build.DwellingBuildService;
 import ua.hudyma.util.IdGenerator;
 import ua.hudyma.util.MessageProcessor;

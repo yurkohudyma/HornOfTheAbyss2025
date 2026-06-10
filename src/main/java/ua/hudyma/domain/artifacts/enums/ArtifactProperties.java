@@ -9,7 +9,7 @@ import static ua.hudyma.domain.artifacts.enums.ArtifactAction.*;
 import static ua.hudyma.domain.creatures.enums.CreatureProperty.*;
 import static ua.hudyma.domain.creatures.enums.MovementType.FLYING;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;
-import static ua.hudyma.resource.enums.ResourceType.GOLD;
+import static ua.hudyma.domain.resource.enums.ResourceType.GOLD;
 
 @Getter
 @RequiredArgsConstructor
@@ -29,6 +29,8 @@ public enum ArtifactProperties {
             DEFENSE.name(), 2,
             POWER.name(), 2,
             KNOWLEDGE.name(), 2)),
+
+
     ADMIRAL_HAT(COMPLEX, Map.of()), //No boarding or unboarding penalty for boats. Converts movement points between land and water movement. +1500 movement points on water. Gain Summon Boat and Scuttle Boat while equipped.Protects army in whirlpools.
     SENTINEL_SHIELD(BOOST,
             Map.of(
@@ -45,8 +47,18 @@ public enum ArtifactProperties {
             KNOWLEDGE.name(), -2)),
     ANGEL_WINGS(MODIFIER,
             Map.of(MOVEMENT.name(), FLYING)),
-    EQUESTRIAN_GLOVES(BOOST, Map.of(
-            LAND_MOVEMENT.name(), 200)),
+    EQUESTRIAN_GLOVES(BOOST, Map.of()),
+    //just for information. specific enum HeroMovementModifiers is used
+    BOOTS_OF_SPEED(BOOST,
+            Map.of()),
+    //just for information. specific enum HeroMovementModifiers is used
+
+    //just for information. specific enum HeroMovementModifiers is used
+    NECKLACE_OF_OCEAN_GUIDANCE (BOOST,
+            Map.of()),
+    //just for information. specific enum HeroMovementModifiers is used
+    SEA_CAPTAINS_HAT(BOOST,
+            Map.of()),
     STILL_EYE_OF_THE_DRAGON(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 1,
             MORALE.name(), 1)),

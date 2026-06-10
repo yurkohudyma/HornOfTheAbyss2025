@@ -10,7 +10,7 @@ import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.dto.TownGenerCreaturesReport;
 import ua.hudyma.dto.TownHireCreaturesReqDto;
-import ua.hudyma.resource.ResourceDemandRespDto;
+import ua.hudyma.domain.resource.ResourceDemandRespDto;
 import ua.hudyma.service.TownService;
 import ua.hudyma.service.build.AbstractBuildService;
 import ua.hudyma.service.build.GrailBuildingService;

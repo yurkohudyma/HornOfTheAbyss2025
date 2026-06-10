@@ -6,35 +6,22 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ua.hudyma.domain.heroes.Hero;
-import ua.hudyma.domain.heroes.dto.HeroSpecialty;
-import ua.hudyma.domain.heroes.enums.HeroFaction;
-import ua.hudyma.domain.heroes.enums.HeroSpecialtyType;
-import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
-import ua.hudyma.domain.players.enums.PlayerColour;
-import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.HallType;
-import ua.hudyma.enums.WarMachine;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.repository.PlayerRepository;
-import ua.hudyma.resource.enums.ResourceType;
-import ua.hudyma.util.IdGenerator;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.towns.enums.UniqueBuildingType.TREASURY;
 import static ua.hudyma.enums.Faction.RAMPART;
-import static ua.hudyma.resource.enums.ResourceType.GOLD;
-import static ua.hudyma.util.IdGenerator.getRandomEnum;
-import static ua.hudyma.util.IdGenerator.getThreadLocalRandomIndex;
+import static ua.hudyma.domain.resource.enums.ResourceType.GOLD;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 

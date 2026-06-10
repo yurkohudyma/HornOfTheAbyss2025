@@ -9,11 +9,10 @@ import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.properties.dwelling.CastleDwellingTypeProperties;
 import ua.hudyma.domain.towns.enums.properties.dwelling.RampartDwellingTypeProperties;
-import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.HashMap;

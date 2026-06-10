@@ -3,14 +3,12 @@ package ua.hudyma.domain.towns.enums.properties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.towns.enums.FortificationType;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
-
-import static ua.hudyma.resource.enums.ResourceType.*;
-
+import static ua.hudyma.domain.resource.enums.ResourceType.*;
 @Getter
 @RequiredArgsConstructor
 public enum FortificationTypeProperties implements AbstractBuildingTypeProperties{

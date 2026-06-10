@@ -13,7 +13,7 @@ import ua.hudyma.domain.towns.enums.properties.*;
 import ua.hudyma.exception.BuildingAlreadyExistsException;
 import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.exception.RequiredBuildingMissingException;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.*;
 import java.util.function.Function;

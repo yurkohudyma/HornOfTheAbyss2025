@@ -2,7 +2,7 @@ package ua.hudyma.domain.towns.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -12,7 +12,7 @@ import static ua.hudyma.domain.towns.enums.CommonBuildingType.SHIPYARD;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.TAVERN;
 import static ua.hudyma.domain.towns.enums.HordeBuildingType.MINERS_GUILD;
 import static ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType.BARRACKS;
-import static ua.hudyma.resource.enums.ResourceType.*;
+import static ua.hudyma.domain.resource.enums.ResourceType.*;
 
 @Getter
 @RequiredArgsConstructor

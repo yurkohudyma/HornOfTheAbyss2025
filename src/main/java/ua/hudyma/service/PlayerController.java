@@ -3,15 +3,11 @@ package ua.hudyma.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.players.dto.PlayerReqDto;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.players.dto.ResourcesReqDto;
-import ua.hudyma.mapper.HeroMapper;
-import ua.hudyma.mapper.PlayerMapper;
-import ua.hudyma.resource.enums.MineType;
-import ua.hudyma.resource.enums.ResourceType;
-import ua.hudyma.service.PlayerService;
+import ua.hudyma.domain.resource.enums.MineType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.List;
 import java.util.Map;

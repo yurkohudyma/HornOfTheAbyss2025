@@ -2,12 +2,11 @@ package ua.hudyma.domain.spells.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.Map;
-
-import static ua.hudyma.resource.enums.ResourceType.*;
+import static ua.hudyma.domain.resource.enums.ResourceType.*;
 
 @Getter
 @RequiredArgsConstructor

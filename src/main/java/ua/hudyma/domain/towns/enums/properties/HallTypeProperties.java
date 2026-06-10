@@ -2,14 +2,14 @@ package ua.hudyma.domain.towns.enums.properties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.resource.enums.ResourceType;
+import ua.hudyma.domain.resource.enums.ResourceType;
 
 import java.util.EnumMap;
 import java.util.Map;
 
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.*;
 import static ua.hudyma.domain.towns.enums.FortificationType.CASTLE;
-import static ua.hudyma.resource.enums.ResourceType.GOLD;
+import static ua.hudyma.domain.resource.enums.ResourceType.GOLD;
 
 @Getter
 @RequiredArgsConstructor
