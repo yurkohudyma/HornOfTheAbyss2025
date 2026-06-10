@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
-import ua.hudyma.domain.heroes.dto.CalcSpecialtyReq;
-import ua.hudyma.domain.heroes.dto.HeroReqDto;
-import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
-import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
@@ -19,6 +17,12 @@ import ua.hudyma.util.IdGenerator;
 public class HeroController {
     private final HeroService heroService;
     private final RandomService randomService;
+
+    public ResponseEntity<MovemementPointsRespDto> updateAndFetchHeroMovementPoints
+            (@RequestParam String heroid){
+        return ResponseEntity.ok(heroService
+                .updateAndFetchHeroMovementPoints(heroid));
+    }
 
     public String getRandomCreature(HeroFaction heroFaction) {
         var faction = heroFaction.getFaction();
@@ -48,7 +52,7 @@ public class HeroController {
     public ResponseEntity<HeroRespDto> getMostPowerfulHero (
             @RequestParam Long playerId){
         return ResponseEntity.ok(heroService
-                .getMostPowerfullHero(playerId));
+                .getMostPowerfulHero(playerId));
     }
 
     @GetMapping("/gainExperience")

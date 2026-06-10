@@ -114,4 +114,6 @@ public class Hero implements BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "specialty")
     private HeroSpecialty heroSpecialty;
+
+
 }

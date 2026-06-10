@@ -18,7 +18,6 @@ import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.FixedSizeMap;
-import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
 
@@ -216,6 +215,11 @@ public class HeroService {
         };
     }
 
+    public MovemementPointsRespDto updateAndFetchHeroMovementPoints(String heroid) {
+        return new MovemementPointsRespDto(null, null);
+        //todo implement updateAndFetchHeroMovementPoints
+    }
+
     private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel){
         return switch (skillLevel){
             case BASIC -> 0;
@@ -286,7 +290,8 @@ public class HeroService {
         }
     }
 
-    private static ArtifactSlot detectFreeMiscSlot(Map<ArtifactSlot, ArtifactSlotDisposition> miscInvMap) {
+    private static ArtifactSlot detectFreeMiscSlot(Map<ArtifactSlot,
+            ArtifactSlotDisposition> miscInvMap) {
         var set = EnumSet.copyOf(MISC_SLOTS_SET);
         set.removeAll(miscInvMap.keySet());
         if (set.isEmpty())
@@ -333,7 +338,7 @@ public class HeroService {
     }
 
     @Transactional(readOnly = true)
-    public HeroRespDto getMostPowerfullHero(Long playerId) {
+    public HeroRespDto getMostPowerfulHero(Long playerId) {
         var player = playerService.getPlayer(playerId);
         var allHeroesList = player.getHeroList();
         var heroComparisonMap = new HashMap<String, Integer>();
@@ -421,7 +426,7 @@ public class HeroService {
                 var modifier = secondarySkill.getSkillLevelModifiers()[secSkillArrayIndex];
                 yield Math.round(modifier * (1 + heroLevel * 0.05));
             }
-            //todo amend other calculations
+            //todo amend other heroSpecialtyType calculations
         };
     }
 }
