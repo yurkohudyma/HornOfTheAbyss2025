@@ -18,6 +18,7 @@ public class HeroController {
     private final HeroService heroService;
     private final RandomService randomService;
 
+    @GetMapping("/getMovePoints")
     public ResponseEntity<MovemementPointsRespDto> updateAndFetchHeroMovementPoints
             (@RequestParam String heroid){
         return ResponseEntity.ok(heroService

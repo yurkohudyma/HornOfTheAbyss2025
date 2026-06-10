@@ -57,7 +57,6 @@ public enum GrailBuildingType implements AbstractBuildingType {
             BOOST, Map.of (
                     POWER, "12, defending_only")))),
     LIGHTNING_ROD (FACTORY, toEnumMap(Map.of(
-            //todo calculate damage
             /**
              * Strikes all enemies with lightning at the first round of every battle.             *
              * Damage is based on town building count.             *
@@ -88,7 +87,6 @@ public enum GrailBuildingType implements AbstractBuildingType {
     WARLORDS_MONUMENT(STRONGHOLD, toEnumMap(
             Map.of(BOOST, Map.of(
                     ATTACK, "20, defending_only"))));
-    // this parameter is adjusted dynamically when hero is invoked into battle by other hero
 
     private final Faction faction;
     private final EnumMap<ArtifactAction, Object> propertiesMap;

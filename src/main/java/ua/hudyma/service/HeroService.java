@@ -21,8 +21,7 @@ import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
 
-import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
-import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
+import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.INTELLIGENCE;
@@ -33,11 +32,17 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 @RequiredArgsConstructor
 @Log4j2
 public class HeroService {
+
     private static final int MISC_INV_MAP_SIZE = 5;
+
     private static final Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
+
     private final HeroMapper heroMapper;
+
     private final HeroRepository heroRepository;
+
     private final PlayerService playerService;
+
     private final ArmyHeroService armyHeroService;
 
     @SneakyThrows
@@ -211,17 +216,46 @@ public class HeroService {
             case BASIC -> 1.2f;
             case ADVANCED -> 1.35f;
             case EXPERT -> 1.5f;
-            case CUSTOM -> throw new IllegalArgumentException("Not applicable for "+INTELLIGENCE);
+            case CUSTOM -> throw new IllegalArgumentException("Not applicable for " + INTELLIGENCE);
         };
     }
 
+    @Transactional
     public MovemementPointsRespDto updateAndFetchHeroMovementPoints(String heroid) {
-        return new MovemementPointsRespDto(null, null);
-        //todo implement updateAndFetchHeroMovementPoints
+        var hero = getHero(heroid);
+        var paramMap = hero.getParametersMap();
+        var recalculatedMaxMovePoints = recalculateMaxMovePoints(hero);
+        paramMap.putIfAbsent(CUR_MOVE_POINTS, recalculatedMaxMovePoints);
+        paramMap.putIfAbsent(MAX_MOVE_POINTS, recalculatedMaxMovePoints);
+        return new MovemementPointsRespDto(recalculatedMaxMovePoints, recalculatedMaxMovePoints);
+
+        //https://heroes.thelazy.net/index.php/Movement
+
+        /*Boots of Speed give +400 Horn of the Abyss points on land
+        Equestrian's Gloves give +200 Horn of the Abyss points on land
+        Necklace of Ocean Guidance gives +1000 points on water
+        Sea Captain's Hat gives +500 points on water.*/
+    }
+    private Integer recalculateMaxMovePoints(Hero hero) {
+        var result = 1300;
+        var heroMovementModifiers = Arrays.stream(HeroMovementModifiers.values()).toList();
+        var bodyInventoryMap = hero.getBodyInventoryMap();
+        for (Map.Entry<ArtifactSlot, ArtifactSlotDisposition> entry : bodyInventoryMap.entrySet()) {
+            var artifactSlot = entry.getKey();
+            if (artifactSlot.getEntityField() != EntityField.BODY) continue;
+            for (HeroMovementModifiers modifier : heroMovementModifiers) {
+                if (entry.getValue().toString().equals(modifier.toString())) {
+                    result += modifier.getMovePoints();
+                }
+            }
+        }
+        //todo not tested, attach logistics and pathfinding secondSkills evaluation
+
+        return result;
     }
 
-    private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel){
-        return switch (skillLevel){
+    private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel) {
+        return switch (skillLevel) {
             case BASIC -> 0;
             case ADVANCED -> 1;
             case EXPERT -> 2;
@@ -415,7 +449,7 @@ public class HeroService {
     public Integer calcSpecialtyResult(CalcSpecialtyReq dto) {
         var heroSpecialtyType = dto.heroSpecialtyType();
         var heroLevel = dto.heroLevel();
-        return (int) switch (heroSpecialtyType){
+        return (int) switch (heroSpecialtyType) {
             case CREATURE, UPGRADE, WAR_MACHINE -> 0;
             case SPEED -> 2;
             case RESOURCE, SPELL -> 1;
@@ -429,4 +463,5 @@ public class HeroService {
             //todo amend other heroSpecialtyType calculations
         };
     }
+
 }
