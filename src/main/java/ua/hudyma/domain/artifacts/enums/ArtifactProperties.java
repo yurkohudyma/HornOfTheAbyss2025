@@ -47,17 +47,12 @@ public enum ArtifactProperties {
             KNOWLEDGE.name(), -2)),
     ANGEL_WINGS(MODIFIER,
             Map.of(MOVEMENT.name(), FLYING)),
-    EQUESTRIAN_GLOVES(BOOST, Map.of()),
-    //just for information. specific enum HeroMovementModifiers is used
-    BOOTS_OF_SPEED(BOOST,
+    EQUESTRIAN_GLOVES(BOOST, Map.of()), //HeroMovementModifiers override
+    BOOTS_OF_SPEED(BOOST, //HeroMovementModifiers override
             Map.of()),
-    //just for information. specific enum HeroMovementModifiers is used
-
-    //just for information. specific enum HeroMovementModifiers is used
-    NECKLACE_OF_OCEAN_GUIDANCE (BOOST,
+    NECKLACE_OF_OCEAN_GUIDANCE (BOOST, //HeroMovementModifiers override
             Map.of()),
-    //just for information. specific enum HeroMovementModifiers is used
-    SEA_CAPTAINS_HAT(BOOST,
+    SEA_CAPTAINS_HAT(BOOST, //HeroMovementModifiers override
             Map.of()),
     STILL_EYE_OF_THE_DRAGON(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 1,

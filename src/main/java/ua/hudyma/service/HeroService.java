@@ -24,7 +24,7 @@ import java.util.*;
 import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
-import static ua.hudyma.domain.heroes.enums.SecondarySkill.INTELLIGENCE;
+import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -249,8 +249,24 @@ public class HeroService {
                 }
             }
         }
-        //todo not tested, attach logistics and pathfinding secondSkills evaluation
-
+        var secondarySkillMap = hero.getSecondarySkillMap();
+        float logisticsModifier = 0, pathfindingModifier = 0;
+        if (secondarySkillMap.containsKey(LOGISTICS)) {
+            logisticsModifier = (float)
+                    LOGISTICS
+                    .getSkillLevelModifiers()
+                    [getSecondarySkillModifierNumber(
+                            secondarySkillMap.get(LOGISTICS))] / 100;
+        }
+        if (secondarySkillMap.containsKey(PATHFINDING)){
+            pathfindingModifier = (float)
+                    PATHFINDING.getSkillLevelModifiers()
+                    [getSecondarySkillModifierNumber(
+                            secondarySkillMap.get(PATHFINDING))] / 100;
+        }
+        result += result * logisticsModifier;
+        result += result * pathfindingModifier;
+        //todo does not include creatures minimal speed unit restrictions and LOGICSTICS specialty eval
         return result;
     }
 
