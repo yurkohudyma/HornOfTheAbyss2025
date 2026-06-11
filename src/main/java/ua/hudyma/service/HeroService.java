@@ -37,6 +37,22 @@ public class HeroService {
 
     private static final Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
 
+    private static final Map<Integer, Integer> LOWEST_CREATURE_BASE_MOVEMENT_VALUE_MAP =
+            Map.ofEntries(
+                    Map.entry(0, 1300),
+                    Map.entry(1, 1360),
+                    Map.entry(2, 1430),
+                    Map.entry(3, 1500),
+                    Map.entry(4, 1560),
+                    Map.entry(5, 1630),
+                    Map.entry(6, 1700),
+                    Map.entry(7, 1760),
+                    Map.entry(8, 1830),
+                    Map.entry(9, 1900),
+                    Map.entry(10, 1960),
+                    Map.entry(11, 2000)
+            );
+
     private final HeroMapper heroMapper;
 
     private final HeroRepository heroRepository;
@@ -44,6 +60,8 @@ public class HeroService {
     private final PlayerService playerService;
 
     private final ArmyHeroService armyHeroService;
+
+    private final HeroCreatureService heroCreatureService;
 
     @SneakyThrows
     @Transactional
@@ -223,11 +241,17 @@ public class HeroService {
     @Transactional
     public MovemementPointsRespDto updateAndFetchHeroMovementPoints(String heroid) {
         var hero = getHero(heroid);
-        var paramMap = hero.getParametersMap();
+        var paramMap = getOrCreateHeroParamsMap(hero);
         var recalculatedMaxMovePoints = recalculateMaxMovePoints(hero);
-        paramMap.putIfAbsent(CUR_MOVE_POINTS, recalculatedMaxMovePoints);
-        paramMap.putIfAbsent(MAX_MOVE_POINTS, recalculatedMaxMovePoints);
-        return new MovemementPointsRespDto(recalculatedMaxMovePoints, recalculatedMaxMovePoints);
+        paramMap.putIfAbsent(CUR_MOVE_POINTS, recalculatedMaxMovePoints[0]);
+        paramMap.putIfAbsent(MAX_MOVE_POINTS, recalculatedMaxMovePoints[1]);
+        paramMap.putIfAbsent(CUR_WATER_MOVE_POINTS, recalculatedMaxMovePoints[2]);
+        paramMap.putIfAbsent(MAX_WATER_MOVE_POINTS, recalculatedMaxMovePoints[3]);
+        return new MovemementPointsRespDto(
+                recalculatedMaxMovePoints[0],
+                recalculatedMaxMovePoints[1],
+                recalculatedMaxMovePoints[2],
+                recalculatedMaxMovePoints[3]);
 
         //https://heroes.thelazy.net/index.php/Movement
 
@@ -236,38 +260,51 @@ public class HeroService {
         Necklace of Ocean Guidance gives +1000 points on water
         Sea Captain's Hat gives +500 points on water.*/
     }
-    private Integer recalculateMaxMovePoints(Hero hero) {
-        var result = 1300;
-        var heroMovementModifiers = Arrays.stream(HeroMovementModifiers.values()).toList();
-        var bodyInventoryMap = hero.getBodyInventoryMap();
+    private int[] recalculateMaxMovePoints(Hero hero) {
+        var landResult = 1500;
+        var slowestCreatureSpeed = heroCreatureService.getHeroSlowestCreatureSpeedValue(hero);
+        if (slowestCreatureSpeed < 0) throw new IllegalArgumentException("Slowest creature speed CANNOT be negative");
+        landResult = slowestCreatureSpeed > 11 ? 2000 :
+                LOWEST_CREATURE_BASE_MOVEMENT_VALUE_MAP.get(slowestCreatureSpeed);
+        var waterResult = 2000;
+        var heroMovementModifiers = Arrays
+                .stream(HeroMovementModifiers.values()).toList();
+        var bodyInventoryMap = getOrCreateBodyInvMap(hero);
         for (Map.Entry<ArtifactSlot, ArtifactSlotDisposition> entry : bodyInventoryMap.entrySet()) {
             var artifactSlot = entry.getKey();
             if (artifactSlot.getEntityField() != EntityField.BODY) continue;
             for (HeroMovementModifiers modifier : heroMovementModifiers) {
                 if (entry.getValue().toString().equals(modifier.toString())) {
-                    result += modifier.getMovePoints();
+                    landResult += modifier.getMovePoints();
                 }
             }
         }
         var secondarySkillMap = hero.getSecondarySkillMap();
-        float logisticsModifier = 0, pathfindingModifier = 0;
+        float logisticsModifier = 0, pathfindingModifier = 0, navigationModifier = 0;
         if (secondarySkillMap.containsKey(LOGISTICS)) {
             logisticsModifier = (float)
                     LOGISTICS
-                    .getSkillLevelModifiers()
-                    [getSecondarySkillModifierNumber(
+                            .getSkillLevelModifiers()
+                            [getSecondarySkillModifierNumber(
                             secondarySkillMap.get(LOGISTICS))] / 100;
         }
-        if (secondarySkillMap.containsKey(PATHFINDING)){
+        if (secondarySkillMap.containsKey(PATHFINDING)) {
             pathfindingModifier = (float)
                     PATHFINDING.getSkillLevelModifiers()
-                    [getSecondarySkillModifierNumber(
+                            [getSecondarySkillModifierNumber(
                             secondarySkillMap.get(PATHFINDING))] / 100;
         }
-        result += result * logisticsModifier;
-        result += result * pathfindingModifier;
+        if (secondarySkillMap.containsKey(NAVIGATION)) {
+            navigationModifier = (float)
+                    NAVIGATION.getSkillLevelModifiers()
+                            [getSecondarySkillModifierNumber(
+                            secondarySkillMap.get(NAVIGATION))] / 100;
+        }
+        landResult += (int) (landResult * logisticsModifier);
+        landResult += (int) (landResult * pathfindingModifier);
+        waterResult += (int) (waterResult * navigationModifier);
         //todo does not include creatures minimal speed unit restrictions and LOGICSTICS specialty eval
-        return result;
+        return new int[]{landResult, landResult, waterResult, waterResult};
     }
 
     private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel) {

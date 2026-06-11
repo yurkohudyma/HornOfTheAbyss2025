@@ -19,16 +19,20 @@ public class HeroController {
     private final RandomService randomService;
 
     @GetMapping("/getMovePoints")
-    public ResponseEntity<MovemementPointsRespDto> updateAndFetchHeroMovementPoints
-            (@RequestParam String heroid){
+    public ResponseEntity<MovemementPointsRespDto>
+    updateAndFetchHeroMovementPoints
+            (@RequestParam String heroCode){
         return ResponseEntity.ok(heroService
-                .updateAndFetchHeroMovementPoints(heroid));
+                .updateAndFetchHeroMovementPoints(heroCode));
     }
 
     public String getRandomCreature(HeroFaction heroFaction) {
         var faction = heroFaction.getFaction();
-        var allFactionCreatures = CreatureTypeRegistry.getAllCreaturesByFaction(faction, true);
-        return allFactionCreatures[IdGenerator.getThreadLocalRandomIndex(0, allFactionCreatures.length)].getCode();
+        var allFactionCreatures = CreatureTypeRegistry
+                .getAllCreaturesByFaction(faction, true);
+        return allFactionCreatures[IdGenerator
+                .getThreadLocalRandomIndex(
+                        0, allFactionCreatures.length)].getCode();
     }
 
     @GetMapping("/getRandom")

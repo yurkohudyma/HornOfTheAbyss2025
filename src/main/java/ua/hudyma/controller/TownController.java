@@ -27,7 +27,8 @@ public class TownController {
     private final GrailBuildingService grailBuildingService;
 
     @GetMapping("/createRandom")
-    public ResponseEntity<List<TownRespDto>> getRandomTowns(@RequestParam int qty){
+    public ResponseEntity<List<TownRespDto>>
+    getRandomTowns(@RequestParam int qty){
         return ResponseEntity.ok(townService.createRandomTowns(qty));
     }
 
@@ -116,6 +117,7 @@ public class TownController {
     @GetMapping("/calculateGrailSpellDamage") // i.e. LIGHTNING_ROD
     public ResponseEntity<Integer> calculateGrailSpellDamage
             (@RequestParam String townName){
-        return ResponseEntity.ok(grailBuildingService.calculateGrailSpellDamage(townName));
+        return ResponseEntity.ok(grailBuildingService
+                .calculateGrailSpellDamage(townName));
     }
 }

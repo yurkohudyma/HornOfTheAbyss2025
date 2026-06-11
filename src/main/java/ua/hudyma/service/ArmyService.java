@@ -5,29 +5,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
-import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
+import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.creatures.enums.ModifiableSkill;
-import ua.hudyma.domain.creatures.enums.creaturetypes.CoveCreatureType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
-import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.domain.heroes.enums.PrimarySkill;
-import ua.hudyma.enums.Faction;
 import ua.hudyma.exception.ArmyFreeSlotOverflowException;
 import ua.hudyma.exception.MinimalUnitOperationException;
 import ua.hudyma.mapper.ArmyMapper;
 import ua.hudyma.mapper.EnumMapper;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-import static ua.hudyma.util.IdGenerator.getThreadLocalRandomIndex;
+import static ua.hudyma.domain.creatures.enums.CreatureSkill.SPEED;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -43,7 +40,7 @@ public class ArmyService {
 
     static final Integer ARMY_SLOT_MAX_QTY = 7;
 
-
+    private final CreatureService creatureService;
 
     @Transactional
     public String compressArmy(String heroId) {
@@ -137,7 +134,7 @@ public class ArmyService {
                 })
                 .forEach(army::add);
         slot.setQuantity(distributionNumber);
-        for (int i = 0; i < remainder; i++){
+        for (int i = 0; i < remainder; i++) {
             var currentSlot = army.get(i);
             currentSlot.setQuantity(currentSlot.getQuantity() + 1);
         }
@@ -146,7 +143,7 @@ public class ArmyService {
                 " = " + distributedSlotsOverallQuantity;
     }
 
-    private Integer distributedSlotsOverallQuantity (List<CreatureSlot> army){
+    private Integer distributedSlotsOverallQuantity(List<CreatureSlot> army) {
         return army
                 .stream()
                 .mapToInt(CreatureSlot::getQuantity)
@@ -159,15 +156,15 @@ public class ArmyService {
                     ("Number shall be higher or equal to 2 to distribute from");
         var distributionNumber = number / ARMY_SLOT_MAX_QTY;
         var remainder = number % ARMY_SLOT_MAX_QTY;
-       var list = new ArrayList<>(IntStream
-               .range(0, ARMY_SLOT_MAX_QTY)
-               .mapToObj(num -> distributionNumber)
-               .toList());
-       for (int i = 0; i < remainder; i++){
-           list.set(i, list.get(i) + 1);
-       }
-       log.info(list.stream().reduce(0, Integer::sum));
-       return list;
+        var list = new ArrayList<>(IntStream
+                .range(0, ARMY_SLOT_MAX_QTY)
+                .mapToObj(num -> distributionNumber)
+                .toList());
+        for (int i = 0; i < remainder; i++) {
+            list.set(i, list.get(i) + 1);
+        }
+        log.info(list.stream().reduce(0, Integer::sum));
+        return list;
     }
 
     @Transactional
@@ -364,4 +361,26 @@ public class ArmyService {
                 .orElseThrow(getExceptionSupplier(CreatureSlot.class,
                         type, EntityNotFoundException::new, false));
     }
+    public String getHeroSlowestCreatureSlot(String heroId) {
+        var slowestCreature = heroService
+                .getHero(heroId)
+                .getArmyList()
+                .stream()
+                .map(CreatureSlot::getType)
+                .map(creatureService::fetchCreatureByType)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .min(Comparator
+                        .comparingInt(ArmyService::getSpeedValue))
+                .orElseThrow();
+        return slowestCreature.getCreatureType() + " -> " + getSpeedValue(slowestCreature) + " (speed)";
+    }
+    private static int getSpeedValue(Creature creature) {
+        return creature
+                .getCreatureSkillMap()
+                .get(SPEED)
+                .value();
+    }
+
+
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.heroes.Hero;
@@ -20,6 +21,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ArmyController {
     private final ArmyService armyService;
+
+    @GetMapping("/getSlowestCreature")
+    public ResponseEntity<String> getSlowestCreatureSlot(
+            @RequestParam String heroId) {
+        return ResponseEntity.ok(armyService
+                .getHeroSlowestCreatureSlot(heroId));
+    }
 
     @PostMapping("/reinforce")
     public ResponseEntity<String> reinforceArmy (

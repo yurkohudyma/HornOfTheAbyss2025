@@ -5,6 +5,7 @@ import ua.hudyma.domain.creatures.CreatureType;
 public record CreatureSlotRespDto(
         String slotId,
         CreatureType type,
-        Integer quantity
+        Integer quantity,
+        Integer speed
 ) {
 }

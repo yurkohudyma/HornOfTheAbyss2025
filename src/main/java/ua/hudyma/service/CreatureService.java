@@ -7,17 +7,17 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
-import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
-import ua.hudyma.domain.heroes.enums.HeroFaction;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.mapper.CreatureMapper;
 import ua.hudyma.repository.CreatureRepository;
-import ua.hudyma.util.IdGenerator;
+import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.MessageProcessor;
 
 import java.util.Optional;
 
+import static ua.hudyma.domain.creatures.enums.CreatureSkill.SPEED;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 
 @Service
@@ -26,6 +26,8 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 public class CreatureService {
     private final CreatureRepository creatureRepository;
     private final CreatureMapper creatureMapper;
+    private final HeroRepository heroRepository;
+    //private final HeroService heroService -> circular
 
     @SneakyThrows
     public String createCreature(CreatureReqDto dto) {
@@ -40,8 +42,6 @@ public class CreatureService {
 
     public Optional<Creature> fetchCreatureByType(CreatureType type) {
         return creatureRepository.findByCreatureType(type);
-                /*.orElseThrow(getExceptionSupplier(Creature.class, type,
-                EntityNotFoundException::new, false));*/
     }
 
     private Creature getCreature(Long id) {
@@ -49,5 +49,22 @@ public class CreatureService {
                 .findById(id)
                 .orElseThrow(getExceptionSupplier(Creature.class, id,
                         EntityNotFoundException::new, false));
+    }
+
+    public Integer getHeroSlowestCreatureSpeedValue(String heroId) {
+        var hero = heroRepository.findByCode(heroId).orElseThrow();
+        var army = hero.getArmyList();
+        return army
+                .stream()
+                .map(CreatureSlot::getType)
+                .map(this::fetchCreatureByType)
+                .filter(Optional::isPresent)
+                .map(creature -> creature
+                        .get()
+                        .getCreatureSkillMap()
+                        .get(SPEED)
+                        .value())
+                .min(Integer::compareTo)
+                .orElse(0);
     }
 }

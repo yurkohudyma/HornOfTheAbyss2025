@@ -38,5 +38,12 @@ public class CreatureController {
                 .fetchCreatureByType(type));
     }
 
+    @GetMapping("/getSlowestCreatureSpeed")
+    public ResponseEntity<Integer> getHeroSlowestCreatureSpeedValue(
+            @RequestParam String heroId) {
+        return ResponseEntity.ok(creatureService
+                .getHeroSlowestCreatureSpeedValue(heroId));
+    }
+
 
 }
