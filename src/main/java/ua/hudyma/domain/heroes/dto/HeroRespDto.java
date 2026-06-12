@@ -23,4 +23,5 @@ public record HeroRespDto(
         List<CreatureSlot> armySlotList
 
 ) {
+
 }

@@ -11,7 +11,10 @@ import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
-import ua.hudyma.domain.heroes.dto.*;
+import ua.hudyma.domain.heroes.dto.HeroReqDto;
+import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
+import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
@@ -23,7 +26,7 @@ import java.util.*;
 
 import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
-import static ua.hudyma.domain.heroes.enums.HeroSpecialtyType.*;
+import static ua.hudyma.domain.heroes.enums.HeroSpecialtyType.SECONDARY_SKILL;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -240,14 +243,16 @@ public class HeroService {
     }
 
     @Transactional
-    public MovemementPointsRespDto updateAndFetchHeroMovementPoints(String heroid) {
-        var hero = getHero(heroid);
+    public MovemementPointsRespDto updateAndFetchHeroMovementPoints(String heroCode) {
+        var hero = getHero(heroCode);
         var paramMap = getOrCreateHeroParamsMap(hero);
         var recalculatedMaxMovePoints = recalculateMaxMovePoints(hero);
-        paramMap.putIfAbsent(CUR_MOVE_POINTS, recalculatedMaxMovePoints[0]);
-        paramMap.putIfAbsent(MAX_MOVE_POINTS, recalculatedMaxMovePoints[1]);
-        paramMap.putIfAbsent(CUR_WATER_MOVE_POINTS, recalculatedMaxMovePoints[2]);
-        paramMap.putIfAbsent(MAX_WATER_MOVE_POINTS, recalculatedMaxMovePoints[3]);
+        paramMap.putAll(
+                Map.of(CUR_MOVE_POINTS, recalculatedMaxMovePoints[0],
+                        MAX_MOVE_POINTS, recalculatedMaxMovePoints[1],
+                        CUR_WATER_MOVE_POINTS, recalculatedMaxMovePoints[2],
+                        MAX_WATER_MOVE_POINTS, recalculatedMaxMovePoints[3]));
+        hero.setParametersMap(paramMap);
         return new MovemementPointsRespDto(
                 recalculatedMaxMovePoints[0],
                 recalculatedMaxMovePoints[1],
@@ -301,22 +306,47 @@ public class HeroService {
                             [getSecondarySkillModifierNumber(
                             secondarySkillMap.get(NAVIGATION))] / 100;
         }
-        var heroSpecialtyModifier = retrieveHeroSpecialty(hero);
+        var heroSpecialtyModifier = calcSpecialtyModifier(hero.getCode());
         landResult += (int) (landResult * logisticsModifier);
         landResult += (int) (landResult * pathfindingModifier);
         waterResult += (int) (waterResult * navigationModifier);
-        landResult += (int) (landResult * heroSpecialtyModifier);
+        landResult += heroSpecialtyModifier;
         return new int[]{landResult, landResult, waterResult, waterResult};
     }
 
-    private Float retrieveHeroSpecialty(Hero hero) {
-        /*var heroSpecialty = hero.getHeroSpecialty();
-        if (heroSpecialty == null) return 0f;
-        else if (heroSpecialty.specialtyType() != HeroSpecialtyType.SECONDARY_SKILL) return 0f;
+    @Transactional
+    public Integer calcSpecialtyModifier(String heroCode) {
+        var hero = getHero(heroCode);
+        var heroSpecialty = hero.getHeroSpecialty();
+        Object specialtyProperty;
+        if (heroSpecialty == null || (specialtyProperty = heroSpecialty.property()) == null)
+            return -1;
         var heroLevel = hero.getLevel();
-        if (heroSpecialty.equals(LOGISTICS))*/
-        return 1f;
-
+        SkillLevel secondarySkillSpecialtyLevel = null;
+        var secondarySkillMap = hero.getSecondarySkillMap();
+        var heroSpecialtyProperty = heroSpecialty.property();
+        var heroSpecialtyType = heroSpecialty.specialtyType();
+        if (heroSpecialtyType.equals(SECONDARY_SKILL)) {
+            secondarySkillSpecialtyLevel = secondarySkillMap
+                    .get(specialtyProperty);
+            if (secondarySkillSpecialtyLevel == null) {
+                log.warn("Secondary skill is missing while Specialty has been set");
+                log.warn(applyBasicSecondarySkillIfMissing(hero, heroSpecialtyProperty.toString()));
+                secondarySkillSpecialtyLevel = SkillLevel.BASIC;
+            }
+        }
+        return (int) switch (heroSpecialtyType) {
+            case CREATURE, UPGRADE, WAR_MACHINE -> 0;
+            case SPEED -> 2;
+            case RESOURCE, SPELL -> 1;
+            case SECONDARY_SKILL -> {
+                var secSkillArrayIndex = getSecondarySkillModifierNumber(secondarySkillSpecialtyLevel);
+                var secondarySkill = SecondarySkill.valueOf((String) specialtyProperty);
+                var modifier = secondarySkill.getSkillLevelModifiers()[secSkillArrayIndex];
+                yield Math.round(modifier * (1 + heroLevel * 0.05));
+            }
+            //todo amend other heroSpecialtyProperty calculations
+        };
     }
 
     private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel) {
@@ -503,36 +533,32 @@ public class HeroService {
                 .reduce(0, Integer::sum);
     }
     @Transactional
-    public HeroRespDto setSpecialty(HeroReqSpecialty dto) {
+    public String setSpecialty(HeroReqSpecialty dto) {
         var hero = getHero(dto.heroCode());
         var specialtyType = dto.specialtyType();
-        var heroSpecialty = new HeroSpecialty(specialtyType, dto.property());
+        var specialtyProperty = dto.property();
+        if (hero.getHeroSpecialty() != null) {
+            applyBasicSecondarySkillIfMissing(hero, dto.property());
+            return String.format("%s already has a specialty %s. Assigning secSkill if missing",
+                    hero.getName(), hero.getHeroSpecialty().property());
+        }
+        var heroSpecialty = new HeroSpecialty(specialtyType, specialtyProperty);
         hero.setHeroSpecialty(heroSpecialty);
-        return heroMapper.toDto(hero);
+        var secSkillReply = applyBasicSecondarySkillIfMissing(hero, specialtyProperty);//assigning the same BASIC secSkill if missing
+        return String.format("Specialty %s succ set for %s", specialtyProperty, hero.getName()) + System.lineSeparator() + secSkillReply;
     }
 
-    public Integer calcSpecialtyModifier(Hero hero) {
-        var heroSpecialty = hero.getHeroSpecialty();
-        if (heroSpecialty == null) return 1;
-        var heroLevel = hero.getLevel();
-        Object specialtyProperty = heroSpecialty.property();
-        if (specialtyProperty == null) return 1;
-        SkillLevel secondarySkillSpecialtyLevel = null;
-        if (heroSpecialty.specialtyType().equals(SECONDARY_SKILL)){
-            secondarySkillSpecialtyLevel = hero.getSecondarySkillMap()
-                    .get(specialtyProperty);        }
-        return (int) switch (heroSpecialty.specialtyType()) {
-            case CREATURE, UPGRADE, WAR_MACHINE -> 0;
-            case SPEED -> 2;
-            case RESOURCE, SPELL -> 1;
-            case SECONDARY_SKILL -> {
-                var secSkillArrayIndex = getSecondarySkillModifierNumber(secondarySkillSpecialtyLevel);
-                var secondarySkill = SecondarySkill.valueOf((String) specialtyProperty);
-                var modifier = secondarySkill.getSkillLevelModifiers()[secSkillArrayIndex];
-                yield Math.round(modifier * (1 + heroLevel * 0.05));
-            }
-            //todo amend other heroSpecialtyType calculations
-        };
+    private String applyBasicSecondarySkillIfMissing(Hero hero, String property) {
+        var secondarySkillMap = hero.getSecondarySkillMap();
+        var secondarySkill = SecondarySkill.valueOf(property);
+        if (secondarySkillMap.containsKey(secondarySkill)) {
+            return String.format("%s already obtained %s", hero.getName(), property);
+        }
+        if (secondarySkillMap.size() == 5) {
+            return String.format("%s -> No free SecondarySkill slots for %s", property, hero.getName());
+        }
+        secondarySkillMap.put(secondarySkill, SkillLevel.BASIC);
+        return String.format("%s succ added to SecondarySkills for %s", property, hero.getName());
     }
 
 }

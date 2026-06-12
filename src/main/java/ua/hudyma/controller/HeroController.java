@@ -42,16 +42,16 @@ public class HeroController {
     }
 
     @PatchMapping("/setSpecialty")
-    public ResponseEntity<HeroRespDto> setSpecialty(
+    public ResponseEntity<String> setSpecialty(
             @RequestBody HeroReqSpecialty dto){
         return ResponseEntity.ok(heroService.setSpecialty(dto));
     }
 
-    @PostMapping("/calcSpecialtyResult")
-    public ResponseEntity<Integer> calcSpecialtyResult(
-            @RequestBody Hero hero){
+    @GetMapping("/calcSpecialtyModifier")
+    public ResponseEntity<Integer> calcSpecialtyModifier(
+            @RequestParam String heroCode){
         return ResponseEntity.ok(heroService
-                .calcSpecialtyModifier(hero));
+                .calcSpecialtyModifier(heroCode));
     }
 
     @GetMapping("/getBest")

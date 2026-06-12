@@ -8,7 +8,7 @@ import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.creaturetypes.CoveCreatureType;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
-import ua.hudyma.domain.heroes.dto.HeroSpecialty;
+import ua.hudyma.domain.heroes.enums.HeroSpecialty;
 import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.domain.heroes.enums.HeroSpecialtyType;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
