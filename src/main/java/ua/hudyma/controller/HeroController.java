@@ -49,8 +49,9 @@ public class HeroController {
 
     @PostMapping("/calcSpecialtyResult")
     public ResponseEntity<Integer> calcSpecialtyResult(
-            @RequestBody CalcSpecialtyReq dto){
-        return ResponseEntity.ok(heroService.calcSpecialtyResult(dto));
+            @RequestBody Hero hero){
+        return ResponseEntity.ok(heroService
+                .calcSpecialtyModifier(hero));
     }
 
     @GetMapping("/getBest")

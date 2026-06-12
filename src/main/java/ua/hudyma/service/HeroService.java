@@ -23,6 +23,7 @@ import java.util.*;
 
 import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
+import static ua.hudyma.domain.heroes.enums.HeroSpecialtyType.*;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
@@ -300,11 +301,22 @@ public class HeroService {
                             [getSecondarySkillModifierNumber(
                             secondarySkillMap.get(NAVIGATION))] / 100;
         }
+        var heroSpecialtyModifier = retrieveHeroSpecialty(hero);
         landResult += (int) (landResult * logisticsModifier);
         landResult += (int) (landResult * pathfindingModifier);
         waterResult += (int) (waterResult * navigationModifier);
-        //todo does not include creatures minimal speed unit restrictions and LOGICSTICS specialty eval
+        landResult += (int) (landResult * heroSpecialtyModifier);
         return new int[]{landResult, landResult, waterResult, waterResult};
+    }
+
+    private Float retrieveHeroSpecialty(Hero hero) {
+        /*var heroSpecialty = hero.getHeroSpecialty();
+        if (heroSpecialty == null) return 0f;
+        else if (heroSpecialty.specialtyType() != HeroSpecialtyType.SECONDARY_SKILL) return 0f;
+        var heroLevel = hero.getLevel();
+        if (heroSpecialty.equals(LOGISTICS))*/
+        return 1f;
+
     }
 
     private Integer getSecondarySkillModifierNumber(SkillLevel skillLevel) {
@@ -499,17 +511,23 @@ public class HeroService {
         return heroMapper.toDto(hero);
     }
 
-    public Integer calcSpecialtyResult(CalcSpecialtyReq dto) {
-        var heroSpecialtyType = dto.heroSpecialtyType();
-        var heroLevel = dto.heroLevel();
-        return (int) switch (heroSpecialtyType) {
+    public Integer calcSpecialtyModifier(Hero hero) {
+        var heroSpecialty = hero.getHeroSpecialty();
+        if (heroSpecialty == null) return 1;
+        var heroLevel = hero.getLevel();
+        Object specialtyProperty = heroSpecialty.property();
+        if (specialtyProperty == null) return 1;
+        SkillLevel secondarySkillSpecialtyLevel = null;
+        if (heroSpecialty.specialtyType().equals(SECONDARY_SKILL)){
+            secondarySkillSpecialtyLevel = hero.getSecondarySkillMap()
+                    .get(specialtyProperty);        }
+        return (int) switch (heroSpecialty.specialtyType()) {
             case CREATURE, UPGRADE, WAR_MACHINE -> 0;
             case SPEED -> 2;
             case RESOURCE, SPELL -> 1;
             case SECONDARY_SKILL -> {
-                var skillLevel = dto.skillLevel();
-                var secSkillArrayIndex = getSecondarySkillModifierNumber(skillLevel);
-                var secondarySkill = SecondarySkill.valueOf(dto.specialtyProperty());
+                var secSkillArrayIndex = getSecondarySkillModifierNumber(secondarySkillSpecialtyLevel);
+                var secondarySkill = SecondarySkill.valueOf((String) specialtyProperty);
                 var modifier = secondarySkill.getSkillLevelModifiers()[secSkillArrayIndex];
                 yield Math.round(modifier * (1 + heroLevel * 0.05));
             }
