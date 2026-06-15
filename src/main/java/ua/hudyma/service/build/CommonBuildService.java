@@ -49,9 +49,9 @@ public class CommonBuildService {
                 throw new IllegalStateException("Available Resources Map is NULL");
             }
             if (buildingType instanceof GrailBuildingType){
-                //var hero = detectHeroToCarryTheGrail(player); //todo temporarily
-                //var grailTown = detectTownForClaimingGrail(hero, player.getTownsList()); //todo temporarily
-                var grailTown = town; //todo temporarily to build grail in any selected town
+                //var hero = detectHeroToCarryTheGrail(player); //temporarily
+                //var grailTown = detectTownForClaimingGrail(hero, player.getTownsList()); //temporarily
+                var grailTown = town; //temporarily to build grail in any selected town
                 var grailType = Arrays.stream(GrailBuildingType.values())
                         .filter(faction -> faction.getFaction().equals(town.getFaction()))
                         .findAny()

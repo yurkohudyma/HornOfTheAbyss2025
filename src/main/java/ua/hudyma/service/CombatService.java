@@ -318,7 +318,7 @@ public class CombatService {
     private AttackResultDto attackSlot(
             CreatureSlot attackerSlot,
             CreatureSlot defenderSlot) {
-        //todo attack/defense skills NOT accounted (use nullable modified values)
+        //attack/defense skills NOT accounted (use nullable modified values)
         var attackerDamage = attackerSlot
                 .getModifiableDataMap()
                 .get(DAMAGE).getCurrentValue(); 
