@@ -37,7 +37,6 @@ public enum InfernoEssentialCreatureType implements CreatureType {
             GOLD, 50
     )));
 
-    //todo populate resources demand
     private final Integer level;
 
     private final EnumMap<ResourceType, Integer> requiredResourceMap;

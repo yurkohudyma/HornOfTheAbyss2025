@@ -346,6 +346,8 @@ public class HeroService {
                 yield Math.round(modifier * (1 + heroLevel * 0.05));
             }
             //todo amend other heroSpecialtyProperty calculations
+            // creature -> Increases Speed of creatures and their Attack and Defense skills for every x levels (rounded up)
+            //FIXED_CREATURES_SPECIALTY on desktop
         };
     }
 
@@ -378,7 +380,7 @@ public class HeroService {
                     var value = entry.getValue();
                     if (value.name().equals(artifactName)) {
                         miscInvMap.remove(key);
-                        log.info(" ::: " + artifactName + " detached from " + key + " slot");
+                        log.info(" ::: {} detached from {} slot", artifactName, key);
                         return;
                     }
                 }
@@ -560,5 +562,4 @@ public class HeroService {
         secondarySkillMap.put(secondarySkill, SkillLevel.BASIC);
         return String.format("%s succ added to SecondarySkills for %s", property, hero.getName());
     }
-
 }

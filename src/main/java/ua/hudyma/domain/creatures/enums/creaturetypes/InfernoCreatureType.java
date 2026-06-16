@@ -39,8 +39,6 @@ public enum InfernoCreatureType implements CreatureType {
     private final Integer level;
     private final EnumMap<ResourceType, Integer> requiredResourceMap;
 
-    //todo populate resources demand
-
     @Override
     public String getCode() {
         return name();
