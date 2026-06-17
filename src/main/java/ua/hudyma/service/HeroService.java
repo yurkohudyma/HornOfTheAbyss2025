@@ -16,6 +16,7 @@ import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
 import ua.hudyma.domain.heroes.enums.*;
+import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
@@ -562,4 +563,11 @@ public class HeroService {
         secondarySkillMap.put(secondarySkill, SkillLevel.BASIC);
         return String.format("%s succ added to SecondarySkills for %s", property, hero.getName());
     }
+    public WarMachineRespDto syncHeroWarMachine(String heroCode) {
+        //todo implement
+        // коротче, в поточному виконанні змінити параметри вормашини нема куди, потрібно створювати її як CreatureSlot
+        // і додавати або до існуючої армії або створювати окрему мапу
+        throw new IllegalStateException("syncHeroWarMachine NOT yet implemented");
+    }
+
 }

@@ -87,6 +87,7 @@ public class Hero implements BaseEntity {
     private List<CreatureSlot> armyList;
 
     @ToString.Exclude
+    //implemented for testing combat functions to preserve main army intact
     private List<CreatureSlot> combatArmyList;
 
     @ManyToOne

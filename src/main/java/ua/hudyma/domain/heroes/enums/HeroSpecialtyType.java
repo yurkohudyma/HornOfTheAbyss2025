@@ -8,4 +8,5 @@ public enum HeroSpecialtyType {
     SPELL, // Casts spell with increased effect
     UPGRADE, //  	Can upgrade creatures to 3rd level
     WAR_MACHINE; // Increases the Attack and Defense skills of any Ballista by 30% for every 5 levels (rounded up).
+    // Cannon - Att/Def +20% for every 6 lvls
 }
