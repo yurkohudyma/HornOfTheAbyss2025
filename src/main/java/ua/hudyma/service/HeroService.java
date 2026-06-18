@@ -603,7 +603,11 @@ public class HeroService {
                 var firstAidTentPropertiesMap = FIRST_AID_TENT.getCreatureSkillMap();
                 updatedDefense = defense + firstAidTentPropertiesMap.get(DEFENSE).value();
             }
-            case CATAPULT -> throw new IllegalStateException("Catapult parameters are static and could not be changed");
+            case CATAPULT -> {
+                var catapultPropertiesMap = CATAPULT.getCreatureSkillMap();
+                updatedAttack =  attack + catapultPropertiesMap.get(ATTACK).value();
+                updatedDefense = defense + catapultPropertiesMap.get(DEFENSE).value();
+            }
         }
 
         //ballista dmg calc : own dmg params * (hero's attack + 5)
