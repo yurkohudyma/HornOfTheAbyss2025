@@ -6,12 +6,12 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
-import ua.hudyma.domain.creatures.dto.CreatureSlot;
-import ua.hudyma.domain.heroes.enums.HeroSpecialty;
-import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
+import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.enums.*;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
+import ua.hudyma.enums.WarMachine;
 import ua.hudyma.util.FixedSize;
 import ua.hudyma.util.FixedSizeListDeserializer;
 import ua.hudyma.util.FixedSizeMap;
@@ -71,6 +71,12 @@ public class Hero implements BaseEntity {
     @ToString.Exclude
     private Map<ArtifactSlot, ArtifactSlotDisposition> miscInventoryMap =
             new FixedSizeMap<>(new HashMap<>(), 5);
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json", name = "war_machines_inventory_set")
+    @ToString.Exclude
+    private Set<WarMachine> warMachineInventorySet =
+            EnumSet.noneOf(WarMachine.class);
 
     @JsonDeserialize(using = FixedSizeListDeserializer.class)
     @FixedSize(64)

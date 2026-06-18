@@ -1,5 +1,14 @@
 package ua.hudyma.dto;
 
-public record WarMachineRespDto() {
+import ua.hudyma.enums.WarMachine;
+import ua.hudyma.enums.WarMachineProperties;
+
+public record WarMachineRespDto(
+        WarMachine warMachine,
+        Integer attack,
+        Integer defense,
+        Integer minDamage,
+        Integer maxDamage
+) {
 
 }

@@ -17,6 +17,8 @@ import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.dto.WarMachineRespDto;
+import ua.hudyma.enums.WarMachine;
+import ua.hudyma.enums.WarMachineProperties;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
 import ua.hudyma.mapper.HeroMapper;
@@ -25,11 +27,14 @@ import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
 
+import static ua.hudyma.domain.creatures.enums.CreatureSkill.*;
 import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 import static ua.hudyma.domain.heroes.enums.HeroSpecialtyType.SECONDARY_SKILL;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
+import static ua.hudyma.enums.WarMachineProperties.*;
+import static ua.hudyma.enums.WarMachineProperties.CATAPULT;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -563,11 +568,99 @@ public class HeroService {
         secondarySkillMap.put(secondarySkill, SkillLevel.BASIC);
         return String.format("%s succ added to SecondarySkills for %s", property, hero.getName());
     }
-    public WarMachineRespDto syncHeroWarMachine(String heroCode) {
-        //todo implement
-        // коротче, в поточному виконанні змінити параметри вормашини нема куди, потрібно створювати її як CreatureSlot
-        // і додавати або до існуючої армії або створювати окрему мапу
-        throw new IllegalStateException("syncHeroWarMachine NOT yet implemented");
+    public WarMachineRespDto syncHeroWarMachine(String heroCode, WarMachine warMachine) {
+        var hero = getHero(heroCode);
+        var warMachineInventorySet = getOrCreateWarMachinesInvSet(hero);
+        if (!warMachineInventorySet.contains(warMachine))
+            throw new IllegalArgumentException(hero.getName() + " doesn't possess the " + warMachine);
+        var heroLevel = hero.getLevel();
+        var heroPrimarySkillMap = hero.getPrimarySkillMap();
+        int attack = heroPrimarySkillMap.get(PrimarySkill.ATTACK),
+                defense = heroPrimarySkillMap.get(PrimarySkill.DEFENSE);
+        int updatedAttack = 0, updatedDefense = 0, updatedMinDamage = 0, updatedMaxDamage = 0;
+        //todo include ARCHERY secskill if available
+        switch (warMachine) {
+            case BALLISTA -> {
+                var ballistaPropertiesMap = BALLISTA.getCreatureSkillMap();
+                updatedAttack = attack + ballistaPropertiesMap.get(ATTACK).value();
+                updatedDefense = defense + ballistaPropertiesMap.get(DEFENSE).value();
+                updatedMinDamage = ballistaPropertiesMap.get(DAMAGE).value() * (attack + 5);
+                updatedMaxDamage = ballistaPropertiesMap.get(DAMAGE).multipliedValue() * (attack + 5);
+                //todo include ARTILLERY secskill if available
+            }
+            case AMMO_CART -> {
+                var ammoCartPropertiesMap = AMMO_CART.getCreatureSkillMap();
+                updatedDefense = defense + ammoCartPropertiesMap.get(DEFENSE).value();
+            }
+            case CANNON -> {
+                var cannonPropertiesMap = CANNON.getCreatureSkillMap();
+                updatedAttack = attack + cannonPropertiesMap.get(ATTACK).value();
+                updatedDefense = defense + cannonPropertiesMap.get(DEFENSE).value();
+                updatedMinDamage = cannonPropertiesMap.get(DAMAGE).value() * (attack + 1);
+                updatedMaxDamage = cannonPropertiesMap.get(DAMAGE).multipliedValue() * (attack + 1);
+            }
+            case FIRST_AID_TENT -> {
+                var firstAidTentPropertiesMap = FIRST_AID_TENT.getCreatureSkillMap();
+                updatedDefense = defense + firstAidTentPropertiesMap.get(DEFENSE).value();
+            }
+            case CATAPULT -> throw new IllegalStateException("Catapult parameters are static and could not be changed");
+        }
+
+        //ballista dmg calc : own dmg params * (hero's attack + 5)
+        //cannom dmg calc : own dmg params * (hero's attack + 1)
+        return new WarMachineRespDto(warMachine, updatedAttack, updatedDefense, updatedMinDamage, updatedMaxDamage);
+    }
+    private Set<WarMachine> getOrCreateWarMachinesInvSet(Hero hero) {
+        var warMachineInventorySet = hero.getWarMachineInventorySet();
+        if (warMachineInventorySet == null) {
+            var set = EnumSet.noneOf(WarMachine.class);
+            hero.setWarMachineInventorySet(set);
+            return set;
+        }
+        return warMachineInventorySet;
+    }
+
+    @Transactional
+    public WarMachineRespDto attachWarmachine(String heroCode, WarMachine warmachine) {
+        var hero = getHero(heroCode);
+        var warMachineInventorySet = getOrCreateWarMachinesInvSet(hero);
+        if (warMachineInventorySet.contains(warmachine))
+            throw new IllegalArgumentException(hero.getName() + " already possess the " + warmachine);
+        else if (warmachine == WarMachine.BALLISTA && warMachineInventorySet.contains(WarMachine.CANNON)) {
+            throw new IllegalArgumentException(hero.getName() + " already possess the " + WarMachine.CANNON + ". " +
+                    "Detach one first");
+            //todo implement automatic swap instead of warning if you want to
+        }
+        else if (warmachine == WarMachine.CANNON && warMachineInventorySet.contains(WarMachine.BALLISTA)) {
+            throw new IllegalArgumentException(hero.getName() + " already possess the " + WarMachine.BALLISTA + ". " +
+                    "Detach one first");
+        }
+        warMachineInventorySet.add(warmachine);
+        return syncHeroWarMachine(heroCode, warmachine);
+    }
+
+    @Transactional
+    public void provideAllHeroesWithCatapult(Long playerId) {
+        var player = playerService.getPlayer(playerId);
+        var heroList = player.getHeroList();
+        heroList.forEach(hero -> {
+            var warMachinesInvSet = getOrCreateWarMachinesInvSet(hero);
+            if (!warMachinesInvSet.contains(WarMachine.CATAPULT)) {
+                warMachinesInvSet.add(WarMachine.CATAPULT);
+                log.info(" --> {} was succ provided with Catapult", hero.getName());
+            } else log.error("{} already obtained a Catapult", hero.getName());
+        });
+    }
+
+    @Transactional
+    public void detachWarmachine(String heroCode, WarMachine warmachine) {
+        var hero = getHero(heroCode);
+        var warMachineInventorySet = hero.getWarMachineInventorySet();
+        if (warMachineInventorySet == null){
+            throw new IllegalArgumentException(hero.getName() + " has no " + warmachine + ", as warMachineSet in NULL");
+        }
+        warMachineInventorySet.remove(warmachine);
+        log.info(" --> {} has been succ detached from {}", warmachine, hero.getName());
     }
 
 }

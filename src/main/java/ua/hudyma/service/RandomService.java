@@ -19,7 +19,7 @@ import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.towns.Town;
 import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.enums.Faction;
-import ua.hudyma.enums.WarMachine;
+import ua.hudyma.enums.WarMachineProperties;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.mapper.PlayerMapper;
 import ua.hudyma.domain.resource.enums.ResourceType;
@@ -108,7 +108,7 @@ public class RandomService {
             case CREATURE ->
                     getRandomCreature(faction); // Increases Speed of creatures and their Attack and Defense skills for every x levels (rounded up)
             case RESOURCE -> getRandomEnum(ResourceType.class).name();
-            case WAR_MACHINE -> getRandomEnum(WarMachine.class).name();
+            case WAR_MACHINE -> getRandomEnum(WarMachineProperties.class).name();
         };
     }
 

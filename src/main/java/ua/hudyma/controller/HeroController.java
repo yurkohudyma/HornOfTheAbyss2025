@@ -1,8 +1,10 @@
 package ua.hudyma.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
@@ -10,6 +12,8 @@ import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
 import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.dto.WarMachineRespDto;
+import ua.hudyma.enums.WarMachine;
+import ua.hudyma.enums.WarMachineProperties;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
 import ua.hudyma.util.IdGenerator;
@@ -34,24 +38,22 @@ public class HeroController {
     @GetMapping("/syncHeroWarMachineOnSpecialty")
     public ResponseEntity<WarMachineRespDto>
     syncHeroWarMachineOnSpecialty
-            (@RequestParam String heroCode) {
+            (@RequestParam String heroCode,
+             @RequestParam WarMachine warMachine) {
         return ResponseEntity.ok(heroService
-                .syncHeroWarMachine(heroCode));
-    }
-
-    public String getRandomCreature(HeroFaction heroFaction) {
-        var faction = heroFaction.getFaction();
-        var allFactionCreatures = CreatureTypeRegistry
-                .getAllCreaturesByFaction(faction, true);
-        return allFactionCreatures[IdGenerator
-                .getThreadLocalRandomIndex(
-                        0, allFactionCreatures.length)].getCode();
+                .syncHeroWarMachine(heroCode, warMachine));
     }
 
     @GetMapping("/getRandom")
     public ResponseEntity<HeroRespDto> createRandomHero() {
         return ResponseEntity.ok(randomService
                 .createRandomHeroDto());
+    }
+
+    @GetMapping("/provideAllHeroesWithCatapult")
+    public void provideAllHeroesWithCatapult
+            (@RequestParam Long playerId) {
+        heroService.provideAllHeroesWithCatapult(playerId);
     }
 
     @PatchMapping("/setSpecialty")
@@ -103,6 +105,23 @@ public class HeroController {
                         (heroId, artifact));
     }
 
+    @PatchMapping("/attachWarmachine")
+    public ResponseEntity<WarMachineRespDto>
+    attachWarmachine(
+            @RequestParam String heroCode,
+            @RequestParam WarMachine warmachine){
+        return ResponseEntity.ok(heroService
+                .attachWarmachine(heroCode, warmachine));
+    }
+
+    @DeleteMapping("/detachWarmachime")
+    public HttpStatus detachWarmachine(
+            @RequestParam String heroCode,
+            @RequestParam WarMachine warmachine){
+        heroService.detachWarmachine(heroCode, warmachine);
+        return HttpStatus.GONE;
+    }
+
     @PatchMapping("/detachArtifact")
     public ResponseEntity<HeroRespDto>
     syncHeroSkillsUponArtifactDetachment(
@@ -119,5 +138,4 @@ public class HeroController {
                 .defPriSkillsEmptyBodyInvMapAndParamMap
                         (heroId));
     }
-
 }

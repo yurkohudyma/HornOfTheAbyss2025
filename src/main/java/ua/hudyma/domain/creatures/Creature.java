@@ -23,16 +23,21 @@ public class Creature implements BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Enumerated(EnumType.STRING)
     private Faction faction;
+
     @Enumerated(EnumType.STRING)
     private AttackType attackType;
+
     @Convert(converter = CreatureTypeConverter.class)
     private CreatureType creatureType;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "creature_property_map")
     private Map<CreatureProperty, List<CreaturePropertyValue>>
             creaturePropertyMap;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "creature_skill_map")
     private Map<CreatureSkill, CreatureSkillValue>

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
+import static ua.hudyma.domain.heroes.enums.ArtifactSlot.CATAPULT;
 
 @Getter
 @RequiredArgsConstructor
@@ -39,7 +40,15 @@ public enum ArtifactSlotDisposition {
     //backpack_inventory:
     SLEEPKEEPER(INVENTORY, null),
     HORN_OF_THE_ABYSS(INVENTORY, null),
-    GRAIL(INVENTORY, null);
+    GRAIL(INVENTORY, null),
+
+    //warmachines
+    BALLISTA (WARMACHINE, null),
+    CANNON(WARMACHINE, null),
+    FIRST_AID_TENT(FIRST_AID, null),
+    CATAPULT (ArtifactSlot.CATAPULT, null),
+    AMMO_CART(AMMO, null);
+
     private final ArtifactSlot artifactSlot;
     private final ArtifactSlot specificArtifactSlot;
 }
