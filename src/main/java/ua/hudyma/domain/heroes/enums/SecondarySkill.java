@@ -8,6 +8,10 @@ import lombok.RequiredArgsConstructor;
 public enum SecondarySkill {
     AIR_MAGIC (new int[]{}),
     ARCHERY (new int[]{10, 25, 50}),
+
+    /*Basic: increases the damage done by range attacking creatures by 10%.
+    Advanced: increases the damage done by range attacking creatures by 25%.
+    Expert: increases the damage done by range attacking creatures by 50%.*/
     ARMORER (new int[]{5, 10, 15}),
     ARTILLERY (new int[]{50, 75, 100}), //https://heroes.thelazy.net/index.php/Artillery
 
