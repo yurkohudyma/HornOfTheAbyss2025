@@ -10,6 +10,14 @@ public enum SecondarySkill {
     ARCHERY (new int[]{10, 25, 50}),
     ARMORER (new int[]{5, 10, 15}),
     ARTILLERY (new int[]{50, 75, 100}), //https://heroes.thelazy.net/index.php/Artillery
+
+    /*Basic: The Ballista has a 50% chance to inflict 200% base Damage.
+    The Cannon has an increased chance to hit fortifications.
+    The Ballista and the Cannon cannot be dealt more than 40% of their Health as Damage from any single damage source.
+    Advanced: The Ballista shoots twice and has a 75% chance to inflict 200% base Damage. The Cannon has an increased chance to hit fortifications and inflicts 200% base Damage to creatures. The Ballista and the Cannon cannot be dealt more than 40% of their Health as Damage from any single damage source. Horn of the Abyss
+    Expert: The Ballista shoots twice and has a 100% chance to inflict 200% base Damage. The Cannon precisely hits fortifications at maximum Damage and inflicts 300% base Damage to creatures. The Ballista and the Cannon cannot be dealt more than 40% of their Health as Damage from any single damage source.*/
+
+
     BALLISTICS (new int[]{}), //https://heroes.thelazy.net/index.php/Ballistics
     DIPLOMACY(new int[]{20, 40, 60}),
     EAGLE_EYE (new int[]{30, 40, 50}),

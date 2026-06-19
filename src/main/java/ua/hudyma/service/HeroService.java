@@ -26,6 +26,7 @@ import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.*;
 import static ua.hudyma.domain.heroes.HeroParams.*;
@@ -573,20 +574,20 @@ public class HeroService {
         var warMachineInventorySet = getOrCreateWarMachinesInvSet(hero);
         if (!warMachineInventorySet.contains(warMachine))
             throw new IllegalArgumentException(hero.getName() + " doesn't possess the " + warMachine);
-        var heroLevel = hero.getLevel();
+        //var heroLevel = hero.getLevel();
         var heroPrimarySkillMap = hero.getPrimarySkillMap();
         int attack = heroPrimarySkillMap.get(PrimarySkill.ATTACK),
                 defense = heroPrimarySkillMap.get(PrimarySkill.DEFENSE);
         int updatedAttack = 0, updatedDefense = 0, updatedMinDamage = 0, updatedMaxDamage = 0;
         //todo include ARCHERY secskill if available
+        var damageChanceModifier = retrieveChanceDamageModifier(hero.getSecondarySkillMap());
         switch (warMachine) {
             case BALLISTA -> {
                 var ballistaPropertiesMap = BALLISTA.getCreatureSkillMap();
                 updatedAttack = attack + ballistaPropertiesMap.get(ATTACK).value();
                 updatedDefense = defense + ballistaPropertiesMap.get(DEFENSE).value();
-                updatedMinDamage = ballistaPropertiesMap.get(DAMAGE).value() * (attack + 5);
-                updatedMaxDamage = ballistaPropertiesMap.get(DAMAGE).multipliedValue() * (attack + 5);
-                //todo include ARTILLERY secskill if available
+                updatedMinDamage = ballistaPropertiesMap.get(DAMAGE).value() * (attack + 5) + damageChanceModifier;
+                updatedMaxDamage = ballistaPropertiesMap.get(DAMAGE).multipliedValue() * (attack + 5) + damageChanceModifier;
             }
             case AMMO_CART -> {
                 var ammoCartPropertiesMap = AMMO_CART.getCreatureSkillMap();
@@ -596,8 +597,8 @@ public class HeroService {
                 var cannonPropertiesMap = CANNON.getCreatureSkillMap();
                 updatedAttack = attack + cannonPropertiesMap.get(ATTACK).value();
                 updatedDefense = defense + cannonPropertiesMap.get(DEFENSE).value();
-                updatedMinDamage = cannonPropertiesMap.get(DAMAGE).value() * (attack + 1);
-                updatedMaxDamage = cannonPropertiesMap.get(DAMAGE).multipliedValue() * (attack + 1);
+                updatedMinDamage = cannonPropertiesMap.get(DAMAGE).value() * (attack + 1) + damageChanceModifier;
+                updatedMaxDamage = cannonPropertiesMap.get(DAMAGE).multipliedValue() * (attack + 1) + damageChanceModifier;
             }
             case FIRST_AID_TENT -> {
                 var firstAidTentPropertiesMap = FIRST_AID_TENT.getCreatureSkillMap();
@@ -613,6 +614,18 @@ public class HeroService {
         //ballista dmg calc : own dmg params * (hero's attack + 5)
         //cannom dmg calc : own dmg params * (hero's attack + 1)
         return new WarMachineRespDto(warMachine, updatedAttack, updatedDefense, updatedMinDamage, updatedMaxDamage);
+    }
+    private int retrieveChanceDamageModifier(Map<SecondarySkill, SkillLevel> secondarySkillMap) {
+        var artillerySkill = secondarySkillMap.get(ARTILLERY);
+        if (artillerySkill == null) return 0;        
+        var secondarySkillModifierNumber = getSecondarySkillModifierNumber(artillerySkill);
+        var modifierCoefficient = SecondarySkill.valueOf(ARTILLERY.name()).getSkillLevelModifiers()[secondarySkillModifierNumber];
+        return switch (modifierCoefficient){
+            case 50 -> ThreadLocalRandom.current().nextBoolean() ? 2 : 0;
+            case 75 -> ThreadLocalRandom.current().nextDouble() < 0.75 ? 2 : 0;
+            case 100 -> 2;
+            default -> throw new IllegalStateException("ModifierCoefficient unexpected value: " + modifierCoefficient);
+        };
     }
     private Set<WarMachine> getOrCreateWarMachinesInvSet(Hero hero) {
         var warMachineInventorySet = hero.getWarMachineInventorySet();
@@ -630,17 +643,17 @@ public class HeroService {
         var warMachineInventorySet = getOrCreateWarMachinesInvSet(hero);
         if (warMachineInventorySet.contains(warmachine))
             throw new IllegalArgumentException(hero.getName() + " already possess the " + warmachine);
-        else if (warmachine == WarMachine.BALLISTA && warMachineInventorySet.contains(WarMachine.CANNON)) {
-            throw new IllegalArgumentException(hero.getName() + " already possess the " + WarMachine.CANNON + ". " +
-                    "Detach one first");
-            //todo implement automatic swap instead of warning if you want to
-        }
-        else if (warmachine == WarMachine.CANNON && warMachineInventorySet.contains(WarMachine.BALLISTA)) {
-            throw new IllegalArgumentException(hero.getName() + " already possess the " + WarMachine.BALLISTA + ". " +
-                    "Detach one first");
+        else if (warmachine == WarMachine.BALLISTA && warMachineInventorySet.contains(WarMachine.CANNON) ||
+                 warmachine == WarMachine.CANNON && warMachineInventorySet.contains(WarMachine.BALLISTA)) {
+            log.warn("{} already possess warmachine, swapping for {}", hero.getName(), warmachine);
+            var existingWarmachine = retrieveExistingWarmachineToDetach(warmachine);
+            detachWarmachine(heroCode, existingWarmachine);
         }
         warMachineInventorySet.add(warmachine);
         return syncHeroWarMachine(heroCode, warmachine);
+    }
+    private WarMachine retrieveExistingWarmachineToDetach(WarMachine requestedWarMachine) {
+        return requestedWarMachine == WarMachine.BALLISTA ? WarMachine.CANNON : WarMachine.BALLISTA;
     }
 
     @Transactional
