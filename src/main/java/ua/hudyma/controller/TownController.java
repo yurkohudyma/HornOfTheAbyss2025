@@ -30,7 +30,8 @@ public class TownController {
     @GetMapping("/createRandom")
     public ResponseEntity<List<TownRespDto>>
     getRandomTowns(@RequestParam int qty){
-        return ResponseEntity.ok(townService.createRandomTowns(qty));
+        return ResponseEntity.ok(townService
+                .createRandomTowns(qty));
     }
 
     @PatchMapping("/replaceSpell")
@@ -53,7 +54,7 @@ public class TownController {
     public ResponseEntity<CreatureType[]> getAllTownEssentialCreatures(
             @RequestParam String townName, @RequestParam boolean essential){
         return ResponseEntity.ok(townService
-                .getAllCreaturesTypes(townName, essential));
+                .getAllTownCreaturesTypes(townName, essential));
     }
 
     @PostMapping("/hireCreatures")

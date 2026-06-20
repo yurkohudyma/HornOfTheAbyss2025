@@ -13,7 +13,6 @@ import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
-import ua.hudyma.domain.players.dto.ResourcesReqDto;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.SpellReplaceDemands;
 import ua.hudyma.domain.towns.Town;
@@ -71,13 +70,32 @@ public class TownService {
 
     private final PlayerRepository playerRepository;
 
-    private DwellingBuildService dwellingBuildService;
+    //private DwellingBuildService dwellingBuildService;
 
     //private final SpellService spellService; generates circular
 
     public Map<ResourceType, Integer> calcAllHireableCreatures(String townName) {
-        throw new MethodNotImplementedException
-                ("implement calcAllHireableCreatures");
+        var town = getTown(townName);
+        var dwellingMap = town.getDwellingMap();
+        if (dwellingMap == null) throw new IllegalStateException("Dwelling map is null");
+        var reportMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
+        for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()){
+            var dwelling = entry.getKey();
+            var creaturesQty = entry.getValue();
+            var creatureReqResourceMap =
+                    AbstractDwellingTypeRegistry
+                            .fromCode(dwelling)
+                            .getCreature()
+                            .getRequiredResourceMap();
+            for (Map.Entry<ResourceType, Integer> resourceMapEntry :
+                    creatureReqResourceMap.entrySet()){
+                reportMap.merge(
+                        resourceMapEntry.getKey(),
+                        resourceMapEntry.getValue() * creaturesQty,
+                        Integer::sum);
+            }
+        }
+        return reportMap;
     }
 
     //todo test two-level dwelling building
@@ -454,7 +472,7 @@ public class TownService {
                         false));
     }
 
-    public CreatureType[] getAllCreaturesTypes
+    public CreatureType[] getAllTownCreaturesTypes
             (String townName, boolean essential) {
         var town = getTown(townName);
         var faction = town.getFaction();
