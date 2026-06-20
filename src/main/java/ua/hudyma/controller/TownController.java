@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.domain.towns.dto.TownReqDto;
 import ua.hudyma.domain.towns.dto.TownRespDto;
 import ua.hudyma.domain.towns.enums.FortificationType;
@@ -59,6 +60,13 @@ public class TownController {
     public ResponseEntity<List<CreatureSlot>> hireCreatures
             (@RequestBody TownHireCreaturesReqDto dto) {
         return ResponseEntity.ok(townService.hireCreatures(dto));
+    }
+
+    @GetMapping("/calcAllHireableCreaturesCost")
+    public ResponseEntity<Map<ResourceType, Integer>> calcAllHireableCreatures
+            (@RequestParam String townName){
+        return ResponseEntity.ok(townService
+                .calcAllHireableCreatures(townName));
     }
 
     @GetMapping("/getTownCreaturesForHire")

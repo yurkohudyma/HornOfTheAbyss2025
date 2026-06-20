@@ -13,6 +13,7 @@ import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.players.Player;
+import ua.hudyma.domain.players.dto.ResourcesReqDto;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.SpellReplaceDemands;
 import ua.hudyma.domain.towns.Town;
@@ -71,7 +72,13 @@ public class TownService {
     private final PlayerRepository playerRepository;
 
     private DwellingBuildService dwellingBuildService;
+
     //private final SpellService spellService; generates circular
+
+    public Map<ResourceType, Integer> calcAllHireableCreatures(String townName) {
+        throw new MethodNotImplementedException
+                ("implement calcAllHireableCreatures");
+    }
 
     //todo test two-level dwelling building
 
