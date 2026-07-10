@@ -334,7 +334,7 @@ public class HeroService {
         var heroSpecialtyType = heroSpecialty.specialtyType();
         if (heroSpecialtyType.equals(SECONDARY_SKILL)) {
             secondarySkillSpecialtyLevel = secondarySkillMap
-                    .get(specialtyProperty);
+                    .get((SecondarySkill) specialtyProperty);
             if (secondarySkillSpecialtyLevel == null) {
                 log.warn("Secondary skill is missing while Specialty has been set");
                 log.warn(applyBasicSecondarySkillIfMissing(hero, heroSpecialtyProperty.toString()));
@@ -347,7 +347,7 @@ public class HeroService {
             case RESOURCE, SPELL -> 1;
             case SECONDARY_SKILL -> {
                 var secSkillArrayIndex = getSecondarySkillModifierNumber(secondarySkillSpecialtyLevel);
-                var secondarySkill = SecondarySkill.valueOf((String) specialtyProperty);
+                var secondarySkill = SecondarySkill.valueOf(String.valueOf(specialtyProperty));
                 var modifier = secondarySkill.getSkillLevelModifiers()[secSkillArrayIndex];
                 yield Math.round(modifier * (1 + heroLevel * 0.05));
             }

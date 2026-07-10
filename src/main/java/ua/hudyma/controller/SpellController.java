@@ -60,6 +60,14 @@ class SpellController {
                 .castSpell(heroId, spell));
     }
 
+    @GetMapping("/calcSpellDamage")
+    public ResponseEntity<int[]> calcSpellDamage(
+            @RequestParam String heroId,
+            @RequestParam String spellName){
+        return ResponseEntity.ok(spellService
+                .calcSpellDamage(heroId, spellName));
+    }
+
     @GetMapping("/allBySchool")
     public ResponseEntity<Set<String>> getAllSchoolSpells (
             @RequestParam String spellSchool){

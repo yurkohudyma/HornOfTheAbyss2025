@@ -10,6 +10,7 @@ import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
+import ua.hudyma.domain.heroes.enums.PrimarySkill;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
 import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
@@ -317,4 +318,59 @@ public class SpellService {
                 .filter(spell -> !bannerSpellSet.contains(spell))
                 .collect(Collectors.toSet());
     }
+    public int[] calcSpellDamage(String heroId, String spellName) {
+        var spell = SpellRegistry.fromCode(spellName);
+        var spellAction = spell.getSpellAction();
+        if (spellAction != SpellAction.DAMAGE){
+            throw new IllegalStateException(spellName + " has not a damaging spell action");
+        }
+        var spellDamage = spell.getSpellPrimarySkill();
+        var hero = getHero(heroId);
+        var primarySkillMap = getOrCreatePrimarySkillMap(hero);
+        var spellPower = primarySkillMap.getOrDefault(PrimarySkill.POWER, 1);
+        var secondarySkillMap = getOrCreateSecondarySkillMap(hero);
+        var sorceryLevel = secondarySkillMap.getOrDefault(SORCERY, null);
+        SecondarySkill spellSpecificMagicSchoolSecondarySkill = null; //вияснити школу магії та
+        // наявність у героя відповідного навика (ланцюгова блискавка - AIR, відповідно перевірити наявність
+        //AIR_MAGIC skill
+        if (spell == AirSpellSchool.CHAIN_LIGHTNING){
+            var numberOfStrikes = spellSpecificMagicSchoolSecondarySkill.getSkillLevelModifiers();
+        }
+        throw new IllegalStateException("Implement SpellService.calcSpellDamage");
+        //todo допиши функціонал
+
+        /** Chain Lightning strikes up to four or five creature stacks
+         * causing full damage for the initial target, and halving
+         * for each target after that. The closest creature stack
+         * to the initial target becomes the second target of the
+         * spell whether it is a friend or a foe, and this method
+         * repeats itself for all the spell's targets.
+         * However, the same creature stack cannot be targeted twice.
+         * If two or more targets are at the equal distance from previous target,
+         * then the stack is randomly chosen. If the spell is resisted after
+         * it has already struck at least one target, it will continue
+         * arcing to the next target.         *
+         *     This spell deals up to (46 + power x 75) damage on basic level,
+         *     (96 + power x 77.5) on advanced level and (193 + power x 77.5)
+         *     with expert air magic.
+         */
+    }
+
+    private Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
+        var primarySkillMap = hero.getPrimarySkillMap();
+        if (primarySkillMap == null) {
+            return new EnumMap<>(PrimarySkill.class);
+        }
+        return primarySkillMap;
+    }
+
+    private Map<SecondarySkill, SkillLevel> getOrCreateSecondarySkillMap(Hero hero) {
+        var secondarySkillMap = hero.getSecondarySkillMap();
+        if (secondarySkillMap == null) {
+                secondarySkillMap = new EnumMap<>(SecondarySkill.class);
+                hero.setSecondarySkillMap(secondarySkillMap);
+        }
+        return secondarySkillMap;
+    }
+
 }
