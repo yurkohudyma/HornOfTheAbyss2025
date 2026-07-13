@@ -290,7 +290,7 @@ public class SpellService {
         }
     }
 
-    private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
+     private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
         var spellMap = town.getMagicGuildSpellMap();
         if (spellMap == null || spellMap.isEmpty()) {
             town.setMagicGuildSpellMap(new HashMap<>());
@@ -336,18 +336,19 @@ public class SpellService {
         if (sorceryLevel != null) {
             sorcerySkillLevelModifier = spellModifiers.get(sorceryLevel.ordinal());
         }
-        var spellMagicSchool = SpellRegistry.retrieveMagicSchoolForSpell(spell);
-        var spellSpecificMagicSchoolSecondarySkill = retrieveMagicwiseSecondarySchool(spellMagicSchool);
+        var spellSpecificMagicSchoolSecondarySkill =
+              retrieveMagicwiseSecondarySchool(spell.getClass());
         SkillLevel magicSchoolSecondarySkillLevel = BASIC;
         if (secondarySkillMap.containsKey(spellSpecificMagicSchoolSecondarySkill)) {
             magicSchoolSecondarySkillLevel = secondarySkillMap.get(spellSpecificMagicSchoolSecondarySkill);
         }
         var numberOfStrikes = 4;
         if (spell == AirSpellSchool.CHAIN_LIGHTNING) {
-            numberOfStrikes = magicSchoolSecondarySkillLevel.ordinal() > 3 ? 5 : numberOfStrikes;
+            numberOfStrikes = magicSchoolSecondarySkillLevel.ordinal() > 0 ? 5 : numberOfStrikes;
             //встановити довжину блискавки (4 або 5)
         }
-        var damageModifier = spellMagicSchool.getModifiedValuesList().get(magicSchoolSecondarySkillLevel.ordinal());
+        var damageModifier = spell
+                .getModifiedValuesList().get(magicSchoolSecondarySkillLevel.ordinal());
         spellDamage = (int) (damageModifier + (spellPower * 40));
         spellDamage += (int) (spellDamage * sorcerySkillLevelModifier);
         var damageArray = new int[numberOfStrikes];
@@ -356,8 +357,6 @@ public class SpellService {
             spellDamage = damageArray[i];
         }
         return damageArray;
-
-        //todo "Holy crap! retrieveMagicwiseSecondarySchool -> Unexpected value: CHAIN_LIGHTNING"
     }
 
         /** Chain Lightning strikes up to four or five creature stacks
@@ -376,16 +375,23 @@ public class SpellService {
          *     with expert air magic.
          */
 
-    private static SecondarySkill retrieveMagicwiseSecondarySchool(
-            @org.jetbrains.annotations.UnknownNullability Class<? extends Enum<? extends Enum<?>>> spellMagicSchool) {
-        return switch (spellMagicSchool.toString()) {
-            case "AirSpellSchool" -> AIR_MAGIC;
-            case "EarthSpellSchool" -> EARTH_MAGIC;
-            case "WaterSpellSchool" -> WATER_MAGIC;
-            case "FireSpellSchool" -> FIRE_MAGIC;
-            default -> throw new IllegalStateException("retrieveMagicwiseSecondarySchool -> Unexpected value: " + spellMagicSchool);
-        };
-    }
+        private static SecondarySkill retrieveMagicwiseSecondarySchool(
+                Class<?> spellMagicSchool) {
+            if (spellMagicSchool == AirSpellSchool.class) {
+                return AIR_MAGIC;
+            }
+            else if (spellMagicSchool == EarthSpellSchool.class) {
+                return EARTH_MAGIC;
+            }
+            else if (spellMagicSchool == WaterSpellSchool.class) {
+                return WATER_MAGIC;
+            }
+            else if (spellMagicSchool == FireSpellSchool.class) {
+                return FIRE_MAGIC;
+            }
+            throw new IllegalStateException(
+                    "Unexpected value: " + spellMagicSchool);
+        }
 
     private Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
         var primarySkillMap = hero.getPrimarySkillMap();

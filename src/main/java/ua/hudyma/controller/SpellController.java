@@ -63,7 +63,7 @@ class SpellController {
     @GetMapping("/calcSpellDamage")
     public ResponseEntity<int[]> calcSpellDamage(
             @RequestParam String heroId,
-            @RequestParam String spellName){
+            @RequestParam String spellName) throws InstantiationException, IllegalAccessException {
         return ResponseEntity.ok(spellService
                 .calcSpellDamage(heroId, spellName));
     }
