@@ -30,6 +30,7 @@ import static ua.hudyma.domain.artifacts.enums.ArtifactProperties.*;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
+import static ua.hudyma.domain.heroes.enums.SkillLevel.BASIC;
 import static ua.hudyma.domain.spells.converter.SpellRegistry.resolveAllLevelSpells;
 import static ua.hudyma.domain.towns.enums.CommonBuildingType.MAGE_GUILD;
 import static ua.hudyma.service.HeroService.getIntelligenceLevel;
@@ -245,8 +246,8 @@ public class SpellService {
 
     private int getHeroMaxSpellLevel(Map<SecondarySkill, SkillLevel> heroSecondarySkillMap) {
         return heroSecondarySkillMap
-                .containsKey(SecondarySkill.WISDOM) ?
-                getMaxSpellLevel(heroSecondarySkillMap.get(SecondarySkill.WISDOM)) : 2;
+                .containsKey(WISDOM) ?
+                getMaxSpellLevel(heroSecondarySkillMap.get(WISDOM)) : 2;
     }
 
     private int getMaxSpellLevel(SkillLevel skillLevel) {
@@ -320,24 +321,44 @@ public class SpellService {
     }
     public int[] calcSpellDamage(String heroId, String spellName) {
         var spell = SpellRegistry.fromCode(spellName);
+        var spellModifiers = spell.getModifiedValuesList();
         var spellAction = spell.getSpellAction();
-        if (spellAction != SpellAction.DAMAGE){
+        if (spellAction != SpellAction.DAMAGE) {
             throw new IllegalStateException(spellName + " has not a damaging spell action");
         }
-        var spellDamage = spell.getSpellPrimarySkill();
+        var spellDamage = 0;
         var hero = getHero(heroId);
         var primarySkillMap = getOrCreatePrimarySkillMap(hero);
         var spellPower = primarySkillMap.getOrDefault(PrimarySkill.POWER, 1);
         var secondarySkillMap = getOrCreateSecondarySkillMap(hero);
         var sorceryLevel = secondarySkillMap.getOrDefault(SORCERY, null);
-        SecondarySkill spellSpecificMagicSchoolSecondarySkill = null; //вияснити школу магії та
-        // наявність у героя відповідного навика (ланцюгова блискавка - AIR, відповідно перевірити наявність
-        //AIR_MAGIC skill
-        if (spell == AirSpellSchool.CHAIN_LIGHTNING){
-            var numberOfStrikes = spellSpecificMagicSchoolSecondarySkill.getSkillLevelModifiers();
+        var sorcerySkillLevelModifier = 1f;
+        if (sorceryLevel != null) {
+            sorcerySkillLevelModifier = spellModifiers.get(sorceryLevel.ordinal());
         }
-        throw new IllegalStateException("Implement SpellService.calcSpellDamage");
-        //todo допиши функціонал
+        var spellMagicSchool = SpellRegistry.retrieveMagicSchoolForSpell(spell);
+        var spellSpecificMagicSchoolSecondarySkill = retrieveMagicwiseSecondarySchool(spellMagicSchool);
+        SkillLevel magicSchoolSecondarySkillLevel = BASIC;
+        if (secondarySkillMap.containsKey(spellSpecificMagicSchoolSecondarySkill)) {
+            magicSchoolSecondarySkillLevel = secondarySkillMap.get(spellSpecificMagicSchoolSecondarySkill);
+        }
+        var numberOfStrikes = 4;
+        if (spell == AirSpellSchool.CHAIN_LIGHTNING) {
+            numberOfStrikes = magicSchoolSecondarySkillLevel.ordinal() > 3 ? 5 : numberOfStrikes;
+            //встановити довжину блискавки (4 або 5)
+        }
+        var damageModifier = spellMagicSchool.getModifiedValuesList().get(magicSchoolSecondarySkillLevel.ordinal());
+        spellDamage = (int) (damageModifier + (spellPower * 40));
+        spellDamage += (int) (spellDamage * sorcerySkillLevelModifier);
+        var damageArray = new int[numberOfStrikes];
+        for (int i = 0; i < damageArray.length; i++) {
+            damageArray[i] = spellDamage / 2;
+            spellDamage = damageArray[i];
+        }
+        return damageArray;
+
+        //todo "Holy crap! retrieveMagicwiseSecondarySchool -> Unexpected value: CHAIN_LIGHTNING"
+    }
 
         /** Chain Lightning strikes up to four or five creature stacks
          * causing full damage for the initial target, and halving
@@ -354,6 +375,16 @@ public class SpellService {
          *     (96 + power x 77.5) on advanced level and (193 + power x 77.5)
          *     with expert air magic.
          */
+
+    private static SecondarySkill retrieveMagicwiseSecondarySchool(
+            @org.jetbrains.annotations.UnknownNullability Class<? extends Enum<? extends Enum<?>>> spellMagicSchool) {
+        return switch (spellMagicSchool.toString()) {
+            case "AirSpellSchool" -> AIR_MAGIC;
+            case "EarthSpellSchool" -> EARTH_MAGIC;
+            case "WaterSpellSchool" -> WATER_MAGIC;
+            case "FireSpellSchool" -> FIRE_MAGIC;
+            default -> throw new IllegalStateException("retrieveMagicwiseSecondarySchool -> Unexpected value: " + spellMagicSchool);
+        };
     }
 
     private Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {

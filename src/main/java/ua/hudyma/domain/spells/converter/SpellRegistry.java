@@ -1,7 +1,6 @@
 package ua.hudyma.domain.spells.converter;
 
 import org.reflections.Reflections;
-import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.spells.AbstractSpellSchool;
 import ua.hudyma.domain.spells.enums.AirSpellSchool;
 import ua.hudyma.domain.spells.enums.EarthSpellSchool;
@@ -49,6 +48,8 @@ public class SpellRegistry {
             return null;
         }
     }
+
+
     public static AbstractSpellProperty fromCodeProperty(String code) {
         for (Class<? extends AbstractSpellProperty> type : PROP_ENUMS) {
             if (type.isEnum()) {
@@ -73,23 +74,38 @@ public class SpellRegistry {
     /**
      * Пошук enum-класу серед усіх підтипів базового інтерфейсу/класу.
      *
-     * @param spellSchool          частина назви enum-класу для пошуку
-     * @param baseInterface інтерфейс або базовий клас, який реалізує enum
-     * @param <B>           тип базового інтерфейсу
-     * @return enum-клас, який реалізує B
+     * @param spell          частина назви enum-класу для пошуку
+     * @return enum-клас
      */
     @SuppressWarnings("unchecked")
-    public static <B> Class<? extends Enum<?>> findEnumClassByChildName(
-            AbstractSpellSchool spellSchool, Class<B> baseInterface) {
+    public static Class<? extends Enum<?>> retrieveMagicSchoolForSpell(
+            AbstractSpellSchool spell) {
         for (Class<? extends AbstractSpellSchool> subtype : SCHOOL_ENUMS) {
             if (subtype.isEnum() && Arrays.asList(subtype.getEnumConstants())
-                    .contains(spellSchool)) {
+                    .contains(spell)) {
                 return (Class<? extends Enum<?>>) subtype;
             }
         }
-        throw new IllegalArgumentException("No enum class matches townName: " + spellSchool + " for "
-                + baseInterface.getSimpleName());
+        throw new IllegalArgumentException("No Magic School enum class matches " + spell);
     }
+
+    public static Class<? extends AbstractSpellSchool> retrieveSpellSchoolBySpell(AbstractSpellSchool spell) {
+        for (Class<? extends AbstractSpellSchool> school : SCHOOL_ENUMS) {
+            if (!school.isEnum()) {
+                continue;
+            }
+            var enumClass = (Class<? extends Enum<?>>) school.asSubclass(Enum.class);
+            for (Enum<?> constant : enumClass.getEnumConstants()) {
+                if (constant.equals(spell)) {
+                    return (Class<? extends AbstractSpellSchool>) school.getDeclaringClass();
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("Unknown AbstractSpellSchool code: " + spell);
+    }
+
+
     public static List<String> resolveAllLevelSpells(int level) {
         var spells = new ArrayList<String>();
         spells.addAll(filterByLevel(EarthSpellSchool.values(), level));
