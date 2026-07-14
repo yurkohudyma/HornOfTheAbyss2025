@@ -12,7 +12,10 @@ import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.enums.SecondarySkill;
+import ua.hudyma.domain.heroes.enums.SkillLevel;
 import ua.hudyma.domain.players.Player;
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.domain.spells.converter.SpellRegistry;
 import ua.hudyma.domain.spells.enums.SpellReplaceDemands;
 import ua.hudyma.domain.towns.Town;
@@ -31,8 +34,6 @@ import ua.hudyma.mapper.TownMapper;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.repository.PlayerRepository;
 import ua.hudyma.repository.TownRepository;
-import ua.hudyma.domain.resource.enums.ResourceType;
-import ua.hudyma.service.build.DwellingBuildService;
 import ua.hudyma.util.IdGenerator;
 import ua.hudyma.util.MessageProcessor;
 
@@ -69,6 +70,9 @@ public class TownService {
     private final HeroRepository heroRepository;
 
     private final PlayerRepository playerRepository;
+    private static boolean isUnoccupied(Town town) {
+        return town.getVisitingHero() == null;
+    }
 
     //private DwellingBuildService dwellingBuildService;
 
@@ -79,7 +83,7 @@ public class TownService {
         var dwellingMap = town.getDwellingMap();
         if (dwellingMap == null) throw new IllegalStateException("Dwelling map is null");
         var reportMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
-        for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()){
+        for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()) {
             var dwelling = entry.getKey();
             var creaturesQty = entry.getValue();
             var creatureReqResourceMap =
@@ -88,7 +92,7 @@ public class TownService {
                             .getCreature()
                             .getRequiredResourceMap();
             for (Map.Entry<ResourceType, Integer> resourceMapEntry :
-                    creatureReqResourceMap.entrySet()){
+                    creatureReqResourceMap.entrySet()) {
                 reportMap.merge(
                         resourceMapEntry.getKey(),
                         resourceMapEntry.getValue() * creaturesQty,
@@ -508,6 +512,45 @@ public class TownService {
     public TownGenerCreaturesReport generateWeeklyCreatures(String townName) {
         var town = getTown(townName);
         return retrieveTownDwellingsAndGenerateCreatures(town);
+    }
+
+    @Transactional(readOnly = true)
+    public Set<String> getAvailTownsForTownPortal(String heroCode) {
+        var hero = heroRepository.findByCode(heroCode).orElseThrow();
+        var townList = hero.getPlayer().getTownsList();
+        var secondarySkillMap = hero.getSecondarySkillMap();
+        SkillLevel earthSchoolMagicLevel = SkillLevel.BASIC;
+        if (secondarySkillMap == null
+                || secondarySkillMap.isEmpty()
+                || !secondarySkillMap.containsKey(SecondarySkill.EARTH_MAGIC)) {
+            log.error("Secondary skill map is null, empty or " +
+                    "doesn't contain dedicated spell");
+            //do NOT check the spell availability,
+            // this would be made on spell casting endpoint
+        } else {
+            earthSchoolMagicLevel = secondarySkillMap
+                    .get(SecondarySkill.EARTH_MAGIC);
+        }
+        if (earthSchoolMagicLevel.ordinal() < 1)
+            return Set.of(nearestUnoccupiedTown(hero, townList));
+        else {
+            return getAllUnoccupiedTowns(townList);
+        }
+    }
+
+    private Set<String> getAllUnoccupiedTowns(List<Town> townList) {
+        return townList.stream().filter(TownService::isUnoccupied)
+                .map(Town::getName).collect(Collectors.toSet());
+    }
+
+    private String nearestUnoccupiedTown(Hero hero, List<Town> townList) {
+        return townList
+                .stream()
+                .filter(TownService::isUnoccupied)
+                .findFirst()  //calculate the nearestTown instead
+                .orElseThrow()
+                .getName();
+
     }
 
 }

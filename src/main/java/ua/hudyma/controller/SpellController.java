@@ -3,7 +3,9 @@ package ua.hudyma.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.spells.enums.SpellSchool;
 import ua.hudyma.service.SpellService;
+import ua.hudyma.service.TownService;
 
 import java.util.Map;
 import java.util.Set;
@@ -13,10 +15,12 @@ import java.util.Set;
 @RequiredArgsConstructor
 class SpellController {
     private final SpellService spellService;
+    private final TownService townService;
 
     @GetMapping
     public ResponseEntity<Set<String>> provideTownWithSpellSet(
-            @RequestParam String townName, @RequestParam int mageGuildLevel) {
+            @RequestParam String townName,
+            @RequestParam int mageGuildLevel) {
         return ResponseEntity.ok(spellService
                 .randomiseSpellSet(townName, mageGuildLevel));
     }
@@ -63,7 +67,7 @@ class SpellController {
     @GetMapping("/calcSpellDamage")
     public ResponseEntity<int[]> calcSpellDamage(
             @RequestParam String heroId,
-            @RequestParam String spellName) throws InstantiationException, IllegalAccessException {
+            @RequestParam String spellName) {
         return ResponseEntity.ok(spellService
                 .calcSpellDamage(heroId, spellName));
     }
@@ -73,5 +77,12 @@ class SpellController {
             @RequestParam String spellSchool){
         return ResponseEntity.ok(spellService
                 .getAllSchoolSpells(spellSchool));
+    }
+
+    @GetMapping("/getAvailTownsForTownPortal")
+    public ResponseEntity<Set<String>>
+    getAvailTownsForTownPortal(@RequestParam String heroCode){
+        return ResponseEntity.ok(townService
+                .getAvailTownsForTownPortal(heroCode));
     }
 }

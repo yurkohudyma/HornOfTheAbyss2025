@@ -319,6 +319,7 @@ public class SpellService {
                 .filter(spell -> !bannerSpellSet.contains(spell))
                 .collect(Collectors.toSet());
     }
+
     public int[] calcSpellDamage(String heroId, String spellName) {
         var spell = SpellRegistry.fromCode(spellName);
         var spellModifiers = spell.getModifiedValuesList();
@@ -345,7 +346,6 @@ public class SpellService {
         var numberOfStrikes = 4;
         if (spell == AirSpellSchool.CHAIN_LIGHTNING) {
             numberOfStrikes = magicSchoolSecondarySkillLevel.ordinal() > 0 ? 5 : numberOfStrikes;
-            //встановити довжину блискавки (4 або 5)
         }
         var damageModifier = spell
                 .getModifiedValuesList().get(magicSchoolSecondarySkillLevel.ordinal());
@@ -359,21 +359,7 @@ public class SpellService {
         return damageArray;
     }
 
-        /** Chain Lightning strikes up to four or five creature stacks
-         * causing full damage for the initial target, and halving
-         * for each target after that. The closest creature stack
-         * to the initial target becomes the second target of the
-         * spell whether it is a friend or a foe, and this method
-         * repeats itself for all the spell's targets.
-         * However, the same creature stack cannot be targeted twice.
-         * If two or more targets are at the equal distance from previous target,
-         * then the stack is randomly chosen. If the spell is resisted after
-         * it has already struck at least one target, it will continue
-         * arcing to the next target.         *
-         *     This spell deals up to (46 + power x 75) damage on basic level,
-         *     (96 + power x 77.5) on advanced level and (193 + power x 77.5)
-         *     with expert air magic.
-         */
+
 
         private static SecondarySkill retrieveMagicwiseSecondarySchool(
                 Class<?> spellMagicSchool) {
@@ -393,14 +379,17 @@ public class SpellService {
                     "Unexpected value: " + spellMagicSchool);
         }
 
+    @Transactional
     private Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
         var primarySkillMap = hero.getPrimarySkillMap();
         if (primarySkillMap == null) {
-            return new EnumMap<>(PrimarySkill.class);
+            primarySkillMap = new EnumMap<>(PrimarySkill.class);
+            hero.setPrimarySkillMap(primarySkillMap);
         }
         return primarySkillMap;
     }
 
+    @Transactional
     private Map<SecondarySkill, SkillLevel> getOrCreateSecondarySkillMap(Hero hero) {
         var secondarySkillMap = hero.getSecondarySkillMap();
         if (secondarySkillMap == null) {

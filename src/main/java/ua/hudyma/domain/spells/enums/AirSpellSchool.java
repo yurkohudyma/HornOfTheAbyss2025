@@ -27,7 +27,21 @@ public enum AirSpellSchool implements AbstractSpellSchool {
     PRECISION(2, SpellAction.BUF, 16, //real is 8
             null, 1, List.of()),
     VISIONS(2, SpellAction.MISC, 0, null, 1, List.of()),
-
+    /** Chain Lightning strikes up to four or five creature stacks
+     * causing full damage for the initial target, and halving
+     * for each target after that. The closest creature stack
+     * to the initial target becomes the second target of the
+     * spell whether it is a friend or a foe, and this method
+     * repeats itself for all the spell's targets.
+     * However, the same creature stack cannot be targeted twice.
+     * If two or more targets are at the equal distance from previous target,
+     * then the stack is randomly chosen. If the spell is resisted after
+     * it has already struck at least one target, it will continue
+     * arcing to the next target.         *
+     *     This spell deals up to (46 + power x 75) damage on basic level,
+     *     (96 + power x 77.5) on advanced level and (193 + power x 77.5)
+     *     with expert air magic.
+     */
     CHAIN_LIGHTNING (4, SpellAction.DAMAGE, 24, POWER, 40, List.of(25f, 50f, 100f)),
 
     SUMMON_AIR_ELEMENTAL(5, SUMMON, 25, POWER,
