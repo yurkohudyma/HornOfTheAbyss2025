@@ -8,11 +8,13 @@ import ua.hudyma.domain.spells.AbstractSpellSchool;
 import java.util.List;
 
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.POWER;
+import static ua.hudyma.domain.spells.enums.SpellAction.ADVENTURE;
 import static ua.hudyma.domain.spells.enums.SpellAction.SUMMON;
 
 @Getter
 @RequiredArgsConstructor
 public enum AirSpellSchool implements AbstractSpellSchool {
+    FLY (5, ADVENTURE, 20, null, null, List.of(40f, 20f, Float.MAX_VALUE)),
     MAGIC_ARROW(1,
             SpellAction.DAMAGE,
             6,

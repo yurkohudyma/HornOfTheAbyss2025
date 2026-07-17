@@ -343,13 +343,14 @@ public class SpellService {
         if (secondarySkillMap.containsKey(spellSpecificMagicSchoolSecondarySkill)) {
             magicSchoolSecondarySkillLevel = secondarySkillMap.get(spellSpecificMagicSchoolSecondarySkill);
         }
-        var numberOfStrikes = 4;
+        var numberOfStrikes = 1;
         if (spell == AirSpellSchool.CHAIN_LIGHTNING) {
-            numberOfStrikes = magicSchoolSecondarySkillLevel.ordinal() > 0 ? 5 : numberOfStrikes;
+            numberOfStrikes = magicSchoolSecondarySkillLevel.ordinal() > 0 ? 5 : 4;
         }
         var damageModifier = spell
                 .getModifiedValuesList().get(magicSchoolSecondarySkillLevel.ordinal());
-        spellDamage = (int) (damageModifier + (spellPower * 40));
+        var modifierCoefficient = spell.getModifierCoefficient();
+        spellDamage = (int) (damageModifier + (spellPower * modifierCoefficient));
         spellDamage += (int) (spellDamage * sorcerySkillLevelModifier);
         var damageArray = new int[numberOfStrikes];
         for (int i = 0; i < damageArray.length; i++) {
