@@ -85,4 +85,7 @@ class SpellController {
         return ResponseEntity.ok(townService
                 .getAvailTownsForTownPortal(heroCode));
     }
+
+    @RequestMapping
+    void doIt(){}
 }
