@@ -4,19 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
-import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.heroes.dto.HeroReqDto;
 import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
-import ua.hudyma.domain.heroes.enums.HeroFaction;
 import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.enums.WarMachine;
-import ua.hudyma.enums.WarMachineProperties;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
-import ua.hudyma.util.IdGenerator;
 
 @RestController
 @RequestMapping("/heroes")
