@@ -27,6 +27,7 @@ import ua.hudyma.util.FixedSizeMap;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static ua.hudyma.domain.artifacts.enums.ArtifactAction.*;
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.*;
 import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
@@ -627,7 +628,7 @@ public class HeroService {
 
     private int retrieveArtilleryChanceDamageModifier(Map<SecondarySkill, SkillLevel> secondarySkillMap) {
         var artillerySkill = secondarySkillMap.get(ARTILLERY);
-        if (artillerySkill == null) return 0;        
+        if (artillerySkill == null) return 0;
         var artillerySkillModifierIndex = getSecondarySkillModifierNumber(artillerySkill);
         var modifierCoefficient = ARTILLERY.getSkillLevelModifiers()[artillerySkillModifierIndex];
         return switch (modifierCoefficient){
@@ -654,7 +655,7 @@ public class HeroService {
         if (warMachineInventorySet.contains(warmachine))
             throw new IllegalArgumentException(hero.getName() + " already possess the " + warmachine);
         else if (warmachine == WarMachine.BALLISTA && warMachineInventorySet.contains(WarMachine.CANNON) ||
-                 warmachine == WarMachine.CANNON && warMachineInventorySet.contains(WarMachine.BALLISTA)) {
+                warmachine == WarMachine.CANNON && warMachineInventorySet.contains(WarMachine.BALLISTA)) {
             var existingWarmachine = retrieveExistingWarmachineToDetach(warmachine);
             log.warn("{} already possess {}, swapping for {}",
                     hero.getName(), existingWarmachine, warmachine);

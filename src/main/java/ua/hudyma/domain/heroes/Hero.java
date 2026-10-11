@@ -27,7 +27,6 @@ import static ua.hudyma.util.IdGenerator.generateRandomStartingExperience;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Hero implements BaseEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
