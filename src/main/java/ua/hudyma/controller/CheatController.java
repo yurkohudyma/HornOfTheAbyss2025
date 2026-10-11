@@ -18,7 +18,7 @@ public class CheatController {
     private final CheatService cheatService;
 
     @GetMapping
-    public List<CreatureSlot> engageCheat (
+    public Object engageCheat (
             @RequestParam String cheatCode,
             @RequestParam String heroCode){
         return cheatService.engageCode(cheatCode, heroCode);
