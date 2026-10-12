@@ -26,6 +26,7 @@ import java.security.SecureRandom;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.function.Function.identity;
 import static ua.hudyma.domain.artifacts.enums.ArtifactProperties.*;
 import static ua.hudyma.domain.heroes.HeroParams.CUR_SPELL_POINTS;
 import static ua.hudyma.domain.heroes.HeroParams.MAX_SPELL_POINTS;
@@ -53,6 +54,31 @@ public class SpellService {
     );
 
     private final HeroRepository heroRepository;
+
+    public Map<Integer, Set<String>> convertListSpellMapIntoSetSpellMap(
+            Map<Integer, List<String>> allSpellMap) {
+        return allSpellMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> new HashSet<>(entry.getValue())
+                ));
+    }
+
+    public Map<Integer, List<String>> convertSpellSetIntoSpellMap(Set<String> allSpellSet) {
+        return allSpellSet
+                .stream()
+                .collect(Collectors
+                        .groupingBy(this::retrieveSpellLevelFromEnum));
+    }
+
+    public Set<String> getAllSpells() {
+        var spellSchools = SpellSchool.values();
+        var spellSet = new HashSet<String>();
+        for (SpellSchool school : spellSchools) {
+            spellSet.addAll(getAllSchoolSpells(String.valueOf(school)));
+        }
+        return spellSet;
+    }
 
     public Hero getHero(String heroCode) {
         return heroRepository.findByCode(heroCode)
@@ -143,8 +169,7 @@ public class SpellService {
     @Transactional
     public Map<Integer, Set<String>> learnSpell(String heroId, String spell) {
         var hero = getHero(heroId);
-        var enumSchool = SpellRegistry.fromCode(spell);
-        var spellLevel = enumSchool.getSpellLevel();
+        int spellLevel = retrieveSpellLevelFromEnum(spell);
         var heroWisdomlevel = getHeroMaxSpellLevel(hero
                 .getSecondarySkillMap());
         if (spellLevel > heroWisdomlevel) throw new SpellCastException
@@ -155,6 +180,11 @@ public class SpellService {
         spellSet.add(spell);
         heroSpellBook.put(spellLevel, spellSet);
         return heroSpellBook;
+    }
+
+    private int retrieveSpellLevelFromEnum(String spell) {
+        var enumSchool = SpellRegistry.fromCode(spell);
+        return enumSchool.getSpellLevel();
     }
 
     private int getSecondarySkillManaCostModifier(
@@ -290,13 +320,12 @@ public class SpellService {
         }
     }
 
-     private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
+    private Map<Integer, Set<String>> initOrValidateSpellMap(Town town, int level) {
         var spellMap = town.getMagicGuildSpellMap();
         if (spellMap == null || spellMap.isEmpty()) {
             town.setMagicGuildSpellMap(new HashMap<>());
             return town.getMagicGuildSpellMap();
-        }
-        else if (spellMap.containsKey(level) && !spellMap.get(level).isEmpty()) {
+        } else if (spellMap.containsKey(level) && !spellMap.get(level).isEmpty()) {
             throw new TownSpellBookSetAlreadyGeneratedException(
                     "Spells for level " + level + " in " + town.getName() + " already generated");
         }
@@ -338,7 +367,7 @@ public class SpellService {
             sorcerySkillLevelModifier = spellModifiers.get(sorceryLevel.ordinal());
         }
         var spellSpecificMagicSchoolSecondarySkill =
-              retrieveMagicwiseSecondarySchool(spell.getClass());
+                retrieveMagicwiseSecondarySchool(spell.getClass());
         SkillLevel magicSchoolSecondarySkillLevel = BASIC;
         if (secondarySkillMap.containsKey(spellSpecificMagicSchoolSecondarySkill)) {
             magicSchoolSecondarySkillLevel = secondarySkillMap.get(spellSpecificMagicSchoolSecondarySkill);
@@ -361,24 +390,20 @@ public class SpellService {
     }
 
 
-
-        private static SecondarySkill retrieveMagicwiseSecondarySchool(
-                Class<?> spellMagicSchool) {
-            if (spellMagicSchool == AirSpellSchool.class) {
-                return AIR_MAGIC;
-            }
-            else if (spellMagicSchool == EarthSpellSchool.class) {
-                return EARTH_MAGIC;
-            }
-            else if (spellMagicSchool == WaterSpellSchool.class) {
-                return WATER_MAGIC;
-            }
-            else if (spellMagicSchool == FireSpellSchool.class) {
-                return FIRE_MAGIC;
-            }
-            throw new IllegalStateException(
-                    "Unexpected value: " + spellMagicSchool);
+    private static SecondarySkill retrieveMagicwiseSecondarySchool(
+            Class<?> spellMagicSchool) {
+        if (spellMagicSchool == AirSpellSchool.class) {
+            return AIR_MAGIC;
+        } else if (spellMagicSchool == EarthSpellSchool.class) {
+            return EARTH_MAGIC;
+        } else if (spellMagicSchool == WaterSpellSchool.class) {
+            return WATER_MAGIC;
+        } else if (spellMagicSchool == FireSpellSchool.class) {
+            return FIRE_MAGIC;
         }
+        throw new IllegalStateException(
+                "Unexpected value: " + spellMagicSchool);
+    }
 
     @Transactional
     private Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
@@ -394,8 +419,8 @@ public class SpellService {
     private Map<SecondarySkill, SkillLevel> getOrCreateSecondarySkillMap(Hero hero) {
         var secondarySkillMap = hero.getSecondarySkillMap();
         if (secondarySkillMap == null) {
-                secondarySkillMap = new EnumMap<>(SecondarySkill.class);
-                hero.setSecondarySkillMap(secondarySkillMap);
+            secondarySkillMap = new EnumMap<>(SecondarySkill.class);
+            hero.setSecondarySkillMap(secondarySkillMap);
         }
         return secondarySkillMap;
     }

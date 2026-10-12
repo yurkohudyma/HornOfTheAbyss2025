@@ -8,13 +8,18 @@ import ua.hudyma.domain.cheats.enums.Cheats;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
+import ua.hudyma.domain.heroes.HeroParams;
+import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.resource.enums.ResourceType;
+import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.mapper.PlayerMapper;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.ARCHANGEL;
@@ -25,27 +30,43 @@ import static ua.hudyma.domain.creatures.enums.creaturetypes.NecropolisCreatureT
 @Log4j2
 public class CheatService {
     private final HeroService heroService;
-    private final PlayerMapper playerMapper;
+    private final SpellService spellService;
     private final int MAX_ARMY_SLOT_SIZE = 7;
     private final List<Cheats> cheatList = Arrays.stream(Cheats.values()).toList();
+    private final HeroMapper heroMapper;
 
     public Object engageCode(String cheatCode, String heroCode) {
         if (cheatCode.isEmpty() || cheatCodeIsUnknown(cheatCode)) {
             throw new IllegalArgumentException("Cheatcode" + cheatCode + " is not recognized");
         }
         var hero = heroService.getHero(heroCode);
+        var player = hero.getPlayer();
         return switch (cheatCode) {
             case "nwctrinity" -> supplyTroops(hero, ARCHANGEL, 5);
             case "nwcagents" -> supplyTroops(hero, BLACK_KNIGHT, 10);
-            case "nwctheconstruct" -> construct(hero);
+            case "nwctheconstruct" -> construct(player);
+            case "nwcthereisnospoon" -> spoon(hero);
             default -> throw new IllegalArgumentException("cheatcode " + cheatCode + " not implemented yet");
         };
     }
 
     //@Transactional
     // disabled for testing
-    private Map<ResourceType, Integer> construct(Hero hero) {
-        var player = hero.getPlayer();
+    private HeroRespDto spoon(Hero hero) {
+        var allSpellSet = spellService.getAllSpells();
+        var allSpellMap = spellService
+                .convertSpellSetIntoSpellMap(allSpellSet);
+        var allSpellsSetMap = spellService
+                .convertListSpellMapIntoSetSpellMap(allSpellMap);
+        hero.setSpellBook(allSpellsSetMap);
+        var parametersMap = heroService.getOrCreateHeroParamsMap(hero);
+        parametersMap.put(HeroParams.CUR_SPELL_POINTS, 999);
+        return heroMapper.toDto(hero);
+    }
+
+    //@Transactional
+    // disabled for testing
+    private Map<ResourceType, Integer> construct(Player player) {        
         var resourceMap = player.getResourceMap();
         resourceMap.merge(ResourceType.GOLD, 100_000, Integer::sum);
         resourceMap
