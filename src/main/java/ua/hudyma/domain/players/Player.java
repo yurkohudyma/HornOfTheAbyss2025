@@ -34,7 +34,7 @@ public class Player implements BaseEntity {
     @ToString.Exclude
     private List<Hero> heroList = new FixedSizeList<>();
 
-    @OneToMany(mappedBy = "player")
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL)
     @ToString.Exclude
     private List<Town> townsList = new ArrayList<>();
 

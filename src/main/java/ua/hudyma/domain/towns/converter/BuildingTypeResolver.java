@@ -3,8 +3,12 @@ package ua.hudyma.domain.towns.converter;
 import org.reflections.Reflections;
 import ua.hudyma.domain.towns.enums.AbstractBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
+import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
+import ua.hudyma.enums.Faction;
 
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class BuildingTypeResolver {
 
@@ -36,5 +40,20 @@ public final class BuildingTypeResolver {
             } catch (IllegalArgumentException ignored) {}
         }
         throw new IllegalArgumentException("BuildingTypeResolver : unknown dwelling type: " + value);
+    }
+
+    public static Map<String, Integer> retrieveTownSpecificDwellings(Faction townFaction) {
+        for (Class<? extends AbstractDwellingType> type : ENUM_DWELL_TYPES) {
+            if (type.getSimpleName().toUpperCase().contains(townFaction.name())) {
+                return Arrays
+                        .stream(type.getEnumConstants())
+                        .map(String::valueOf)
+                        .filter(constant -> constant.startsWith("UPG_"))
+                        .collect(Collectors.toMap(
+                                Function.identity(),
+                                k -> 0));
+            }
+        }
+        return Map.of();
     }
 }

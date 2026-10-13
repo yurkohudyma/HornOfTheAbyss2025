@@ -11,18 +11,21 @@ import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.players.Player;
-import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.domain.towns.Town;
+import ua.hudyma.domain.towns.converter.BuildingTypeResolver;
+import ua.hudyma.domain.towns.dto.TownRespDto;
+import ua.hudyma.domain.towns.enums.CommonBuildingType;
 import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HallType;
+import ua.hudyma.domain.towns.enums.HordeBuildingType;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.mapper.HeroMapper;
-import ua.hudyma.mapper.PlayerMapper;
+import ua.hudyma.mapper.TownMapper;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.ARCHANGEL;
@@ -34,10 +37,12 @@ import static ua.hudyma.domain.creatures.enums.creaturetypes.NecropolisCreatureT
 public class CheatService {
     private final HeroService heroService;
     private final SpellService spellService;
+    private final TownMapper townMapper;
     private final int MAX_ARMY_SLOT_SIZE = 7;
     private final List<Cheats> cheatList = Arrays.stream(Cheats.values()).toList();
     private final HeroMapper heroMapper;
 
+    @Transactional(readOnly = true)
     public Object engageCode(String cheatCode, String heroCode) {
         if (cheatCode.isEmpty() || cheatCodeIsUnknown(cheatCode)) {
             throw new IllegalArgumentException("Cheatcode" + cheatCode + " is not recognized");
@@ -54,17 +59,55 @@ public class CheatService {
         };
     }
 
-    private Object zion(Player player) {
+    @Transactional(readOnly = true)
+    private List<TownRespDto> zion(Player player) {
         var townList = player.getTownsList();
         for (Town town : townList){
             var commonBuildingMap = town.getCommonBuildingMap();
+            var townFaction = town.getFaction();
+            commonBuildingMap.put(CommonBuildingType.MAGE_GUILD,
+                    retrieveMageGuildMaxLevel(townFaction));
+            var allCommonBuildings = Arrays
+                    .stream(CommonBuildingType.values())
+                    .collect(Collectors
+                            .toMap(Function.identity(),
+                                    v -> 0,
+                                    (o1, o2) -> o1,
+                                    () -> new EnumMap<>(CommonBuildingType.class)));
+            commonBuildingMap.putAll(allCommonBuildings);
             town.setFortificationType(FortificationType.CASTLE);
+
             var hordeBuildingSet = town.getHordeBuildingSet();
+            hordeBuildingSet.addAll(retrieveTownSpecificHordeBuildings(townFaction));
+
             var dwellingMap = town.getDwellingMap();
+            var townSpecificDwellings = BuildingTypeResolver
+                    .retrieveTownSpecificDwellings(townFaction);
+            dwellingMap.putAll(townSpecificDwellings);
+            //todo if there were any creatures they would be zeroed
+            //todo so we need to transfer all existing for hire creatures into new dwellings
+
+
             town.setHallType(HallType.CITY_HALL);
             var uniqueBuildingSet = town.getUniqueBuildingSet();
         }
+        townList.get(0).setHallType(HallType.CAPITOL);
         throw new IllegalStateException("Method not implemented");
+        //return townMapper.toDtoList(townList);
+    }
+
+    private Set<String> retrieveTownSpecificHordeBuildings(Faction townFaction) {
+        return Arrays
+                .stream(HordeBuildingType.values())
+                .filter(constant -> constant
+                        .getFaction()
+                        .equals(townFaction))
+                .map(String::valueOf)
+                .collect(Collectors.toSet());
+    }
+
+    private Integer retrieveMageGuildMaxLevel(Faction faction) {
+        return faction.getMagicGuildMaxLevel();
     }
 
     //@Transactional

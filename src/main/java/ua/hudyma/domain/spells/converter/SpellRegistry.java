@@ -7,12 +7,11 @@ import ua.hudyma.domain.spells.enums.EarthSpellSchool;
 import ua.hudyma.domain.spells.enums.FireSpellSchool;
 import ua.hudyma.domain.spells.enums.WaterSpellSchool;
 import ua.hudyma.domain.spells.enums.properties.AbstractSpellProperty;
+import ua.hudyma.enums.Alignment;
+import ua.hudyma.enums.Faction;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class SpellRegistry {
     private SpellRegistry() {
