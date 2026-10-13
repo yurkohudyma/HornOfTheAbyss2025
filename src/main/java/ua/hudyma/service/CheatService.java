@@ -13,6 +13,9 @@ import ua.hudyma.domain.heroes.dto.HeroRespDto;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.players.dto.PlayerRespDto;
 import ua.hudyma.domain.resource.enums.ResourceType;
+import ua.hudyma.domain.towns.Town;
+import ua.hudyma.domain.towns.enums.FortificationType;
+import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.mapper.PlayerMapper;
 
@@ -46,8 +49,22 @@ public class CheatService {
             case "nwcagents" -> supplyTroops(hero, BLACK_KNIGHT, 10);
             case "nwctheconstruct" -> construct(player);
             case "nwcthereisnospoon" -> spoon(hero);
+            case "nwczion" -> zion(player);
             default -> throw new IllegalArgumentException("cheatcode " + cheatCode + " not implemented yet");
         };
+    }
+
+    private Object zion(Player player) {
+        var townList = player.getTownsList();
+        for (Town town : townList){
+            var commonBuildingMap = town.getCommonBuildingMap();
+            town.setFortificationType(FortificationType.CASTLE);
+            var hordeBuildingSet = town.getHordeBuildingSet();
+            var dwellingMap = town.getDwellingMap();
+            town.setHallType(HallType.CITY_HALL);
+            var uniqueBuildingSet = town.getUniqueBuildingSet();
+        }
+        throw new IllegalStateException("Method not implemented");
     }
 
     //@Transactional
