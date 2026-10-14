@@ -2,8 +2,8 @@ package ua.hudyma.domain.towns.converter;
 
 import org.reflections.Reflections;
 import ua.hudyma.domain.towns.enums.AbstractBuildingType;
+import ua.hudyma.domain.towns.enums.UniqueBuildingType;
 import ua.hudyma.domain.towns.enums.dwelling.AbstractDwellingType;
-import ua.hudyma.domain.towns.enums.dwelling.CastleDwellingType;
 import ua.hudyma.enums.Faction;
 
 import java.util.*;
@@ -42,7 +42,15 @@ public final class BuildingTypeResolver {
         throw new IllegalArgumentException("BuildingTypeResolver : unknown dwelling type: " + value);
     }
 
-    public static Map<String, Integer> retrieveTownSpecificDwellings(Faction townFaction) {
+    public static Set<String> retrieveAllTownSpecificUniqueBuildings(Faction townFaction) {
+        return Arrays
+                .stream(UniqueBuildingType.values())
+                .filter(type -> type.getFaction().equals(townFaction))
+                .map(String::valueOf)
+                .collect(Collectors.toSet());
+    }
+
+    public static Map<String, Integer> retrieveAllTownSpecificUpgradedDwellings(Faction townFaction) {
         for (Class<? extends AbstractDwellingType> type : ENUM_DWELL_TYPES) {
             if (type.getSimpleName().toUpperCase().contains(townFaction.name())) {
                 return Arrays

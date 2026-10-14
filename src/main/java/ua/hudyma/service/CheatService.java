@@ -65,8 +65,6 @@ public class CheatService {
         for (Town town : townList){
             var commonBuildingMap = town.getCommonBuildingMap();
             var townFaction = town.getFaction();
-            commonBuildingMap.put(CommonBuildingType.MAGE_GUILD,
-                    retrieveMageGuildMaxLevel(townFaction));
             var allCommonBuildings = Arrays
                     .stream(CommonBuildingType.values())
                     .collect(Collectors
@@ -75,25 +73,27 @@ public class CheatService {
                                     (o1, o2) -> o1,
                                     () -> new EnumMap<>(CommonBuildingType.class)));
             commonBuildingMap.putAll(allCommonBuildings);
+            commonBuildingMap.replace(CommonBuildingType.MAGE_GUILD,
+                    retrieveMageGuildMaxLevel(townFaction));
             town.setFortificationType(FortificationType.CASTLE);
 
             var hordeBuildingSet = town.getHordeBuildingSet();
             hordeBuildingSet.addAll(retrieveTownSpecificHordeBuildings(townFaction));
 
-            var dwellingMap = town.getDwellingMap();
             var townSpecificDwellings = BuildingTypeResolver
-                    .retrieveTownSpecificDwellings(townFaction);
-            dwellingMap.putAll(townSpecificDwellings);
+                    .retrieveAllTownSpecificUpgradedDwellings(townFaction);
+            town.setDwellingMap(townSpecificDwellings);
             //todo if there were any creatures they would be zeroed
             //todo so we need to transfer all existing for hire creatures into new dwellings
 
 
             town.setHallType(HallType.CITY_HALL);
-            var uniqueBuildingSet = town.getUniqueBuildingSet();
+            var townSpecificUniqueBuildings = BuildingTypeResolver
+                    .retrieveAllTownSpecificUniqueBuildings(townFaction);
+            town.setUniqueBuildingSet(townSpecificUniqueBuildings);
         }
         townList.get(0).setHallType(HallType.CAPITOL);
-        throw new IllegalStateException("Method not implemented");
-        //return townMapper.toDtoList(townList);
+        return townMapper.toDtoList(townList);
     }
 
     private Set<String> retrieveTownSpecificHordeBuildings(Faction townFaction) {

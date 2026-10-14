@@ -45,7 +45,9 @@ public class TownMapper extends BaseMapper<TownRespDto, Town, TownReqDto> {
                 town.getDwellingMap(),
                 town.getGarrisonArmy(),
                 town.getCommonBuildingMap(),
-                town.getHallType()
+                town.getHallType(),
+                town.getHordeBuildingSet(),
+                town.getUniqueBuildingSet()
         );
     }
 

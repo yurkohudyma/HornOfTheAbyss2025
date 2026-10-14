@@ -8,6 +8,7 @@ import ua.hudyma.enums.Faction;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public record TownRespDto(
         String ownerName,
@@ -19,8 +20,7 @@ public record TownRespDto(
         Map<String, Integer> dwellingMap,
         List<CreatureSlot> garrisonArmy,
         Map<CommonBuildingType, Integer> commonBuildingMap,
-        HallType hallType)
-        //,List<HordeBuildingType> hordeBuildingList,
-        //List<UniqueBuildingType> uniqueBuildingList
-        //, GrailBuildingType grailBuilding
+        HallType hallType,
+        Set<String> hordeBuildingList,
+        Set<String> uniqueBuildingSet)
 {}
