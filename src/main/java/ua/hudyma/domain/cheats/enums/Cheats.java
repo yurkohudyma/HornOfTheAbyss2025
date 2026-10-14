@@ -14,6 +14,7 @@ public enum Cheats {
     //nwcwhatisthematrix, // Fully reveals the world map
     //nwcoracle, //Reveals the puzzle map
     nwcfollowthewhiterabbit, //Maximizes hero luck
-    nwcmorpheus //Maximizes hero morale
+    nwcmorpheus, //Maximizes hero morale
+    nwcarchitect //Hero receives the Grail in their backpack.
 
 }

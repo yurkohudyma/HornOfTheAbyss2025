@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.cheats.enums.Cheats;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.HeroRespDto;
+import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.domain.towns.Town;
@@ -20,6 +22,7 @@ import ua.hudyma.domain.towns.enums.FortificationType;
 import ua.hudyma.domain.towns.enums.HallType;
 import ua.hudyma.domain.towns.enums.HordeBuildingType;
 import ua.hudyma.enums.Faction;
+import ua.hudyma.enums.WarMachine;
 import ua.hudyma.mapper.HeroMapper;
 import ua.hudyma.mapper.TownMapper;
 
@@ -30,6 +33,7 @@ import java.util.stream.IntStream;
 
 import static ua.hudyma.domain.creatures.enums.creaturetypes.CastleCreatureType.ARCHANGEL;
 import static ua.hudyma.domain.creatures.enums.creaturetypes.NecropolisCreatureType.BLACK_KNIGHT;
+import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 
 @Service
 @RequiredArgsConstructor
@@ -55,8 +59,46 @@ public class CheatService {
             case "nwctheconstruct" -> construct(player);
             case "nwcthereisnospoon" -> spoon(hero);
             case "nwczion" -> zion(player);
+            case "nwcneo" -> neo(hero);
+            case "nwclotsofguns" -> guns(hero);
+            case "nwcfollowthewhiterabbit" -> rabbit(hero);
+            case "nwcmorpheus" -> morpheus(hero);
+            case "nwcarchitect" -> architect(hero);
             default -> throw new IllegalArgumentException("cheatcode " + cheatCode + " not implemented yet");
         };
+    }
+
+    private HeroRespDto morpheus(Hero hero) {
+        hero.getParametersMap().replace(HeroParams.MORALE, 999);
+        return heroMapper.toDto(hero);
+    }
+
+    private HeroRespDto architect(Hero hero) {
+        throw new IllegalStateException("Method not impl");
+    }
+
+    private HeroRespDto rabbit(Hero hero) {
+        hero.getParametersMap().replace(HeroParams.LUCK, 999);
+        return heroMapper.toDto(hero);
+    }
+
+    private HeroRespDto guns(Hero hero) {
+        var warMachineInventorySet = hero.getWarMachineInventorySet();
+        if (warMachineInventorySet == null)
+            warMachineInventorySet = EnumSet.noneOf(WarMachine.class);
+        warMachineInventorySet.addAll(Set.of(WarMachine.CANNON, WarMachine.FIRST_AID_TENT, WarMachine.AMMO_CART));
+        var miscInventoryMap = hero.getMiscInventoryMap();
+        miscInventoryMap.putAll(Map.of(
+                WARMACHINE, ArtifactSlotDisposition.CANNON,
+                FIRST_AID, ArtifactSlotDisposition.FIRST_AID_TENT,
+                AMMO, ArtifactSlotDisposition.AMMO_CART
+        ));
+        return heroMapper.toDto(hero);
+    }
+
+    private HeroRespDto neo(Hero hero) {
+        hero.setLevel(hero.getLevel() + 1);
+        return heroMapper.toDto(hero);
     }
 
     @Transactional(readOnly = true)
