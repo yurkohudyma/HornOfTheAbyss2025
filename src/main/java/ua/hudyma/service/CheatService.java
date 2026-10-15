@@ -74,7 +74,8 @@ public class CheatService {
     }
 
     private HeroRespDto architect(Hero hero) {
-        throw new IllegalStateException("Method not impl");
+        hero.getBackpackInventoryList().add(ArtifactSlotDisposition.GRAIL);
+        return heroMapper.toDto(hero);
     }
 
     private HeroRespDto rabbit(Hero hero) {
@@ -122,12 +123,21 @@ public class CheatService {
             var hordeBuildingSet = town.getHordeBuildingSet();
             hordeBuildingSet.addAll(retrieveTownSpecificHordeBuildings(townFaction));
 
-            var townSpecificDwellings = BuildingTypeResolver
+            var allTownSpecificDwellings = BuildingTypeResolver
                     .retrieveAllTownSpecificUpgradedDwellings(townFaction);
-            town.setDwellingMap(townSpecificDwellings);
-            //todo if there were any creatures they would be zeroed
-            //todo so we need to transfer all existing for hire creatures into new dwellings
 
+            var dwellingMap = town.getDwellingMap();
+            for (Map.Entry<String, Integer> entry : dwellingMap.entrySet()){
+                if (entry.getValue() > 0 && entry.getKey().startsWith("UPG_")){
+                    allTownSpecificDwellings
+                            .replace(entry.getKey(), entry.getValue());
+                }
+                else if (entry.getValue() > 0 && !entry.getKey().startsWith("UPG_")){
+                    allTownSpecificDwellings
+                            .replace("UPG_" + entry.getKey(), entry.getValue());
+                }
+            }
+            town.setDwellingMap(allTownSpecificDwellings);
 
             town.setHallType(HallType.CITY_HALL);
             var townSpecificUniqueBuildings = BuildingTypeResolver
@@ -161,7 +171,8 @@ public class CheatService {
         var allSpellsSetMap = spellService
                 .convertListSpellMapIntoSetSpellMap(allSpellMap);
         hero.setSpellBook(allSpellsSetMap);
-        var parametersMap = heroService.getOrCreateHeroParamsMap(hero);
+        var parametersMap = heroService
+                .getOrCreateHeroParamsMap(hero);
         parametersMap.put(HeroParams.CUR_SPELL_POINTS, 999);
         return heroMapper.toDto(hero);
     }
