@@ -1,5 +1,6 @@
 package ua.hudyma.service;
 
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -109,34 +110,73 @@ public class HeroService {
                         EntityNotFoundException::new, false));
     }
 
+    //@Transactional disabled for testing
     public HeroExperienceRespDto sacrificeArtifactsForExperience(List<String> artifactsList, String heroId) {
         var hero = getHero(heroId);
-        var level = hero.getLevel();
-        var nextLevel = calculateHeroNextExpLevel(hero, level);
-        checkArtifactsToBeObtainedByHero(hero, artifactsList);
-        var accumulatedExperience = calculateSacrificedArtifactsExp(artifactsList);
-        throw new IllegalStateException("Method not implemented");
+        var currentLevel = hero.getLevel();
+        var nextLevel = calculateHeroNextExpLevel(hero, currentLevel);
+        var gainedExperience = calculateSacrificedArtifactsExp(hero, artifactsList);
+        var currentExperience = hero.getExperience();
+        return new HeroExperienceRespDto(
+                hero.getName(),
+                hero.getLevel(),
+                nextLevel,
+                currentExperience,
+                gainedExperience);
     }
 
-    private Integer calculateSacrificedArtifactsExp(List<String> artifactsList) {
+    private Integer calculateSacrificedArtifactsExp(Hero hero, List<String> artifactsList) {
         var accumulatedExperience = 0;
         for (String artifact : artifactsList) {
             try {
                 var artifactProp = ArtifactProperties.valueOf(artifact);
                 var expirienceValue = artifactProp.getExpirienceValue();
-                accumulatedExperience += expirienceValue;
+                if (heroOwnsArtifact(hero, artifact)) {
+                    accumulatedExperience += expirienceValue;
+                }
+                else log.error("Artifact {} does not belong to {}", hero.getName(), artifact);
             } catch (IllegalArgumentException ignored) {
-                log.error("Artifact " + artifact + " not recognised. Skipping");
+                log.error("Artifact {} not recognised. Skipping", artifact);
             }
         }
         return accumulatedExperience;
     }
 
-    private int calculateHeroNextExpLevel(Hero hero, int level) {
-        return 0;
+    private int calculateHeroNextExpLevel(Hero hero, int currentLevel) {
+        //From winning a combat,
+        // the hero receives one experience point for each HP of the enemy creatures
+        // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
+        // Resurrected creatures are only counted once, except Demons raised by Pit Lords.
+        // If an enemy hero is defeated or an enemy town is captured during a siege,
+        // the hero receives 500 extra experience points. A hero will not receive this bonus
+        // if the enemy hero escapes or surrenders. If a hero escapes or surrenders,
+        // then that hero does not gain any experience,
+        // even if he/she managed to kill creatures from the victorious hero.
+        // A hero from whom the enemy hero escaped receives experience for the killed enemy creatures,
+        // but does not gain experience for the defeated hero.
+        return 0; //todo implement
     }
 
-    private void checkArtifactsToBeObtainedByHero(Hero hero, List<String> artifactsList) {
+    private boolean heroOwnsArtifact(Hero hero, String artifact) {
+        var bodyInventory = stringifyArtifactSlotDispositionList(hero
+                .getBodyInventoryMap()
+                .values());
+        var backpackInventoryList = stringifyArtifactSlotDispositionList(hero
+                .getBackpackInventoryList());
+        var miscInventory = stringifyArtifactSlotDispositionList(hero
+                .getMiscInventoryMap()
+                .values());
+        return backpackInventoryList.contains(artifact) ||
+                miscInventory.contains(artifact) ||
+                bodyInventory.contains(artifact);
+    }
+    @Nonnull
+    private static List<String> stringifyArtifactSlotDispositionList(
+            Collection<ArtifactSlotDisposition> inventory) {
+        return inventory
+                .stream()
+                .map(String::valueOf)
+                .toList();
     }
 
     @Transactional
