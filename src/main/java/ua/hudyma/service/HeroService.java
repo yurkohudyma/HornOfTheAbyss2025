@@ -11,10 +11,7 @@ import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
-import ua.hudyma.domain.heroes.dto.HeroReqDto;
-import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
-import ua.hudyma.domain.heroes.dto.HeroRespDto;
-import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
+import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.enums.WarMachine;
@@ -27,7 +24,6 @@ import ua.hudyma.util.FixedSizeMap;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
-import static ua.hudyma.domain.artifacts.enums.ArtifactAction.*;
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.*;
 import static ua.hudyma.domain.heroes.HeroParams.*;
 import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
@@ -111,6 +107,36 @@ public class HeroService {
                         Hero.class,
                         heroCode,
                         EntityNotFoundException::new, false));
+    }
+
+    public HeroExperienceRespDto sacrificeArtifactsForExperience(List<String> artifactsList, String heroId) {
+        var hero = getHero(heroId);
+        var level = hero.getLevel();
+        var nextLevel = calculateHeroNextExpLevel(hero, level);
+        checkArtifactsToBeObtainedByHero(hero, artifactsList);
+        var accumulatedExperience = calculateSacrificedArtifactsExp(artifactsList);
+        throw new IllegalStateException("Method not implemented");
+    }
+
+    private Integer calculateSacrificedArtifactsExp(List<String> artifactsList) {
+        var accumulatedExperience = 0;
+        for (String artifact : artifactsList) {
+            try {
+                var artifactProp = ArtifactProperties.valueOf(artifact);
+                var expirienceValue = artifactProp.getExpirienceValue();
+                accumulatedExperience += expirienceValue;
+            } catch (IllegalArgumentException ignored) {
+                log.error("Artifact " + artifact + " not recognised. Skipping");
+            }
+        }
+        return accumulatedExperience;
+    }
+
+    private int calculateHeroNextExpLevel(Hero hero, int level) {
+        return 0;
+    }
+
+    private void checkArtifactsToBeObtainedByHero(Hero hero, List<String> artifactsList) {
     }
 
     @Transactional
@@ -273,6 +299,7 @@ public class HeroService {
         Necklace of Ocean Guidance gives +1000 points on water
         Sea Captain's Hat gives +500 points on water.*/
     }
+
     private int[] recalculateMaxMovePoints(Hero hero) {
         var landResult = 1500;
         var slowestCreatureSpeed = heroCreatureService.getHeroSlowestCreatureSpeedValue(hero);
@@ -461,7 +488,7 @@ public class HeroService {
     }
 
     @Transactional
-    public String gainExperience(String heroId, Integer newExperience) {
+    public String fetchExperience(String heroId, Integer newExperience) {
         var hero = getHero(heroId);
         var experience = hero.getExperience();
         experience = experience == 0 ? 100 : experience;
@@ -541,6 +568,7 @@ public class HeroService {
                 .map(CreatureSlot::getQuantity)
                 .reduce(0, Integer::sum);
     }
+
     @Transactional
     public String setSpecialty(HeroReqSpecialty dto) {
         var hero = getHero(dto.heroCode());
@@ -569,6 +597,7 @@ public class HeroService {
         secondarySkillMap.put(secondarySkill, SkillLevel.BASIC);
         return String.format("%s succ added to SecondarySkills for %s", property, hero.getName());
     }
+
     public WarMachineRespDto syncHeroWarMachine(String heroCode, WarMachine warMachine) {
         var hero = getHero(heroCode);
         var warMachineInventorySet = getOrCreateWarMachinesInvSet(hero);
@@ -610,7 +639,7 @@ public class HeroService {
             }
             case CATAPULT -> {
                 var catapultPropertiesMap = CATAPULT.getCreatureSkillMap();
-                updatedAttack =  attack + catapultPropertiesMap.get(ATTACK).value();
+                updatedAttack = attack + catapultPropertiesMap.get(ATTACK).value();
                 updatedDefense = defense + catapultPropertiesMap.get(DEFENSE).value();
             }
         }
@@ -631,13 +660,14 @@ public class HeroService {
         if (artillerySkill == null) return 0;
         var artillerySkillModifierIndex = getSecondarySkillModifierNumber(artillerySkill);
         var modifierCoefficient = ARTILLERY.getSkillLevelModifiers()[artillerySkillModifierIndex];
-        return switch (modifierCoefficient){
+        return switch (modifierCoefficient) {
             case 50 -> ThreadLocalRandom.current().nextBoolean() ? 2 : 0;
             case 75 -> ThreadLocalRandom.current().nextDouble() < 0.75 ? 2 : 0;
             case 100 -> 2;
             default -> throw new IllegalStateException("ModifierCoefficient unexpected value: " + modifierCoefficient);
         };
     }
+
     private Set<WarMachine> getOrCreateWarMachinesInvSet(Hero hero) {
         var warMachineInventorySet = hero.getWarMachineInventorySet();
         if (warMachineInventorySet == null) {
@@ -664,6 +694,7 @@ public class HeroService {
         warMachineInventorySet.add(warmachine);
         return syncHeroWarMachine(heroCode, warmachine);
     }
+
     private WarMachine retrieveExistingWarmachineToDetach(WarMachine requestedWarMachine) {
         return requestedWarMachine == WarMachine.BALLISTA ? WarMachine.CANNON : WarMachine.BALLISTA;
     }
@@ -685,7 +716,7 @@ public class HeroService {
     public void detachWarmachine(String heroCode, WarMachine warmachine) {
         var hero = getHero(heroCode);
         var warMachineInventorySet = hero.getWarMachineInventorySet();
-        if (warMachineInventorySet == null){
+        if (warMachineInventorySet == null) {
             throw new IllegalArgumentException(hero.getName() + " has no " + warmachine + ", as warMachineSet in NULL");
         }
         warMachineInventorySet.remove(warmachine);

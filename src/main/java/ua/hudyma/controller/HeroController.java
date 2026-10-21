@@ -4,14 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ua.hudyma.domain.heroes.dto.HeroReqDto;
-import ua.hudyma.domain.heroes.dto.HeroReqSpecialty;
-import ua.hudyma.domain.heroes.dto.HeroRespDto;
-import ua.hudyma.domain.heroes.dto.MovemementPointsRespDto;
+import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/heroes")
@@ -21,6 +20,14 @@ public class HeroController {
     private final HeroService heroService;
 
     private final RandomService randomService;
+
+    @GetMapping("/sacrificeArtifacts")
+    public ResponseEntity<HeroExperienceRespDto>
+    sacrificeSelectedArtifacts (@RequestParam List<String> artifactsList,
+                                @RequestParam String heroId){
+        return ResponseEntity.ok(heroService
+                .sacrificeArtifactsForExperience(artifactsList, heroId));
+    }
 
     @GetMapping("/getMovePoints")
     public ResponseEntity<MovemementPointsRespDto>
@@ -72,11 +79,11 @@ public class HeroController {
     }
 
     @GetMapping("/gainExperience")
-    public ResponseEntity<String> gainExperience(
+    public ResponseEntity<String> fetchExperience(
             @RequestParam String heroId,
             @RequestParam Integer experience) {
         return ResponseEntity.ok(heroService
-                .gainExperience(heroId, experience));
+                .fetchExperience(heroId, experience));
     }
     @PostMapping
     public ResponseEntity<String> createHero(

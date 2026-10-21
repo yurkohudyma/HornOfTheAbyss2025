@@ -14,66 +14,74 @@ import static ua.hudyma.domain.resource.enums.ResourceType.GOLD;
 @Getter
 @RequiredArgsConstructor
 public enum ArtifactProperties {
-    TOME_OF_EARTH_MAGIC(ALL_EARTH_SPELLS, Map.of()),
-    TOME_OF_FIRE_MAGIC(ALL_FIRE_SPELLS, Map.of()),
-    TOME_OF_WATER_MAGIC(ALL_WATER_SPELLS, Map.of()),
-    TOME_OF_AIR_MAGIC(ALL_AIR_SPELLS, Map.of()),
+    TOME_OF_EARTH_MAGIC(ALL_EARTH_SPELLS, Map.of(), 6000),
+    TOME_OF_FIRE_MAGIC(ALL_FIRE_SPELLS, Map.of(), 6000),
+    TOME_OF_WATER_MAGIC(ALL_WATER_SPELLS, Map.of(), 6000),
+    TOME_OF_AIR_MAGIC(ALL_AIR_SPELLS, Map.of(), 6000),
     THUNDER_HELMET(BOOST, Map.of(
             POWER.name(), -2,
-            KNOWLEDGE.name(), 10)),
+            KNOWLEDGE.name(), 10),
+            6000),
     PENDANT_OF_COURAGE(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 3,
-            MORALE.name(), 3)),
+            MORALE.name(), 3),
+            6000),
     SANDALS_OF_THE_SAINT(BOOST, Map.of(
             ATTACK.name(), 2,
             DEFENSE.name(), 2,
             POWER.name(), 2,
-            KNOWLEDGE.name(), 2)),
-
-
-    ADMIRAL_HAT(COMPLEX, Map.of()), //No boarding or unboarding penalty for boats. Converts movement points between land and water movement. +1500 movement points on water. Gain Summon Boat and Scuttle Boat while equipped.Protects army in whirlpools.
+            KNOWLEDGE.name(), 2),
+            6000),
+    ADMIRAL_HAT(COMPLEX, Map.of(),
+            6000), //No boarding or unboarding penalty for boats. Converts movement points between land and water movement. +1500 movement points on water. Gain Summon Boat and Scuttle Boat while equipped.Protects army in whirlpools.
     SENTINEL_SHIELD(BOOST,
             Map.of(
                     ATTACK.name(), -3,
-                    DEFENSE.name(), 12)),
+                    DEFENSE.name(), 12),
+            6000),
     LION_SHIELD_OF_COURAGE(BOOST,
     Map.of(
             ATTACK.name(), 6,
             DEFENSE.name(), 6,
             POWER.name(), 6,
-            KNOWLEDGE.name(), 6)),
+            KNOWLEDGE.name(), 6),
+            6000),
     TITAN_CUIRASS(BOOST, Map.of(
             POWER.name(), 10,
-            KNOWLEDGE.name(), -2)),
+            KNOWLEDGE.name(), -2),
+            6000),
     ANGEL_WINGS(MODIFIER,
-            Map.of(MOVEMENT.name(), FLYING)),
-    EQUESTRIAN_GLOVES(BOOST, Map.of()), //HeroMovementModifiers override
+            Map.of(MOVEMENT.name(), FLYING),
+            6000),
+    EQUESTRIAN_GLOVES(BOOST, Map.of(), 6000), //HeroMovementModifiers override
     BOOTS_OF_SPEED(BOOST, //HeroMovementModifiers override
-            Map.of()),
+            Map.of(), 6000),
     NECKLACE_OF_OCEAN_GUIDANCE (BOOST, //HeroMovementModifiers override
-            Map.of()),
+            Map.of(), 6000),
     SEA_CAPTAINS_HAT(BOOST, //HeroMovementModifiers override
-            Map.of()),
+            Map.of(), 6000),
     STILL_EYE_OF_THE_DRAGON(BOOST_OTH_PARAM, Map.of(
             LUCK.name(), 1,
-            MORALE.name(), 1)),
+            MORALE.name(), 1), 3000),
     TITAN_GLADIUS(BOOST,
             Map.of(
                     ATTACK.name(), 12,
-                    DEFENSE.name(), -3)),
+                    DEFENSE.name(), -3), 6000),
     //misc
-    ORB_OF_VULNERABILITY(COMPLEX, Map.of()), //Negate natural magic resistance, magic immunity and chances to resist spells of all creatures on the battlefield. Does not affect the limitations on applicability stated in spell descriptions as well as the immunities given by artifacts.
-    SHAMAN_PUPPET(ENEMY_DEBOOST, Map.of(LUCK.name(), -2)),
-    SPECULUM(BOOST, Map.of(VISIBILITY.name(), 1)),
-    GOLDEN_BOW(COMPLEX, Map.of()), //No range penalty. No obstacle penalty.
-    SHACKLES_OF_WAR(COMPLEX, Map.of()), //Neither hero may retreat or surrender in combat.
+    ORB_OF_VULNERABILITY(COMPLEX, Map.of(), 3000), //Negate natural magic resistance, magic immunity and chances to resist spells of all creatures on the battlefield. Does not affect the limitations on applicability stated in spell descriptions as well as the immunities given by artifacts.
+    SHAMAN_PUPPET(ENEMY_DEBOOST, Map.of(LUCK.name(), -2)
+            , 1500),
+    SPECULUM(BOOST, Map.of(VISIBILITY.name(), 1), 1500),
+    GOLDEN_BOW(COMPLEX, Map.of(), 3000), //No range penalty. No obstacle penalty.
+    SHACKLES_OF_WAR(COMPLEX, Map.of(), 3000), //Neither hero may retreat or surrender in combat.
 
     //backpack_inventory:
-    SLEEPKEEPER(COMPLEX, Map.of()), //Immunity to mind spells.
-    HORN_OF_THE_ABYSS(COMPLEX, Map.of()), //After a stack of living creatures is slain, a stack of Fangarms will rise in their stead and will stay loyal to the hero after the battle concludes
+    SLEEPKEEPER(COMPLEX, Map.of(), 6000), //Immunity to mind spells.
+    HORN_OF_THE_ABYSS(COMPLEX, Map.of(), 6000), //After a stack of living creatures is slain, a stack of Fangarms will rise in their stead and will stay loyal to the hero after the battle concludes
     GRAIL(BOOST_TOWN, Map.of(
             GOLD.name(), 5000,
-            "ALL_DWELLING_BOOST", 0.5));
+            "ALL_DWELLING_BOOST", 0.5), 6000);
     private final ArtifactAction artifactAction;
     private final Map<String, Object> actionData;
+    private final int expirienceValue;
 }
