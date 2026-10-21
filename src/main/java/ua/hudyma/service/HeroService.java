@@ -61,6 +61,45 @@ public class HeroService {
                     Map.entry(11, 2000)
             );
 
+    private static final int[] HERO_LEVEL_EXPERIENCE_ARRAY = new int[]{
+            //https://heroes.thelazy.net/index.php/Experience
+            0,     //0
+            0,     //1
+            1_000, //2
+            2_000, //3
+            3_200, //4
+            4_600,
+            6_200,
+            8_000,
+            10_000,
+            12_200,
+            14_700, //10
+            17_500,
+            20_600,
+            24_320,
+            28_784,
+            34_140,
+            40_567,
+            48_279,
+            57_533,
+            68_637,
+            81_961, //20
+            97_949,
+            117_134,
+            140_156,
+            167_782,
+            200_933,
+            240_714,
+            288_451,
+            345_735,
+            414_475,
+            496_963, //30
+            595_948,
+            714_730,
+            857_268
+            //from now on next level is strictly +20%
+    };
+
     private final HeroMapper heroMapper;
 
     private final HeroRepository heroRepository;
@@ -107,16 +146,20 @@ public class HeroService {
                 .orElseThrow(getExceptionSupplier(
                         Hero.class,
                         heroCode,
-                        EntityNotFoundException::new, false));
+                        EntityNotFoundException::new,
+                        false));
     }
 
     //@Transactional disabled for testing
-    public HeroExperienceRespDto sacrificeArtifactsForExperience(List<String> artifactsList, String heroId) {
-        var hero = getHero(heroId);
+    public HeroExperienceRespDto sacrificeArtifactsForExperience(SacrificeArtifactsReqDto dto) {
+        var hero = getHero(dto.heroId());
+        var artifactsArray = dto.artifactsArray();
         var currentLevel = hero.getLevel();
-        var nextLevel = calculateHeroNextExpLevel(hero, currentLevel);
-        var gainedExperience = calculateSacrificedArtifactsExp(hero, artifactsList);
         var currentExperience = hero.getExperience();
+        var gainedExperience = calculateSacrificedArtifactsExp(hero, artifactsArray);
+        var nextLevel = calculateHeroNextExpLevel(gainedExperience, currentLevel);
+        if (nextLevel > currentLevel)
+             hero.setLevel(nextLevel);
         return new HeroExperienceRespDto(
                 hero.getName(),
                 hero.getLevel(),
@@ -125,7 +168,7 @@ public class HeroService {
                 gainedExperience);
     }
 
-    private Integer calculateSacrificedArtifactsExp(Hero hero, List<String> artifactsList) {
+    private Integer calculateSacrificedArtifactsExp(Hero hero, String[] artifactsList) {
         var accumulatedExperience = 0;
         for (String artifact : artifactsList) {
             try {
@@ -142,7 +185,9 @@ public class HeroService {
         return accumulatedExperience;
     }
 
-    private int calculateHeroNextExpLevel(Hero hero, int currentLevel) {
+    private int calculateHeroNextExpLevel(Integer gainedExp, int currentLevel) {
+        var registeredExperienceForLevel = HERO_LEVEL_EXPERIENCE_ARRAY[currentLevel];
+        return gainedExp >= registeredExperienceForLevel ? ++currentLevel : currentLevel;
         //From winning a combat,
         // the hero receives one experience point for each HP of the enemy creatures
         // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
@@ -154,15 +199,14 @@ public class HeroService {
         // even if he/she managed to kill creatures from the victorious hero.
         // A hero from whom the enemy hero escaped receives experience for the killed enemy creatures,
         // but does not gain experience for the defeated hero.
-        return 0; //todo implement
     }
 
     private boolean heroOwnsArtifact(Hero hero, String artifact) {
-        var bodyInventory = stringifyArtifactSlotDispositionList(hero
-                .getBodyInventoryMap()
-                .values());
-        var backpackInventoryList = stringifyArtifactSlotDispositionList(hero
-                .getBackpackInventoryList());
+        var bodyInventoryMap = getOrCreateBodyInvMap(hero);
+        var bodyInventory = stringifyArtifactSlotDispositionList(
+                bodyInventoryMap.values());
+        var backpackInventoryList = stringifyArtifactSlotDispositionList(
+                getOrCreateBackpackInventoryList(hero));
         var miscInventory = stringifyArtifactSlotDispositionList(hero
                 .getMiscInventoryMap()
                 .values());
@@ -170,6 +214,12 @@ public class HeroService {
                 miscInventory.contains(artifact) ||
                 bodyInventory.contains(artifact);
     }
+
+    private Collection<ArtifactSlotDisposition> getOrCreateBackpackInventoryList(Hero hero) {
+        var backpackInventoryList = hero.getBackpackInventoryList();
+        return backpackInventoryList == null ? new ArrayList<>(): backpackInventoryList;
+    }
+
     @Nonnull
     private static List<String> stringifyArtifactSlotDispositionList(
             Collection<ArtifactSlotDisposition> inventory) {

@@ -10,6 +10,7 @@ import ua.hudyma.enums.WarMachine;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -21,12 +22,11 @@ public class HeroController {
 
     private final RandomService randomService;
 
-    @GetMapping("/sacrificeArtifacts")
+    @PostMapping("/sacrificeArtifacts")
     public ResponseEntity<HeroExperienceRespDto>
-    sacrificeSelectedArtifacts (@RequestParam List<String> artifactsList,
-                                @RequestParam String heroId){
+    sacrificeSelectedArtifacts (@RequestBody SacrificeArtifactsReqDto dto){
         return ResponseEntity.ok(heroService
-                .sacrificeArtifactsForExperience(artifactsList, heroId));
+                .sacrificeArtifactsForExperience(dto));
     }
 
     @GetMapping("/getMovePoints")
