@@ -63,17 +63,17 @@ public class HeroService {
 
     private static final int[] HERO_LEVEL_EXPERIENCE_ARRAY = new int[]{
             //https://heroes.thelazy.net/index.php/Experience
-            0,     //0
-            0,     //1
-            1_000, //2
-            2_000, //3
-            3_200, //4
+            0,          //0
+            0,          //1
+            1_000,      //2
+            2_000,      //3
+            3_200,      //4
             4_600,
             6_200,
             8_000,
             10_000,
             12_200,
-            14_700, //10
+            14_700,     //10
             17_500,
             20_600,
             24_320,
@@ -83,7 +83,7 @@ public class HeroService {
             48_279,
             57_533,
             68_637,
-            81_961, //20
+            81_961,     //20
             97_949,
             117_134,
             140_156,
@@ -93,10 +93,24 @@ public class HeroService {
             288_451,
             345_735,
             414_475,
-            496_963, //30
+            496_963,    //30
             595_948,
             714_730,
-            857_268
+            857_268,
+            1_028_313,  //34
+            1_233_567,
+            1_479_871,
+            1_775_435,
+            2_130_111,
+            2_555_722,
+            3_066_455,  //40
+            3_679_334,
+            4_414_788,
+            5_297_332,
+            6_356_384,
+            7_627_246,
+            9_152_280,  //46
+            10_982_320  //47
             //from now on next level is strictly +20%
     };
 
@@ -187,7 +201,13 @@ public class HeroService {
 
     private int calculateHeroNextExpLevel(Integer gainedExp, int currentLevel) {
         var registeredExperienceForLevel = HERO_LEVEL_EXPERIENCE_ARRAY[currentLevel];
-        return gainedExp >= registeredExperienceForLevel ? ++currentLevel : currentLevel;
+        //todo iterate over array and find which closest hero level corresponds to it
+        if (registeredExperienceForLevel >= 47)
+            return (int) (registeredExperienceForLevel * 0.2 + registeredExperienceForLevel);
+        return gainedExp >= registeredExperienceForLevel ? registeredExperienceForLevel : currentLevel;
+
+
+        //todo gaining exp from battles
         //From winning a combat,
         // the hero receives one experience point for each HP of the enemy creatures
         // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
