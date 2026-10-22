@@ -68,11 +68,11 @@ public class HeroService {
             1_000,      //2
             2_000,      //3
             3_200,      //4
-            4_600,
-            6_200,
-            8_000,
-            10_000,
-            12_200,
+            4_600,      //5
+            6_200,      //6
+            8_000,      //7
+            10_000,     //8
+            12_200,     //9
             14_700,     //10
             17_500,
             20_600,
@@ -97,7 +97,7 @@ public class HeroService {
             595_948,
             714_730,
             857_268,
-            1_028_313,  //34
+            1_028_313,
             1_233_567,
             1_479_871,
             1_775_435,
@@ -109,9 +109,36 @@ public class HeroService {
             5_297_332,
             6_356_384,
             7_627_246,
-            9_152_280,  //46
-            10_982_320  //47
-            //from now on next level is strictly +20%
+            9_152_280,
+            10_982_320,  //47
+            13_178_368,
+            15_813_625,
+            18_975_933,  //50
+            22_770_702,
+            27_324_424,
+            32_788_890,
+            39_346_249,
+            47_215_079,  //55
+            56_657_675,
+            67_988_790,
+            81_586_128,
+            97_902_933,
+            117_483_099, //60
+            140_979_298,
+            169_174_736,
+            203_009_261,
+            243_610_691,
+            292_332_407, //65
+            350_798_466,
+            420_957_736,
+            505_148_860,
+            606_178_208,
+            727_413_425, //70
+            872_895_685,
+            1_047_474_397,
+            1_256_968_851,
+            1_508_362_195,
+            1_810_034_207, //75
     };
 
     private final HeroMapper heroMapper;
@@ -171,12 +198,14 @@ public class HeroService {
         var currentLevel = hero.getLevel();
         var currentExperience = hero.getExperience();
         var gainedExperience = calculateSacrificedArtifactsExp(hero, artifactsArray);
-        var nextLevel = calculateHeroNextExpLevel(gainedExperience, currentLevel);
-        if (nextLevel > currentLevel)
-             hero.setLevel(nextLevel);
+        var nextLevel = calculateHeroNextExpLevel(gainedExperience);
+        if (nextLevel > currentLevel) {
+            hero.setLevel(nextLevel);
+            hero.setExperience(gainedExperience);
+        }
         return new HeroExperienceRespDto(
                 hero.getName(),
-                hero.getLevel(),
+                currentLevel,
                 nextLevel,
                 currentExperience,
                 gainedExperience);
@@ -191,7 +220,7 @@ public class HeroService {
                 if (heroOwnsArtifact(hero, artifact)) {
                     accumulatedExperience += expirienceValue;
                 }
-                else log.error("Artifact {} does not belong to {}", hero.getName(), artifact);
+                else log.error("Artifact {} does not belong to {}", artifact, hero.getName());
             } catch (IllegalArgumentException ignored) {
                 log.error("Artifact {} not recognised. Skipping", artifact);
             }
@@ -199,27 +228,27 @@ public class HeroService {
         return accumulatedExperience;
     }
 
-    private int calculateHeroNextExpLevel(Integer gainedExp, int currentLevel) {
-        var registeredExperienceForLevel = HERO_LEVEL_EXPERIENCE_ARRAY[currentLevel];
-        //todo iterate over array and find which closest hero level corresponds to it
-        if (registeredExperienceForLevel >= 47)
-            return (int) (registeredExperienceForLevel * 0.2 + registeredExperienceForLevel);
-        return gainedExp >= registeredExperienceForLevel ? registeredExperienceForLevel : currentLevel;
-
-
-        //todo gaining exp from battles
-        //From winning a combat,
-        // the hero receives one experience point for each HP of the enemy creatures
-        // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
-        // Resurrected creatures are only counted once, except Demons raised by Pit Lords.
-        // If an enemy hero is defeated or an enemy town is captured during a siege,
-        // the hero receives 500 extra experience points. A hero will not receive this bonus
-        // if the enemy hero escapes or surrenders. If a hero escapes or surrenders,
-        // then that hero does not gain any experience,
-        // even if he/she managed to kill creatures from the victorious hero.
-        // A hero from whom the enemy hero escaped receives experience for the killed enemy creatures,
-        // but does not gain experience for the defeated hero.
+    private int calculateHeroNextExpLevel(Integer gainedExp) {
+        for (int i = 0; i < HERO_LEVEL_EXPERIENCE_ARRAY.length; i++) {
+            if (gainedExp <= HERO_LEVEL_EXPERIENCE_ARRAY[i] && gainedExp > HERO_LEVEL_EXPERIENCE_ARRAY[i - 1]) {
+                return i - 1;
+            }
+        }
+        throw new IllegalStateException("Hero experience " + gainedExp + " exceeds level range of 75");
     }
+
+    //todo gaining exp from battles
+    //From winning a combat,
+    // the hero receives one experience point for each HP of the enemy creatures
+    // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
+    // Resurrected creatures are only counted once, except Demons raised by Pit Lords.
+    // If an enemy hero is defeated or an enemy town is captured during a siege,
+    // the hero receives 500 extra experience points. A hero will not receive this bonus
+    // if the enemy hero escapes or surrenders. If a hero escapes or surrenders,
+    // then that hero does not gain any experience,
+    // even if he/she managed to kill creatures from the victorious hero.
+    // A hero from whom the enemy hero escaped receives experience for the killed enemy creatures,
+    // but does not gain experience for the defeated hero.
 
     private boolean heroOwnsArtifact(Hero hero, String artifact) {
         var bodyInventoryMap = getOrCreateBodyInvMap(hero);
