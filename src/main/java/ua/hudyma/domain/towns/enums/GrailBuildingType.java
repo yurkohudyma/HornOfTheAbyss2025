@@ -2,7 +2,7 @@ package ua.hudyma.domain.towns.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import ua.hudyma.domain.artifacts.enums.ArtifactAction;
+import ua.hudyma.domain.artifact.ArtifactAction;
 import ua.hudyma.domain.creatures.enums.creaturetypes.InfernoCreatureType;
 import ua.hudyma.domain.spells.enums.AirSpellSchool;
 import ua.hudyma.domain.spells.enums.SpellAction;
@@ -11,7 +11,7 @@ import ua.hudyma.enums.Faction;
 import java.util.EnumMap;
 import java.util.Map;
 
-import static ua.hudyma.domain.artifacts.enums.ArtifactAction.*;
+import static ua.hudyma.domain.artifact.ArtifactAction.*;
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.GROWTH;
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.SPEED;
 import static ua.hudyma.domain.heroes.HeroParams.*;

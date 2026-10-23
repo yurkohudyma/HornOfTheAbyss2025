@@ -1,11 +1,12 @@
-package ua.hudyma.domain.artifacts.enums;
+package ua.hudyma.domain.artifact;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import ua.hudyma.domain.artifact.ArtifactAction;
 
 import java.util.Map;
 
-import static ua.hudyma.domain.artifacts.enums.ArtifactAction.*;
+import static ua.hudyma.domain.artifact.ArtifactAction.*;
 import static ua.hudyma.domain.creatures.enums.CreatureProperty.*;
 import static ua.hudyma.domain.creatures.enums.MovementType.FLYING;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.*;

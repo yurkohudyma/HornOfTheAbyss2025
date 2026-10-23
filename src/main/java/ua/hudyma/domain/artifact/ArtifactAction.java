@@ -1,4 +1,4 @@
-package ua.hudyma.domain.artifacts.enums;
+package ua.hudyma.domain.artifact;
 
 public enum ArtifactAction {
     COMPLEX,

@@ -6,7 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
-import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
+import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.domain.players.Player;

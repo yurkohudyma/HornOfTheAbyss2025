@@ -1,6 +1,6 @@
 package ua.hudyma.domain.heroes.dto;
 
-import ua.hudyma.domain.artifacts.enums.ArtifactSlotDisposition;
+import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.*;

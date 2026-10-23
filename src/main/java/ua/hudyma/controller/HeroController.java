@@ -4,14 +4,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
 import ua.hudyma.domain.heroes.dto.*;
+import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/heroes")
@@ -19,8 +20,15 @@ import java.util.List;
 public class HeroController {
 
     private final HeroService heroService;
-
     private final RandomService randomService;
+
+    @GetMapping("/saveEquipmentPreset/{number}")
+    public ResponseEntity<Map<Map<ArtifactSlot, ArtifactSlotDisposition>,
+            Map<ArtifactSlot, ArtifactSlotDisposition>>> saveEquipmentPreset (
+            @PathVariable Integer number, @RequestParam String heroId){
+        return ResponseEntity.ok(heroService
+                .saveEquipmentPreset(number, heroId));
+    }
 
     @PostMapping("/sacrificeArtifacts")
     public ResponseEntity<HeroExperienceRespDto>
