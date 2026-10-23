@@ -5,7 +5,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
-import ua.hudyma.domain.cheats.enums.Cheats;
+import ua.hudyma.domain.cheats.Cheats;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;

@@ -1,4 +1,4 @@
-package ua.hudyma.domain.cheats.enums;
+package ua.hudyma.domain.cheats;
 
 public enum Cheats {
     //nwcredpill, //Instant victory
