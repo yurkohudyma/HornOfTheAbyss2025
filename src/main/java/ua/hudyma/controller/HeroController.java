@@ -27,7 +27,7 @@ public class HeroController {
             Map<ArtifactSlot, ArtifactSlotDisposition>>> saveEquipmentPreset (
             @PathVariable Integer number, @RequestParam String heroId){
         return ResponseEntity.ok(heroService
-                .saveEquipmentPreset(number, heroId));
+                .saveEquipmentPreset(heroId));
     }
 
     @PostMapping("/sacrificeArtifacts")

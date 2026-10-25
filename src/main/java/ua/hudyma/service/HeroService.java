@@ -199,20 +199,122 @@ public class HeroService {
         var currentExperience = hero.getExperience();
         var gainedExperience = calculateSacrificedArtifactsExp(hero, artifactsArray);
         var nextLevel = calculateHeroNextExpLevel(gainedExperience);
+        PrimarySkill gainedPrimarySkill = null;
+        int currentPrimarySkillValue;
         if (nextLevel > currentLevel) {
-            hero.setLevel(nextLevel);
-            hero.setExperience(gainedExperience);
+            gainedPrimarySkill = gainNewLevel(hero, gainedExperience, nextLevel);
         }
+        currentPrimarySkillValue = hero.getPrimarySkillMap().get(gainedPrimarySkill);
         return new HeroExperienceRespDto(
                 hero.getName(),
                 currentLevel,
                 nextLevel,
                 currentExperience,
-                gainedExperience);
+                gainedExperience,
+                gainedPrimarySkill,
+                currentPrimarySkillValue - 1,
+                currentPrimarySkillValue);
+    }
+
+    private static PrimarySkill gainNewLevel(Hero hero, Integer gainedExperience, int nextLevel) {
+        var heroStartingPrimarySkillValues = hero.getSubfaction().getPrimarySkillValues();
+        var primarySkillPercentageValues = calculatePercentageValues(heroStartingPrimarySkillValues);
+        hero.setLevel(nextLevel);
+        hero.setExperience(gainedExperience);
+        var gainedPrimarySkill = randomisePrimarySkill(primarySkillPercentageValues);
+        var primarySkillMap = getOrCreatePrimarySkillMap(hero);
+        var skillValue = primarySkillMap.get(gainedPrimarySkill);
+        primarySkillMap.replace(gainedPrimarySkill, ++skillValue);
+        return gainedPrimarySkill;
+    }
+
+    private static Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
+        var primarySkillMap = hero.getPrimarySkillMap();
+        if (primarySkillMap == null){
+            primarySkillMap = new EnumMap<>(PrimarySkill.class);
+            hero.setPrimarySkillMap(primarySkillMap);
+        }
+        return primarySkillMap;
+    }
+
+    private static PrimarySkill randomisePrimarySkill(int[] primaryArray) {
+        var map = new HashMap<PrimarySkill, List<Integer>>();
+        var values = PrimarySkill.values();
+        var modifier = 0;
+        for (int i = 0; i < primaryArray.length; i++) {
+            map.put(values[i], List.of(modifier, modifier + primaryArray[i] - 1));
+            modifier += primaryArray[i];
+        }
+        var randomValue = ThreadLocalRandom.current().nextInt(100);
+        return map
+                .entrySet()
+                .stream()
+                .filter(entry -> entry
+                        .getValue().get(0) <= randomValue && entry.getValue().get(1) > randomValue)
+                .findAny()
+                .orElseThrow()
+                .getKey();
+
+        //40, 10, 30, 20 -> 38
+
+        //att 0..39   (+40)
+        //def 40..49  (+10)
+        //pow 50..79  (+30)
+        //kno 80..100 (+20)
+    }
+
+    private static int[] calculatePercentageValues(int[] heroStartingPrimarySkillValues) {
+        var maxElement = getMaxElement(heroStartingPrimarySkillValues);
+
+        //якщо є елементи зі знач 0, то потрібно інкрементувати весь масив на 1
+        if (Arrays
+                .stream(heroStartingPrimarySkillValues)
+                .anyMatch(a -> a == 0)) {
+            incrementArrayByOne(heroStartingPrimarySkillValues);
+        }
+        var arrayElementsSum = getArrayElementsSum(heroStartingPrimarySkillValues);
+        var percentageArray = Arrays
+                .stream(heroStartingPrimarySkillValues)
+                .mapToDouble(ele -> ele / (double) arrayElementsSum * 100)
+                .mapToInt(value -> (int) value)
+                .toArray();
+        var maxPercentageElement = getMaxElement(percentageArray);
+
+        //якщо сума всіх відсотків не 100%, додати 1 до найбільшого (якшо найбільших два, тоді додати до обох)
+        if (getArrayElementsSum(percentageArray) < 100) {
+            for (int i = 0; i < percentageArray.length; i++) {
+                if (percentageArray[i] == maxPercentageElement) {
+                    ++percentageArray[i];
+                }
+            }
+        }
+        return percentageArray;
+    }
+
+    private static int getArrayElementsSum(int[] heroStartingPrimarySkillValues) {
+        return Arrays.stream(heroStartingPrimarySkillValues).sum();
+    }
+
+    private static int[] incrementArrayByOne(int[] heroStartingPrimarySkillValues) {
+        for (int i = 0; i < heroStartingPrimarySkillValues.length; i++) {
+            ++heroStartingPrimarySkillValues[i];
+        }
+        return heroStartingPrimarySkillValues;
+    }
+
+    private static int getMaxElement(int[] array) {
+        var maxElement = 0;
+        for (int element : array) {
+            if (element > maxElement) {
+                maxElement = element;
+            }
+        }
+        return maxElement;
     }
 
     public Map<Map<ArtifactSlot, ArtifactSlotDisposition>, Map<ArtifactSlot, ArtifactSlotDisposition>>
-    saveEquipmentPreset(Integer number, String heroId) {
+    saveEquipmentPreset(String heroId) { //todo переробити на Map<Integer, List<Map<ArtifactSlot, ArtifactSlotDisposition>>
+        //todo всі пресети мають бути пронумеровані явно, інакше витягнути пресет по ключу не вийде
         var hero = getHero(heroId);
         var bodyInventoryMap = hero.getBodyInventoryMap();
         var miscInventoryMap = hero.getMiscInventoryMap();
@@ -230,8 +332,7 @@ public class HeroService {
                 var expirienceValue = artifactProp.getExpirienceValue();
                 if (heroOwnsArtifact(hero, artifact)) {
                     accumulatedExperience += expirienceValue;
-                }
-                else log.error("Artifact {} does not belong to {}", artifact, hero.getName());
+                } else log.error("Artifact {} does not belong to {}", artifact, hero.getName());
             } catch (IllegalArgumentException ignored) {
                 log.error("Artifact {} not recognised. Skipping", artifact);
             }
@@ -267,8 +368,7 @@ public class HeroService {
                 bodyInventoryMap.values());
         var backpackInventoryList = stringifyArtifactSlotDispositionList(
                 getOrCreateBackpackInventoryList(hero));
-        var miscInventory = stringifyArtifactSlotDispositionList(hero
-                .getMiscInventoryMap()
+        var miscInventory = stringifyArtifactSlotDispositionList(getOrCreateMiscInventoryMap(hero)
                 .values());
         return backpackInventoryList.contains(artifact) ||
                 miscInventory.contains(artifact) ||
@@ -277,7 +377,7 @@ public class HeroService {
 
     private Collection<ArtifactSlotDisposition> getOrCreateBackpackInventoryList(Hero hero) {
         var backpackInventoryList = hero.getBackpackInventoryList();
-        return backpackInventoryList == null ? new ArrayList<>(): backpackInventoryList;
+        return backpackInventoryList == null ? new ArrayList<>() : backpackInventoryList;
     }
 
     @Nonnull
@@ -631,6 +731,15 @@ public class HeroService {
             hero.setBodyInventoryMap(bodyInvMap);
         }
         return bodyInvMap;
+    }
+
+    public static Map<ArtifactSlot, ArtifactSlotDisposition> getOrCreateMiscInventoryMap(Hero hero) {
+        var miscInventoryMap = hero.getMiscInventoryMap();
+        if (miscInventoryMap == null) {
+            miscInventoryMap = new EnumMap<ArtifactSlot, ArtifactSlotDisposition>(ArtifactSlot.class);
+            hero.setMiscInventoryMap(miscInventoryMap);
+        }
+        return miscInventoryMap;
     }
 
     public void vanquishHero(Hero hero) {
