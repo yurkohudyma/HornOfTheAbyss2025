@@ -7,8 +7,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.Creature;
+import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.creatures.enums.AttackType;
+import ua.hudyma.domain.creatures.enums.CreatureSkill;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.enums.SecondarySkill;
@@ -23,6 +26,7 @@ import ua.hudyma.dto.BattleResultDto;
 import ua.hudyma.dto.SpellAttackResultDto;
 import ua.hudyma.dto.SpellCastCombatReqDto;
 import ua.hudyma.exception.SpellCastException;
+import ua.hudyma.repository.CreatureRepository;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.FixedSizeMap;
 
@@ -41,13 +45,40 @@ import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 @RequiredArgsConstructor
 @Log4j2
 public class CombatService {
+
     //private final HeroService heroService; circular
     private final CreatureService creatureService;
     private final BattlefieldService battlefieldService;
+
     //private final ArmyService armyService; circular
     private final ArmyHeroService armyHeroService;
-
     private final HeroRepository heroRepository;
+
+    public Integer calcExperienceAfterCombat(Map<CreatureType, Integer> creatureMap) {
+        return creatureMap
+                .entrySet()
+                .stream()
+                .mapToInt(entry -> creatureService
+                        .fetchCreatureByType(entry.getKey())
+                        .orElseThrow()
+                        .getCreatureSkillMap()
+                        .get(CreatureSkill.HEALTH)
+                        .value() * entry.getValue())
+                .sum();
+
+        //todo gaining exp from battles
+        //From winning a combat,
+        // the hero receives one experience point for each HP of the enemy creatures
+        // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
+        // Resurrected creatures are only counted once, except Demons raised by Pit Lords.
+        // If an enemy hero is defeated or an enemy town is captured during a siege,
+        // the hero receives 500 extra experience points. A hero will not receive this bonus
+        // if the enemy hero escapes or surrenders. If a hero escapes or surrenders,
+        // then that hero does not gain any experience,
+        // even if he/she managed to kill creatures from the victorious hero.
+        // A hero from whom the enemy hero escaped receives experience for the killed enemy creatures,
+        // but does not gain experience for the defeated hero.
+    }
 
     public void initTownBattle(Hero hero, Town town) {
         throw new IllegalStateException

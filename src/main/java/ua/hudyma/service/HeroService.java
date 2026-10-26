@@ -206,6 +206,14 @@ public class HeroService {
             gainedPrimarySkill = gainNewLevel(hero, gainedExperience, nextLevel);
         }
         currentPrimarySkillValue = hero.getPrimarySkillMap().get(gainedPrimarySkill);
+
+        //remove artifact from inventory
+        var backpackInventoryList = hero.getBackpackInventoryList();
+        Arrays
+                .stream(artifactsArray)
+                .map(ArtifactSlotDisposition::valueOf)
+                .forEach(backpackInventoryList::remove);
+
         return new HeroExperienceRespDto(
                 hero.getName(),
                 currentLevel,
@@ -321,16 +329,20 @@ public class HeroService {
         var inventoryPresetList = getOrCreateInventoryPresetList(hero);
         if (inventoryPresetList.size() > 8 && number > 8) {
             log.warn("Preset is full, overwriting from beginning");
-            inventoryPresetDto = new InventoryPresetDto(0, bodyInventoryMap, miscInventoryMap);
+            number = 0;
+            inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
+            inventoryPresetList.add(number, inventoryPresetDto);
         }
         else if (inventoryPresetList.size() == 0){
             log.warn("Preset is empty, starting from 0 index");
-            inventoryPresetDto = new InventoryPresetDto(0, bodyInventoryMap, miscInventoryMap);
+            number = 0;
+            inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
+            inventoryPresetList.add(number, inventoryPresetDto);
         }
         else {
             inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
+            inventoryPresetList.add(number, inventoryPresetDto);
         }
-        inventoryPresetList.add(number, inventoryPresetDto);
         hero.setInventoryPresetList(inventoryPresetList);
         return inventoryPresetDto;
     }
@@ -364,19 +376,6 @@ public class HeroService {
         }
         throw new IllegalStateException("Hero experience " + gainedExp + " exceeds level range of 75");
     }
-
-    //todo gaining exp from battles
-    //From winning a combat,
-    // the hero receives one experience point for each HP of the enemy creatures
-    // he managed to vanquish in the battle (clones, war machines and bonus health from artifacts do not count).
-    // Resurrected creatures are only counted once, except Demons raised by Pit Lords.
-    // If an enemy hero is defeated or an enemy town is captured during a siege,
-    // the hero receives 500 extra experience points. A hero will not receive this bonus
-    // if the enemy hero escapes or surrenders. If a hero escapes or surrenders,
-    // then that hero does not gain any experience,
-    // even if he/she managed to kill creatures from the victorious hero.
-    // A hero from whom the enemy hero escaped receives experience for the killed enemy creatures,
-    // but does not gain experience for the defeated hero.
 
     private boolean heroOwnsArtifact(Hero hero, String artifact) {
         var bodyInventoryMap = getOrCreateBodyInvMap(hero);
