@@ -23,11 +23,10 @@ public class HeroController {
     private final RandomService randomService;
 
     @GetMapping("/saveEquipmentPreset/{number}")
-    public ResponseEntity<Map<Map<ArtifactSlot, ArtifactSlotDisposition>,
-            Map<ArtifactSlot, ArtifactSlotDisposition>>> saveEquipmentPreset (
+    public ResponseEntity<InventoryPresetDto> saveEquipmentPreset(
             @PathVariable Integer number, @RequestParam String heroId){
         return ResponseEntity.ok(heroService
-                .saveEquipmentPreset(heroId));
+                .saveEquipmentPreset(number, heroId));
     }
 
     @PostMapping("/sacrificeArtifacts")

@@ -31,8 +31,8 @@ import static ua.hudyma.domain.heroes.enums.ArtifactSlot.*;
 import static ua.hudyma.domain.heroes.enums.HeroSpecialtyType.SECONDARY_SKILL;
 import static ua.hudyma.domain.heroes.enums.PrimarySkill.KNOWLEDGE;
 import static ua.hudyma.domain.heroes.enums.SecondarySkill.*;
-import static ua.hudyma.enums.WarMachineProperties.CATAPULT;
 import static ua.hudyma.enums.WarMachineProperties.*;
+import static ua.hudyma.enums.WarMachineProperties.CATAPULT;
 import static ua.hudyma.util.MessageProcessor.getExceptionSupplier;
 import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 
@@ -42,9 +42,11 @@ import static ua.hudyma.util.MessageProcessor.getReturnMessage;
 public class HeroService {
 
     private static final int MISC_INV_MAP_SIZE = 5;
+
     private static final Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
-    private static final Map<Map<ArtifactSlot, ArtifactSlotDisposition>, Map<ArtifactSlot, ArtifactSlotDisposition>>
-            inventoryPresetMap = new LinkedHashMap<>(9);
+
+    private final LinkedList<InventoryPresetDto> inventoryPresetList = new LinkedList<>();
+
     private static final Map<Integer, Integer> LOWEST_CREATURE_BASE_MOVEMENT_VALUE_MAP =
             Map.ofEntries(
                     Map.entry(0, 1300),
@@ -142,9 +144,13 @@ public class HeroService {
     };
 
     private final HeroMapper heroMapper;
+
     private final HeroRepository heroRepository;
+
     private final PlayerService playerService;
+
     private final ArmyHeroService armyHeroService;
+
     private final HeroCreatureService heroCreatureService;
 
     @SneakyThrows
@@ -252,7 +258,7 @@ public class HeroService {
 
     private static Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
         var primarySkillMap = hero.getPrimarySkillMap();
-        if (primarySkillMap == null){
+        if (primarySkillMap == null) {
             primarySkillMap = new EnumMap<>(PrimarySkill.class);
             hero.setPrimarySkillMap(primarySkillMap);
         }
@@ -308,16 +314,19 @@ public class HeroService {
         return maxElement;
     }
 
-    public Map<Map<ArtifactSlot, ArtifactSlotDisposition>, Map<ArtifactSlot, ArtifactSlotDisposition>>
-    saveEquipmentPreset(String heroId) { //todo переробити на Map<Integer, List<Map<ArtifactSlot, ArtifactSlotDisposition>>
-        //todo всі пресети мають бути пронумеровані явно, інакше витягнути пресет по ключу не вийде
+    public InventoryPresetDto saveEquipmentPreset(Integer number, String heroId) {
+        //intentionally without DB persisting, in-memory storing only
         var hero = getHero(heroId);
-        var bodyInventoryMap = hero.getBodyInventoryMap();
-        var miscInventoryMap = hero.getMiscInventoryMap();
-        if (inventoryPresetMap.size() >= 8)
-            throw new IllegalArgumentException("Preset is full");
-        inventoryPresetMap.put(bodyInventoryMap, miscInventoryMap);
-        return inventoryPresetMap;
+        var bodyInventoryMap = getOrCreateBodyInvMap(hero);
+        var miscInventoryMap = getOrCreateMiscInventoryMap(hero);
+        InventoryPresetDto inventoryPresetDto = null;
+        if (inventoryPresetList.size() > 8 && number > 8) {
+            log.warn("Preset is full, overwriting from beginning");
+            number = 0;
+        }
+        inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
+        inventoryPresetList.add(number, inventoryPresetDto);
+        return inventoryPresetDto;
     }
 
     private Integer calculateSacrificedArtifactsExp(Hero hero, String[] artifactsList) {
