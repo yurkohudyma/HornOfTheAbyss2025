@@ -142,13 +142,9 @@ public class HeroService {
     };
 
     private final HeroMapper heroMapper;
-
     private final HeroRepository heroRepository;
-
     private final PlayerService playerService;
-
     private final ArmyHeroService armyHeroService;
-
     private final HeroCreatureService heroCreatureService;
 
     @SneakyThrows
@@ -228,15 +224,6 @@ public class HeroService {
         return gainedPrimarySkill;
     }
 
-    private static Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
-        var primarySkillMap = hero.getPrimarySkillMap();
-        if (primarySkillMap == null){
-            primarySkillMap = new EnumMap<>(PrimarySkill.class);
-            hero.setPrimarySkillMap(primarySkillMap);
-        }
-        return primarySkillMap;
-    }
-
     private static PrimarySkill randomisePrimarySkill(int[] primaryArray) {
         var map = new HashMap<PrimarySkill, List<Integer>>();
         var values = PrimarySkill.values();
@@ -255,12 +242,21 @@ public class HeroService {
                 .orElseThrow()
                 .getKey();
 
-        //40, 10, 30, 20 -> 38
+        //40%, 10%, 30%, 20%
 
         //att 0..39   (+40)
         //def 40..49  (+10)
         //pow 50..79  (+30)
         //kno 80..100 (+20)
+    }
+
+    private static Map<PrimarySkill, Integer> getOrCreatePrimarySkillMap(Hero hero) {
+        var primarySkillMap = hero.getPrimarySkillMap();
+        if (primarySkillMap == null){
+            primarySkillMap = new EnumMap<>(PrimarySkill.class);
+            hero.setPrimarySkillMap(primarySkillMap);
+        }
+        return primarySkillMap;
     }
 
     private static int[] calculatePercentageValues(int[] heroStartingPrimarySkillValues) {
