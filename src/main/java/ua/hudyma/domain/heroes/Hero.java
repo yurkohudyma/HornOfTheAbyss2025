@@ -8,6 +8,7 @@ import org.hibernate.type.SqlTypes;
 import ua.hudyma.domain.BaseEntity;
 import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
+import ua.hudyma.domain.heroes.dto.InventoryPresetDto;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.towns.Town;
@@ -95,6 +96,9 @@ public class Hero implements BaseEntity {
     //implemented for testing combat functions to preserve main army intact
     private List<CreatureSlot> combatArmyList;
 
+    @ToString.Exclude
+    private LinkedList<InventoryPresetDto> inventoryPresetList = new LinkedList<>();
+
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
@@ -120,4 +124,6 @@ public class Hero implements BaseEntity {
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json", name = "specialty")
     private HeroSpecialty heroSpecialty;
+
+
 }

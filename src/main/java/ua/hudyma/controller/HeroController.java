@@ -29,6 +29,12 @@ public class HeroController {
                 .saveEquipmentPreset(number, heroId));
     }
 
+    @GetMapping("retrieveEquipmentPreset/{number}")
+    public ResponseEntity<InventoryPresetDto> retrieveEquipmentPreset(
+    @PathVariable Integer number, @RequestParam String heroId){
+        return ResponseEntity.ok(heroService.retrieveEquipmentPreset(number, heroId));
+    }
+
     @PostMapping("/sacrificeArtifacts")
     public ResponseEntity<HeroExperienceRespDto>
     sacrificeSelectedArtifacts (@RequestBody SacrificeArtifactsReqDto dto){

@@ -45,8 +45,6 @@ public class HeroService {
 
     private static final Set<ArtifactSlot> MISC_SLOTS_SET = Set.of(MISC_A, MISC_B, MISC_C, MISC_D, MISC_E);
 
-    private final LinkedList<InventoryPresetDto> inventoryPresetList = new LinkedList<>();
-
     private static final Map<Integer, Integer> LOWEST_CREATURE_BASE_MOVEMENT_VALUE_MAP =
             Map.ofEntries(
                     Map.entry(0, 1300),
@@ -194,6 +192,7 @@ public class HeroService {
     }
 
     //@Transactional disabled for testing
+
     public HeroExperienceRespDto sacrificeArtifactsForExperience(SacrificeArtifactsReqDto dto) {
         var hero = getHero(dto.heroId());
         var artifactsArray = dto.artifactsArray();
@@ -217,7 +216,6 @@ public class HeroService {
                 currentPrimarySkillValue - 1,
                 currentPrimarySkillValue);
     }
-
     private static PrimarySkill gainNewLevel(Hero hero, Integer gainedExperience, int nextLevel) {
         var heroStartingPrimarySkillValues = hero.getSubfaction().getPrimarySkillValues();
         var primarySkillPercentageValues = calculatePercentageValues(heroStartingPrimarySkillValues);
@@ -319,14 +317,27 @@ public class HeroService {
         var hero = getHero(heroId);
         var bodyInventoryMap = getOrCreateBodyInvMap(hero);
         var miscInventoryMap = getOrCreateMiscInventoryMap(hero);
-        InventoryPresetDto inventoryPresetDto = null;
+        InventoryPresetDto inventoryPresetDto;
+        var inventoryPresetList = getOrCreateInventoryPresetList(hero);
         if (inventoryPresetList.size() > 8 && number > 8) {
             log.warn("Preset is full, overwriting from beginning");
-            number = 0;
+            inventoryPresetDto = new InventoryPresetDto(0, bodyInventoryMap, miscInventoryMap);
         }
-        inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
+        else if (inventoryPresetList.size() == 0){
+            log.warn("Preset is empty, starting from 0 index");
+            inventoryPresetDto = new InventoryPresetDto(0, bodyInventoryMap, miscInventoryMap);
+        }
+        else {
+            inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
+        }
         inventoryPresetList.add(number, inventoryPresetDto);
+        hero.setInventoryPresetList(inventoryPresetList);
         return inventoryPresetDto;
+    }
+
+    public InventoryPresetDto retrieveEquipmentPreset(Integer number, String heroId) {
+        var hero = getHero(heroId);
+        return hero.getInventoryPresetList().get(number);
     }
 
     private Integer calculateSacrificedArtifactsExp(Hero hero, String[] artifactsList) {
@@ -511,6 +522,11 @@ public class HeroService {
             paramMap = new FixedSizeMap<>(new HashMap<>(), 4);
         }
         return paramMap;
+    }
+
+    public LinkedList<InventoryPresetDto> getOrCreateInventoryPresetList(Hero hero) {
+        var inventoryPresetList = hero.getInventoryPresetList();
+        return inventoryPresetList == null ? new LinkedList<>() : inventoryPresetList;
     }
 
     static int getKnowledgeLevel(Hero hero) {
