@@ -5,6 +5,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
+import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.ArtifactSlot;
 import ua.hudyma.dto.WarMachineRespDto;
@@ -12,6 +14,7 @@ import ua.hudyma.enums.WarMachine;
 import ua.hudyma.service.HeroService;
 import ua.hudyma.service.RandomService;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,6 +24,13 @@ public class HeroController {
 
     private final HeroService heroService;
     private final RandomService randomService;
+
+    @GetMapping("/retrieveUpgradableCreatures")
+    public ResponseEntity<List<CreatureType>>
+    retrieveUpgradableCreatures(@RequestParam String heroId) {
+        return ResponseEntity.ok(heroService
+                .retrieveUpgradableCreatures(heroId));
+    }
 
     @GetMapping("/saveEquipmentPreset/{number}")
     public ResponseEntity<InventoryPresetDto> saveEquipmentPreset(

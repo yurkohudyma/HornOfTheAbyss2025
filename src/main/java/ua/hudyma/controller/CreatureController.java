@@ -9,6 +9,7 @@ import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.service.CreatureService;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController

@@ -40,7 +40,9 @@ public class ArmyHeroService {
                             (ModifiableSkill.class);
                     var skillEnums = ModifiableSkill.values();
                     var regularCreatureSkillMap =
-                            creatureService.fetchCreatureByType(armyslot.getType()).orElseThrow().getCreatureSkillMap();
+                            creatureService.fetchCreatureByType(armyslot.getType()).orElseThrow(
+                                    () -> new IllegalArgumentException(armyslot.getType() + " parameters DO NOT exist")
+                            ).getCreatureSkillMap();
                     for (ModifiableSkill skill : skillEnums) {
                         var regularSkillValue = regularCreatureSkillMap
                                 .get(EnumMapper

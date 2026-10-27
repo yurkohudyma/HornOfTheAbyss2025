@@ -5,10 +5,12 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.artifact.ArtifactProperties;
 import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
+import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
@@ -1002,4 +1004,20 @@ public class HeroService {
         log.info(" --> {} has been succ detached from {}", warmachine, hero.getName());
     }
 
+    public List<CreatureType> retrieveUpgradableCreatures(String heroId) {
+        var hero = getHero(heroId);
+        var armyList = hero.getArmyList();
+        if (armyList == null) {
+            log.error("ArmyList is NULL");
+            return List.of();
+        }
+        return armyList
+                .stream()
+                .map(CreatureSlot::getType)
+                .filter(this::isCreatureTypeEssential)
+                .toList();
+    }
+    private boolean isCreatureTypeEssential(CreatureType creatureType) {
+        return creatureType.getClass().getSimpleName().contains("Essential");
+    }
 }
