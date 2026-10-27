@@ -7,9 +7,11 @@ import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
+import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.service.CreatureService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -17,6 +19,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CreatureController {
     private final CreatureService creatureService;
+
+    @GetMapping("/detectNullModifierValueCreaturesAndEqualise")
+    public ResponseEntity<String> detectNullMultipliedValuesAndEqualiseIfNeeded(){
+        // all players, all heroes
+        return ResponseEntity.ok(creatureService
+                .equiliseNullMultipliedValues());
+    }
 
     @PostMapping
     public ResponseEntity<String> createCreature (

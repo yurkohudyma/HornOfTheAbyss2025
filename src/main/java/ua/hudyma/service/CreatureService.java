@@ -5,16 +5,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.creatures.Creature;
 import ua.hudyma.domain.creatures.CreatureType;
 import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
+import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.mapper.CreatureMapper;
 import ua.hudyma.repository.CreatureRepository;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.MessageProcessor;
 
+import java.util.List;
 import java.util.Optional;
 
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.SPEED;
@@ -36,12 +39,30 @@ public class CreatureService {
         return MessageProcessor.getReturnMessage(creature, "creatureType");
     }
 
+    @Transactional
+    public String equiliseNullMultipliedValues() {
+        creatureRepository.findAll()
+                .forEach(creature ->
+                        creature.getCreatureSkillMap()
+                                .replaceAll((skill, value) ->
+                                        value.multipliedValue() == null
+                                                ? new CreatureSkillValue(
+                                                value.value(),
+                                                value.value())
+                                                : value));
+        return "Remapping ALL null multipliedValues to value COMPLETE";
+    }
+
     public CreatureRespDto fetchCreature(Long id) {
         return creatureMapper.toDto(getCreature(id));
     }
 
     public Optional<Creature> fetchCreatureByType(CreatureType type) {
         return creatureRepository.findByCreatureType(type);
+    }
+
+    public List<Creature> findAll() {
+        return creatureRepository.findAll();
     }
 
     private Creature getCreature(Long id) {
