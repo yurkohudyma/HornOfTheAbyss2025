@@ -61,10 +61,6 @@ public class CreatureService {
         return creatureRepository.findByCreatureType(type);
     }
 
-    public List<Creature> findAll() {
-        return creatureRepository.findAll();
-    }
-
     private Creature getCreature(Long id) {
         return creatureRepository
                 .findById(id)

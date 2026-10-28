@@ -16,6 +16,8 @@ import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.*;
+import ua.hudyma.domain.players.Player;
+import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
@@ -26,6 +28,7 @@ import ua.hudyma.util.FixedSizeMap;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.*;
 import static ua.hudyma.domain.heroes.HeroParams.*;
@@ -353,6 +356,8 @@ public class HeroService {
         var hero = getHero(heroId);
         return hero.getInventoryPresetList().get(number);
     }
+
+
 
     private Integer calculateSacrificedArtifactsExp(Hero hero, String[] artifactsList) {
         var accumulatedExperience = 0;
@@ -1004,20 +1009,58 @@ public class HeroService {
         log.info(" --> {} has been succ detached from {}", warmachine, hero.getName());
     }
 
-    public List<CreatureType> retrieveUpgradableCreatures(String heroId) {
+    public Map<CreatureType, CreatureType> upgradeAllCreatures(String heroId) {
+        var hero = getHero(heroId);
+        var armyList = hero.getArmyList();
+        var upgradableCreatureSlotList = getUpgradableCreatureList(armyList);
+        var player = hero.getPlayer();
+        var neededResourcesMap = getNeededUpgradeResourcesMap(
+                upgradableCreatureSlotList);
+        chargePlayerResources(getNeededUpgradeResourcesMap(upgradableCreatureSlotList));
+        //armyList replace essential creatures with upgraded
+        //return map-report of what have been upgraded
+        return Map.of();
+    }
+
+    private void chargePlayerResources(Map<CreatureType, Map<ResourceType, Integer>> neededUpgradeResourcesMap) {
+        //todo implement
+    }
+
+    private Map<CreatureType, Map<ResourceType, Integer>> getNeededUpgradeResourcesMap(
+            List<CreatureSlot> upgradableCreatureList) {
+        return upgradableCreatureList
+                .stream()
+                .collect(Collectors
+                        .toMap(CreatureSlot::getType,
+                                creatureSlot -> creatureSlot
+                                        .getType()
+                                        .getRequiredResourceMap()
+                                        .entrySet()
+                                        .stream()
+                                        .collect(Collectors
+                                                .toMap(Map.Entry::getKey,
+                                                        v -> v.getValue() * creatureSlot.getQuantity(),
+                                                        (k1, k2) -> k1, HashMap::new))));
+    }
+
+    public List<CreatureSlot> retrieveUpgradableCreatures(String heroId) {
         var hero = getHero(heroId);
         var armyList = hero.getArmyList();
         if (armyList == null) {
             log.error("ArmyList is NULL");
             return List.of();
         }
+        return getUpgradableCreatureList(armyList);
+    }
+
+    private List<CreatureSlot> getUpgradableCreatureList(List<CreatureSlot> armyList) {
         return armyList
                 .stream()
-                .map(CreatureSlot::getType)
-                .filter(this::isCreatureTypeEssential)
+                .filter(this::isCreatureSlotTypeEssential)
                 .toList();
     }
-    private boolean isCreatureTypeEssential(CreatureType creatureType) {
-        return creatureType.getClass().getSimpleName().contains("Essential");
+
+    private boolean isCreatureSlotTypeEssential(CreatureSlot creatureSlot) {
+        return creatureSlot.getType().getClass().getSimpleName().contains("Essential");
     }
 }
