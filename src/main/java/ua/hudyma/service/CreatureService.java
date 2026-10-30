@@ -12,12 +12,16 @@ import ua.hudyma.domain.creatures.dto.CreatureReqDto;
 import ua.hudyma.domain.creatures.dto.CreatureRespDto;
 import ua.hudyma.domain.creatures.dto.CreatureSkillValue;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
+import ua.hudyma.domain.resource.enums.ResourceType;
+import ua.hudyma.exception.InsufficientResourcesException;
 import ua.hudyma.mapper.CreatureMapper;
 import ua.hudyma.repository.CreatureRepository;
 import ua.hudyma.repository.HeroRepository;
 import ua.hudyma.util.MessageProcessor;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static ua.hudyma.domain.creatures.enums.CreatureSkill.SPEED;
@@ -31,6 +35,26 @@ public class CreatureService {
     private final CreatureMapper creatureMapper;
     private final HeroRepository heroRepository;
     //private final HeroService heroService -> circular
+
+    static Map<ResourceType, Integer> checkResourcesDemandsAndConsumeIfMet(
+            Map<ResourceType, Integer> reqResourcesMap,
+            Map<ResourceType, Integer> availResourceMap) {
+        var updatedResourceMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
+        for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()) {
+            var resourceName = reqEntry.getKey();
+            var reqResQty = reqEntry.getValue();
+            var availResQty = availResourceMap.get(resourceName);
+            if (availResQty < reqResQty) throw new InsufficientResourcesException("No enough "
+                    + resourceName + ": available : " + availResQty + ", while required " + reqResQty);
+            else {
+                updatedResourceMap.put(resourceName, availResQty - reqResQty);
+            }
+        }
+        log.info("   ---> Previous resources MAP: {}", availResourceMap);
+        log.info("   ---> Updated resources MAP: {}", updatedResourceMap);
+        return updatedResourceMap;
+    }
+
 
     @SneakyThrows
     public String createCreature(CreatureReqDto dto) {

@@ -5,7 +5,6 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.artifact.ArtifactProperties;
@@ -16,7 +15,6 @@ import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
 import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.*;
-import ua.hudyma.domain.players.Player;
 import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.dto.WarMachineRespDto;
 import ua.hudyma.enums.WarMachine;
@@ -1016,14 +1014,21 @@ public class HeroService {
         var player = hero.getPlayer();
         var neededResourcesMap = getNeededUpgradeResourcesMap(
                 upgradableCreatureSlotList);
-        chargePlayerResources(getNeededUpgradeResourcesMap(upgradableCreatureSlotList));
+        chargePlayerResources(player.getResourceMap(), neededResourcesMap);
         //armyList replace essential creatures with upgraded
         //return map-report of what have been upgraded
         return Map.of();
     }
 
-    private void chargePlayerResources(Map<CreatureType, Map<ResourceType, Integer>> neededUpgradeResourcesMap) {
-        //todo implement
+    private void chargePlayerResources(Map<ResourceType, Integer> resourceMap, Map<CreatureType,
+            Map<ResourceType, Integer>> neededResourcesMap) {
+        /*neededResourcesMap
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(entry -> entry.getValue()))
+*/      //todo convert to suitable map
+        /*CreatureService.checkResourcesDemandsAndConsumeIfMet(
+                resourceMap, neededResourcesMap);*/
     }
 
     private Map<CreatureType, Map<ResourceType, Integer>> getNeededUpgradeResourcesMap(

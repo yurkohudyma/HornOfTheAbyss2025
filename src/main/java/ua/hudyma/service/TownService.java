@@ -124,7 +124,7 @@ public class TownService {
         return existingSpellName + " was replaced by " + spellName + " in " + townName;
     }
 
-    private static void retrieveResourcesDemandsAndProceedConsuming(
+    private void retrieveResourcesDemandsAndProceedConsuming(
             Player player, Integer spellLevel) {
         var resourceDemands = SpellReplaceDemands.values();
         var demandMap = Arrays
@@ -134,7 +134,7 @@ public class TownService {
                 .orElseThrow(() -> new SpellCastException
                         ("Requested spellLevel conversion error")).getResourceMap();
         var playerResourceMap = player.getResourceMap();
-        checkResourcesDemandsAndConsumeIfMet(demandMap, playerResourceMap);
+        creatureService.checkResourcesDemandsAndConsumeIfMet(demandMap, playerResourceMap);
     }
 
     /**
@@ -284,7 +284,7 @@ public class TownService {
                 if (reqQty > availCreatureQty) {
                     log.error("{} is only {} left, while you ask {}", creatureType, availCreatureQty, reqQty);
                 } else {
-                    var updatedPlayerResourceMap = checkResourcesDemandsAndConsumeIfMet(
+                    var updatedPlayerResourceMap = CreatureService.checkResourcesDemandsAndConsumeIfMet(
                             creatureResourcePriceMap,
                             playerResourcesMap);
                     var newSlot = new CreatureSlot();
@@ -310,24 +310,6 @@ public class TownService {
         return newSlotsList;
     }
 
-    private static Map<ResourceType, Integer> checkResourcesDemandsAndConsumeIfMet(
-            Map<ResourceType, Integer> reqResourcesMap,
-            Map<ResourceType, Integer> availResourceMap) {
-        var updatedResourceMap = new EnumMap<ResourceType, Integer>(ResourceType.class);
-        for (Map.Entry<ResourceType, Integer> reqEntry : reqResourcesMap.entrySet()) {
-            var resourceName = reqEntry.getKey();
-            var reqResQty = reqEntry.getValue();
-            var availResQty = availResourceMap.get(resourceName);
-            if (availResQty < reqResQty) throw new InsufficientResourcesException("No enough "
-                    + resourceName + ": available : " + availResQty + ", while required " + reqResQty);
-            else {
-                updatedResourceMap.put(resourceName, availResQty - reqResQty);
-            }
-        }
-        log.info("   ---> Previous resources MAP: {}", availResourceMap);
-        log.info("   ---> Updated resources MAP: {}", updatedResourceMap);
-        return updatedResourceMap;
-    }
 
     private static Map<ResourceType, Integer> getCreatureResourceMapFromCreatureType
             (String creatureType) {
