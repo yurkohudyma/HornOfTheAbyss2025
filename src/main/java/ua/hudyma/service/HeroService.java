@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.hudyma.domain.artifact.ArtifactProperties;
 import ua.hudyma.domain.artifact.ArtifactSlotDisposition;
 import ua.hudyma.domain.creatures.CreatureType;
+import ua.hudyma.domain.creatures.converter.CreatureTypeRegistry;
 import ua.hudyma.domain.creatures.dto.CreatureSlot;
 import ua.hudyma.domain.heroes.Hero;
 import ua.hudyma.domain.heroes.HeroParams;
@@ -17,6 +18,7 @@ import ua.hudyma.domain.heroes.dto.*;
 import ua.hudyma.domain.heroes.enums.*;
 import ua.hudyma.domain.resource.enums.ResourceType;
 import ua.hudyma.dto.WarMachineRespDto;
+import ua.hudyma.enums.Faction;
 import ua.hudyma.enums.WarMachine;
 import ua.hudyma.exception.ArtifactAlreadyAttachedException;
 import ua.hudyma.exception.ArtifactFreeSlotMissingException;
@@ -227,6 +229,7 @@ public class HeroService {
                 currentPrimarySkillValue - 1,
                 currentPrimarySkillValue);
     }
+
     private static PrimarySkill gainNewLevel(Hero hero, Integer gainedExperience, int nextLevel) {
         var heroStartingPrimarySkillValues = hero.getSubfaction().getPrimarySkillValues();
         var primarySkillPercentageValues = calculatePercentageValues(heroStartingPrimarySkillValues);
@@ -335,14 +338,12 @@ public class HeroService {
             number = 0;
             inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
             inventoryPresetList.add(number, inventoryPresetDto);
-        }
-        else if (inventoryPresetList.size() == 0){
+        } else if (inventoryPresetList.size() == 0) {
             log.warn("Preset is empty, starting from 0 index");
             number = 0;
             inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
             inventoryPresetList.add(number, inventoryPresetDto);
-        }
-        else {
+        } else {
             inventoryPresetDto = new InventoryPresetDto(number, bodyInventoryMap, miscInventoryMap);
             inventoryPresetList.add(number, inventoryPresetDto);
         }
@@ -354,7 +355,6 @@ public class HeroService {
         var hero = getHero(heroId);
         return hero.getInventoryPresetList().get(number);
     }
-
 
 
     private Integer calculateSacrificedArtifactsExp(Hero hero, String[] artifactsList) {
@@ -1007,28 +1007,72 @@ public class HeroService {
         log.info(" --> {} has been succ detached from {}", warmachine, hero.getName());
     }
 
-    public Map<CreatureType, CreatureType> upgradeAllCreatures(String heroId) {
+    public List<String> upgradeAllCreatures(String heroId) {
         var hero = getHero(heroId);
         var armyList = hero.getArmyList();
         var upgradableCreatureSlotList = getUpgradableCreatureList(armyList);
         var player = hero.getPlayer();
         var neededResourcesMap = getNeededUpgradeResourcesMap(
                 upgradableCreatureSlotList);
-        chargePlayerResources(player.getResourceMap(), neededResourcesMap);
-        //armyList replace essential creatures with upgraded
-        //return map-report of what have been upgraded
-        return Map.of();
+        //chargePlayerResources(player.getResourceMap(), neededResourcesMap);
+        //todo this method upgrades All creatures when aggregated resources amount is enough, otherwise InsufficientResourcesException is thrown
+        //todo to change this logic there has to be an algorythm of choosing priority creatures to be updated first
+
+        return replaceCreaturesWithUpgradedOnes(armyList, upgradableCreatureSlotList);
     }
 
-    private void chargePlayerResources(Map<ResourceType, Integer> resourceMap, Map<CreatureType,
-            Map<ResourceType, Integer>> neededResourcesMap) {
-        /*neededResourcesMap
-                .entrySet()
+    private List<String> replaceCreaturesWithUpgradedOnes(List<CreatureSlot> armyList, List<CreatureSlot> upgradableCreatureSlotList) {
+        List<String> onlyUpgradedCreaturesList = new ArrayList<>();
+        for (CreatureSlot existingSlot : armyList){
+            if (isCreatureSlotTypeEssential(existingSlot) && upgradableCreatureSlotList.contains(existingSlot)){
+                armyList.remove(existingSlot);
+                var newCreatureSlot = new CreatureSlot(retrieveUpgradedCreatureType(existingSlot), existingSlot.getQuantity());
+                newCreatureSlot.setModifiableDataMap(existingSlot.getModifiableDataMap());
+                armyList.add(newCreatureSlot);
+                onlyUpgradedCreaturesList.add(newCreatureSlot.getType().getCode());
+            }
+        }
+        return onlyUpgradedCreaturesList;
+    }
+
+    private CreatureType retrieveUpgradedCreatureType(CreatureSlot creatureSlot) {
+        var creatureTypeFactionWordPart = extractCreatureTypeFactionWordPart(creatureSlot);
+        var level = creatureSlot.getType().getLevel();
+        return Arrays.stream(CreatureTypeRegistry
+                .getAllCreaturesByFaction(Faction.valueOf(creatureTypeFactionWordPart.toUpperCase()), false))
+                .filter(creatureType -> creatureType.getLevel().equals(level))
+                .findAny()
+                .orElseThrow(()-> new NoSuchElementException("Upgraded Creature Type for " + creatureSlot.getType() + " not found"));
+    }
+
+    /*private boolean creatureSlotAssignedToUpgraded(CreatureSlot creatureSlot, List<CreatureSlot> upgradableCreatureSlotList) {
+        return upgradableCreatureSlotList
                 .stream()
-                .collect(Collectors.toMap(entry -> entry.getValue()))
-*/      //todo convert to suitable map
-        /*CreatureService.checkResourcesDemandsAndConsumeIfMet(
-                resourceMap, neededResourcesMap);*/
+                .filter(upgradedCreatureSlot -> creatureSlot
+                        .getType()
+                        .getLevel()
+                        .equals(creatureSlot.getType().getLevel()))
+                .anyMatch(upgradableCreatureSlot ->
+                        extractCreatureTypeFactionWordPart(upgradableCreatureSlot)
+                                .equals(extractCreatureTypeFactionWordPart(creatureSlot)));
+    }*/
+
+
+    private String extractCreatureTypeFactionWordPart(CreatureSlot upgradableCreatureSlot) {
+        return upgradableCreatureSlot.getType().getClass().getSimpleName().split("(?=[A-Z])")[0];
+    }
+
+    private void chargePlayerResources(Map<ResourceType, Integer> availResourceMap, Map<CreatureType,
+            Map<ResourceType, Integer>> neededResourcesMap) {
+        var aggregatedReqResourceMap = neededResourcesMap
+                .values()
+                .stream()
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors
+                        .groupingBy(Map.Entry::getKey,
+                                Collectors.summingInt(Map.Entry::getValue)));
+        CreatureService.checkResourcesDemandsAndConsumeIfMet(
+                aggregatedReqResourceMap, availResourceMap);
     }
 
     private Map<CreatureType, Map<ResourceType, Integer>> getNeededUpgradeResourcesMap(

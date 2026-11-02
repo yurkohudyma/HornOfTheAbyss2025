@@ -34,7 +34,7 @@ public class HeroController {
     }
 
     @GetMapping("/upgradeAllCreatures")
-    public ResponseEntity<Map<CreatureType, CreatureType>> upgradeAllCreatures (
+    public ResponseEntity<List<String>> upgradeAllCreatures (
             @RequestParam String heroId){
         return ResponseEntity.ok(heroService.upgradeAllCreatures(heroId));
     }
