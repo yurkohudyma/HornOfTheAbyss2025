@@ -1018,45 +1018,64 @@ public class HeroService {
         //todo this method upgrades All creatures when aggregated resources amount is enough, otherwise InsufficientResourcesException is thrown
         //todo to change this logic there has to be an algorythm of choosing priority creatures to be updated first
 
-        return replaceCreaturesWithUpgradedOnes(armyList, upgradableCreatureSlotList);
+        var updatedArmyList = replaceCreaturesWithUpgradedOnesStream(armyList, upgradableCreatureSlotList);
+        return updatedArmyList.stream().map(CreatureSlot::getType).map(String::valueOf).toList();
+    }
+
+    private List<CreatureSlot> replaceCreaturesWithUpgradedOnesStream(List<CreatureSlot> armyList, List<CreatureSlot> upgradableCreatureSlotList) {
+        armyList
+                .forEach(existingSlot -> {
+                            if (isCreatureSlotTypeEssential(existingSlot) && upgradableCreatureSlotList.contains(existingSlot)) {
+                                var index = armyList.indexOf(existingSlot);
+                                var newCreatureSlot = new CreatureSlot(retrieveUpgradedCreatureType(existingSlot), existingSlot.getQuantity());
+                                newCreatureSlot.setModifiableDataMap(existingSlot.getModifiableDataMap());
+                                armyList.set(index, newCreatureSlot);
+                            }
+                        }
+                );
+        return armyList;
     }
 
     private List<String> replaceCreaturesWithUpgradedOnes(List<CreatureSlot> armyList, List<CreatureSlot> upgradableCreatureSlotList) {
         List<String> onlyUpgradedCreaturesList = new ArrayList<>();
-        for (CreatureSlot existingSlot : armyList){
-            if (isCreatureSlotTypeEssential(existingSlot) && upgradableCreatureSlotList.contains(existingSlot)){
-                armyList.remove(existingSlot);
+        for (CreatureSlot existingSlot : armyList) {
+            if (isCreatureSlotTypeEssential(existingSlot) && upgradableCreatureSlotList.contains(existingSlot)) {
+                var index = armyList.indexOf(existingSlot);
                 var newCreatureSlot = new CreatureSlot(retrieveUpgradedCreatureType(existingSlot), existingSlot.getQuantity());
                 newCreatureSlot.setModifiableDataMap(existingSlot.getModifiableDataMap());
-                armyList.add(newCreatureSlot);
+                armyList.set(index, newCreatureSlot);
                 onlyUpgradedCreaturesList.add(newCreatureSlot.getType().getCode());
             }
         }
         return onlyUpgradedCreaturesList;
     }
 
+    private List<CreatureSlot> replaceCreaturesWithUpgradedOnesReplaceAll(
+            List<CreatureSlot> armyList, List<CreatureSlot> upgradableCreatureSlotList) {
+        armyList.replaceAll(existingSlot -> {
+            if (isCreatureSlotTypeEssential(existingSlot)
+                    && upgradableCreatureSlotList.contains(existingSlot)) {
+                var upgradedSlot = new CreatureSlot(
+                        retrieveUpgradedCreatureType(existingSlot),
+                        existingSlot.getQuantity()
+                );
+                upgradedSlot.setModifiableDataMap(existingSlot.getModifiableDataMap());
+                return upgradedSlot;
+            }
+            return existingSlot;
+        });
+        return armyList;
+    }
+
     private CreatureType retrieveUpgradedCreatureType(CreatureSlot creatureSlot) {
         var creatureTypeFactionWordPart = extractCreatureTypeFactionWordPart(creatureSlot);
         var level = creatureSlot.getType().getLevel();
         return Arrays.stream(CreatureTypeRegistry
-                .getAllCreaturesByFaction(Faction.valueOf(creatureTypeFactionWordPart.toUpperCase()), false))
+                        .getAllCreaturesByFaction(Faction.valueOf(creatureTypeFactionWordPart.toUpperCase()), false))
                 .filter(creatureType -> creatureType.getLevel().equals(level))
                 .findAny()
-                .orElseThrow(()-> new NoSuchElementException("Upgraded Creature Type for " + creatureSlot.getType() + " not found"));
+                .orElseThrow(() -> new NoSuchElementException("Upgraded Creature Type for " + creatureSlot.getType() + " not found"));
     }
-
-    /*private boolean creatureSlotAssignedToUpgraded(CreatureSlot creatureSlot, List<CreatureSlot> upgradableCreatureSlotList) {
-        return upgradableCreatureSlotList
-                .stream()
-                .filter(upgradedCreatureSlot -> creatureSlot
-                        .getType()
-                        .getLevel()
-                        .equals(creatureSlot.getType().getLevel()))
-                .anyMatch(upgradableCreatureSlot ->
-                        extractCreatureTypeFactionWordPart(upgradableCreatureSlot)
-                                .equals(extractCreatureTypeFactionWordPart(creatureSlot)));
-    }*/
-
 
     private String extractCreatureTypeFactionWordPart(CreatureSlot upgradableCreatureSlot) {
         return upgradableCreatureSlot.getType().getClass().getSimpleName().split("(?=[A-Z])")[0];
