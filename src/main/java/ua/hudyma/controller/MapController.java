@@ -9,7 +9,9 @@ import ua.hudyma.domain.creatures.dto.SplitReqDto;
 import ua.hudyma.domain.heroes.dto.CreatureSlotRespDto;
 import ua.hudyma.domain.heroes.dto.ReinforceReqDto;
 import ua.hudyma.domain.map.dto.MapCoordinatesDto;
+import ua.hudyma.domain.map.dto.TownDataDto;
 import ua.hudyma.domain.map.enums.MapSize;
+import ua.hudyma.domain.map.enums.TownName;
 import ua.hudyma.service.MapService;
 
 import java.util.List;
@@ -22,14 +24,14 @@ public class MapController {
     private final MapService mapService;
 
     @GetMapping("/randomlyPositionTowns")
-    public ResponseEntity<Map<String, MapCoordinatesDto>> randomlyPositionTowns(
+    public ResponseEntity<List<TownDataDto>> randomlyPositionTowns(
             @RequestParam int townQuantity, MapSize mapSize) {
         return ResponseEntity.ok(mapService
                 .randomlyPositionTowns(townQuantity, mapSize));
     }
 
     @PostMapping("/getNearestTown")
-    public ResponseEntity<String> getNearestTown (
+    public ResponseEntity<TownName> getNearestTown (
             @RequestParam MapCoordinatesDto heroPositionDto){
         return ResponseEntity.ok(mapService
                 .getNearestTown(heroPositionDto));

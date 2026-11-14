@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import ua.hudyma.domain.map.dto.MapCoordinatesDto;
 import ua.hudyma.domain.map.dto.TownDataDto;
 import ua.hudyma.domain.map.enums.MapSize;
+import ua.hudyma.domain.map.enums.TownName;
+import ua.hudyma.util.IdGenerator;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -17,31 +19,51 @@ public class MapService {
 
     private static final List<TownDataDto> townDataList = new ArrayList<>();
     private static final ThreadLocalRandom randomiser = ThreadLocalRandom.current();
-    private static byte[][] mapArray = new byte[0][];
+    private static int[][] mapArray = new int[0][];
     private static final int TOWN_SIZE = 5;
 
-    public Map<String, MapCoordinatesDto> randomlyPositionTowns
+    public List<TownDataDto> randomlyPositionTowns
             (int townQuantity, MapSize mapSize) {
         int mapSizeParam = mapSize.getMapSize();
         //in real game, map icon sizes differ, here all sizes are set uniformly for simplicity (5x5)
-        mapArray = new byte[mapSizeParam][mapSizeParam];
+        mapArray = new int[mapSizeParam][mapSizeParam];
         for (int i = 0; i < townQuantity; i++){
-            //todo randomise towncenter
-            //todo check randomised town center for vacancy
-            //todo populate map space for selected town center
-            //todo insert town data into townPositionMap
-
             var col = getRandom(mapSizeParam);
             var row = getRandom(mapSizeParam);
-            //todo put town space coords into mapArray
+            checkRandomisedCoordsForVacancy(col, row);
             var townIndex = getRandomTownIndex();
             generateTownSpaceAndModifyMapArray(col, row, townIndex);
+            var townName = IdGenerator.getRandomEnum(TownName.class);
+            townDataList.add(new TownDataDto(townIndex, townName, new MapCoordinatesDto(col, row)));
         }
-        return Map.of();
+        return townDataList;
     }
 
-    private byte getRandomTownIndex() {
-        byte random = (byte) randomiser.nextInt(255);
+    private void checkRandomisedCoordsForVacancy(int col, int row) {
+        for (int c = col - TOWN_SIZE/2; c <= (col + TOWN_SIZE / 2) + 1; c++){
+            for (int r = row - TOWN_SIZE / 2; r <= (row + TOWN_SIZE / 2) + 1; r++){
+                //todo розмір міста генерується у 4 елементи, а не 5
+                if (mapArray[c][r] != 0){
+                    throw new IllegalArgumentException("Position at [" + c + ":" + r + "] occupied by " +
+                            retrieveTownNameByIndex(mapArray[c][r]));
+                    //todo не кидати помилку, а повторно генерувати координати
+                }
+            }
+        }
+    }
+
+    private TownName retrieveTownNameByIndex(int townIndex) {
+        return townDataList
+                .stream()
+                .filter(townDataDto -> townDataDto
+                        .townIndex() == townIndex)
+                .map(TownDataDto::townName)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No town retrieved by index = " + townIndex));
+    }
+
+    private int getRandomTownIndex() {
+        var random = randomiser.nextInt(TownName.values().length) + 1;
         return tomnIndexAlreadyExists(random) ? getRandomTownIndex() : random;
     }
 
@@ -50,21 +72,21 @@ public class MapService {
     }
 
     private static int getRandom(int mapSizeParam) {
-        int random = randomiser.nextInt(mapSizeParam);
-        return random < TOWN_SIZE || random + TOWN_SIZE > mapSizeParam
+        int random = randomiser.nextInt(mapSizeParam) + 1;
+        return random < TOWN_SIZE / 2 || random + TOWN_SIZE / 2 > mapSizeParam
                 ? getRandom(mapSizeParam) :
                 random;
     }
 
-    private void generateTownSpaceAndModifyMapArray(int col, int row, byte townIndex) {
-        for (int c = col - TOWN_SIZE ; c < col + TOWN_SIZE; c++){
-            for (int r = row - TOWN_SIZE; r < row + TOWN_SIZE; r++){
+    private void generateTownSpaceAndModifyMapArray(int col, int row, int townIndex) {
+        for (int c = col - TOWN_SIZE / 2 ; c < col + TOWN_SIZE / 2; c++){
+            for (int r = row - TOWN_SIZE / 2; r < row + TOWN_SIZE / 2; r++){
                 mapArray[c][r] = townIndex;
             }
         }
     }
 
-    public String getNearestTown(MapCoordinatesDto heroPositionDto) {
+    public TownName getNearestTown(MapCoordinatesDto heroPositionDto) {
         if (townDataList.isEmpty())
             throw new IllegalArgumentException("No towns allocated, townMap is Empty");
         else if (townDataList.size() == 1) {
@@ -73,6 +95,6 @@ public class MapService {
         else {
             //todo calculate distances
         }
-        return "";
+        return TownName._NO_CITY_;
     }
 }
