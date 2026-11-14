@@ -21,15 +21,16 @@ public class MapService {
     private static final ThreadLocalRandom randomiser = ThreadLocalRandom.current();
     private static int[][] mapArray = new int[0][];
     private static final int TOWN_SIZE = 5;
+    private static int MAP_SIZE_PARAM;
 
     public List<TownDataDto> randomlyPositionTowns
             (int townQuantity, MapSize mapSize) {
-        int mapSizeParam = mapSize.getMapSize();
+        MAP_SIZE_PARAM = mapSize.getMapSize();
         //in real game, map icon sizes differ, here all sizes are set uniformly for simplicity (5x5)
-        mapArray = new int[mapSizeParam][mapSizeParam];
+        mapArray = new int[MAP_SIZE_PARAM][MAP_SIZE_PARAM];
         for (int i = 0; i < townQuantity; i++){
-            var col = getRandom(mapSizeParam);
-            var row = getRandom(mapSizeParam);
+            var col = getRandom(MAP_SIZE_PARAM);
+            var row = getRandom(MAP_SIZE_PARAM);
             checkRandomisedCoordsForVacancy(col, row);
             var townIndex = getRandomTownIndex();
             generateTownSpaceAndModifyMapArray(col, row, townIndex);
@@ -40,9 +41,8 @@ public class MapService {
     }
 
     private void checkRandomisedCoordsForVacancy(int col, int row) {
-        for (int c = col - TOWN_SIZE/2; c <= (col + TOWN_SIZE / 2) + 1; c++){
-            for (int r = row - TOWN_SIZE / 2; r <= (row + TOWN_SIZE / 2) + 1; r++){
-                //todo розмір міста генерується у 4 елементи, а не 5
+        for (int c = col - TOWN_SIZE / 2 ; c <= col + TOWN_SIZE / 2; c++){
+            for (int r = row - TOWN_SIZE / 2; r <= row + TOWN_SIZE / 2; r++){
                 if (mapArray[c][r] != 0){
                     throw new IllegalArgumentException("Position at [" + c + ":" + r + "] occupied by " +
                             retrieveTownNameByIndex(mapArray[c][r]));
@@ -79,14 +79,15 @@ public class MapService {
     }
 
     private void generateTownSpaceAndModifyMapArray(int col, int row, int townIndex) {
-        for (int c = col - TOWN_SIZE / 2 ; c < col + TOWN_SIZE / 2; c++){
-            for (int r = row - TOWN_SIZE / 2; r < row + TOWN_SIZE / 2; r++){
+        for (int c = col - TOWN_SIZE / 2 ; c <= col + TOWN_SIZE / 2; c++){
+            for (int r = row - TOWN_SIZE / 2; r <= row + TOWN_SIZE / 2; r++){
                 mapArray[c][r] = townIndex;
             }
         }
     }
 
     public TownName getNearestTown(MapCoordinatesDto heroPositionDto) {
+        TownName nearestTown = TownName._NO_CITY_;
         if (townDataList.isEmpty())
             throw new IllegalArgumentException("No towns allocated, townMap is Empty");
         else if (townDataList.size() == 1) {
@@ -94,7 +95,24 @@ public class MapService {
         }
         else {
             //todo calculate distances
+            var heroCol = heroPositionDto.col();
+            var heroRow = heroPositionDto.row();
+            int minimalDistance = MAP_SIZE_PARAM;
+            for (TownDataDto townData : townDataList){
+                var mapCoordinatesDto = townData.mapCoordinatesDto();
+                var townCol = mapCoordinatesDto.col();
+                var townRow = mapCoordinatesDto.row();
+                var distance = calculateDistance(heroCol, heroRow, townCol, townRow);
+                if (distance < minimalDistance){
+                    minimalDistance = distance;
+                    nearestTown = townData.townName();
+                }
+            }
         }
-        return TownName._NO_CITY_;
+        return nearestTown;
+    }
+
+    private int calculateDistance(int heroCol, int heroRow, int townCol, int townRow) {
+        return (int) Math.sqrt(Math.pow(heroCol + townCol, 2d) + Math.pow(heroRow + townRow, 2d));
     }
 }

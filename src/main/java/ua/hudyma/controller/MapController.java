@@ -32,7 +32,7 @@ public class MapController {
 
     @PostMapping("/getNearestTown")
     public ResponseEntity<TownName> getNearestTown (
-            @RequestParam MapCoordinatesDto heroPositionDto){
+            @RequestBody MapCoordinatesDto heroPositionDto){
         return ResponseEntity.ok(mapService
                 .getNearestTown(heroPositionDto));
     }
