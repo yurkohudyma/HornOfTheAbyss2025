@@ -41,12 +41,13 @@ public class MapService {
     }
 
     private void checkRandomisedCoordsForVacancy(int col, int row) {
-        for (int c = col - TOWN_SIZE / 2 ; c <= col + TOWN_SIZE / 2; c++){
-            for (int r = row - TOWN_SIZE / 2; r <= row + TOWN_SIZE / 2; r++){
+        for (int c = col - TOWN_SIZE / 2 - 1 ; c < col + TOWN_SIZE / 2; c++){
+            for (int r = row - TOWN_SIZE / 2 - 1; r < row + TOWN_SIZE / 2; r++){
                 if (mapArray[c][r] != 0){
-                    throw new IllegalArgumentException("Position at [" + c + ":" + r + "] occupied by " +
-                            retrieveTownNameByIndex(mapArray[c][r]));
-                    //todo не кидати помилку, а повторно генерувати координати
+                   log.error("Position at [{}:{}] occupied by {}",
+                           col, row, retrieveTownNameByIndex(mapArray[c][r]));
+                    col = getRandom(MAP_SIZE_PARAM);
+                    row = getRandom(MAP_SIZE_PARAM);
                 }
             }
         }
@@ -59,7 +60,8 @@ public class MapService {
                         .townIndex() == townIndex)
                 .map(TownDataDto::townName)
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No town retrieved by index = " + townIndex));
+                .orElseThrow(() -> new IllegalStateException
+                        ("No town retrieved by index = " + townIndex));
     }
 
     private int getRandomTownIndex() {
@@ -68,7 +70,10 @@ public class MapService {
     }
 
     private boolean tomnIndexAlreadyExists(int random) {
-        return townDataList.stream().map(TownDataDto::townIndex).anyMatch(index -> index == random);
+        return townDataList
+                .stream()
+                .map(TownDataDto::townIndex)
+                .anyMatch(index -> index == random);
     }
 
     private static int getRandom(int mapSizeParam) {
@@ -79,8 +84,8 @@ public class MapService {
     }
 
     private void generateTownSpaceAndModifyMapArray(int col, int row, int townIndex) {
-        for (int c = col - TOWN_SIZE / 2 ; c <= col + TOWN_SIZE / 2; c++){
-            for (int r = row - TOWN_SIZE / 2; r <= row + TOWN_SIZE / 2; r++){
+        for (int c = col - TOWN_SIZE / 2 - 1 ; c < col + TOWN_SIZE / 2; c++){
+            for (int r = row - TOWN_SIZE / 2 - 1; r < row + TOWN_SIZE / 2; r++){
                 mapArray[c][r] = townIndex;
             }
         }
@@ -88,16 +93,16 @@ public class MapService {
 
     public TownName getNearestTown(MapCoordinatesDto heroPositionDto) {
         TownName nearestTown = TownName._NO_CITY_;
+        int minimalDistance;
         if (townDataList.isEmpty())
             throw new IllegalArgumentException("No towns allocated, townMap is Empty");
         else if (townDataList.size() == 1) {
             return townDataList.get(0).townName();
         }
         else {
-            //todo calculate distances
             var heroCol = heroPositionDto.col();
             var heroRow = heroPositionDto.row();
-            int minimalDistance = MAP_SIZE_PARAM;
+            minimalDistance = MAP_SIZE_PARAM;
             for (TownDataDto townData : townDataList){
                 var mapCoordinatesDto = townData.mapCoordinatesDto();
                 var townCol = mapCoordinatesDto.col();
@@ -109,6 +114,7 @@ public class MapService {
                 }
             }
         }
+        log.info(".....Nearest distance = " + minimalDistance);
         return nearestTown;
     }
 
