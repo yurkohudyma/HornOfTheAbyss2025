@@ -21,7 +21,7 @@ public class MapService {
     private static final ThreadLocalRandom randomiser = ThreadLocalRandom.current();
     private static int[][] mapArray = new int[0][];
     private static final int TOWN_SIZE = 5;
-    private static int MAP_SIZE_PARAM;
+    private static int MAP_SIZE_PARAM, col, row;
 
     public List<TownDataDto> randomlyPositionTowns
             (int townQuantity, MapSize mapSize) {
@@ -29,31 +29,36 @@ public class MapService {
         //in real game, map icon sizes differ, here all sizes are set uniformly for simplicity (5x5)
         mapArray = new int[MAP_SIZE_PARAM][MAP_SIZE_PARAM];
         for (int i = 0; i < townQuantity; i++){
-            var col = getRandom(MAP_SIZE_PARAM);
-            var row = getRandom(MAP_SIZE_PARAM);
-            checkRandomisedCoordsForVacancy(col, row);
+            randomiseCoords();
             var townIndex = getRandomTownIndex();
-            generateTownSpaceAndModifyMapArray(col, row, townIndex);
+            generateTownSpaceAndModifyMapArray(townIndex);
             var townName = IdGenerator.getRandomEnum(TownName.class);
             townDataList.add(new TownDataDto(townIndex, townName, new MapCoordinatesDto(col, row)));
         }
         return townDataList;
     }
 
-    private void checkRandomisedCoordsForVacancy(int col, int row) {
+    private static void randomiseCoords() {
+        col = getRandom(MAP_SIZE_PARAM);
+        row = getRandom(MAP_SIZE_PARAM);
+        if (!areRandomisedCoordsVacant())
+            randomiseCoords();
+    }
+
+    private static boolean areRandomisedCoordsVacant() {
         for (int c = col - TOWN_SIZE / 2 - 1 ; c < col + TOWN_SIZE / 2; c++){
             for (int r = row - TOWN_SIZE / 2 - 1; r < row + TOWN_SIZE / 2; r++){
                 if (mapArray[c][r] != 0){
                    log.error("Position at [{}:{}] occupied by {}",
                            col, row, retrieveTownNameByIndex(mapArray[c][r]));
-                    col = getRandom(MAP_SIZE_PARAM);
-                    row = getRandom(MAP_SIZE_PARAM);
+                   return false;
                 }
             }
         }
+        return true;
     }
 
-    private TownName retrieveTownNameByIndex(int townIndex) {
+    private static TownName retrieveTownNameByIndex(int townIndex) {
         return townDataList
                 .stream()
                 .filter(townDataDto -> townDataDto
@@ -83,7 +88,7 @@ public class MapService {
                 random;
     }
 
-    private void generateTownSpaceAndModifyMapArray(int col, int row, int townIndex) {
+    private void generateTownSpaceAndModifyMapArray(int townIndex) {
         for (int c = col - TOWN_SIZE / 2 - 1 ; c < col + TOWN_SIZE / 2; c++){
             for (int r = row - TOWN_SIZE / 2 - 1; r < row + TOWN_SIZE / 2; r++){
                 mapArray[c][r] = townIndex;
