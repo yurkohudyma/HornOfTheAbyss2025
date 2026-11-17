@@ -30,10 +30,15 @@ public class MapController {
                 .randomlyPositionTowns(townQuantity, mapSize));
     }
 
-    @PostMapping("/getNearestTown")
+    @GetMapping("/getNearestTown")
     public ResponseEntity<TownName> getNearestTown (
-            @RequestBody MapCoordinatesDto heroPositionDto){
+            @RequestParam int col, @RequestParam int row){
         return ResponseEntity.ok(mapService
-                .getNearestTown(heroPositionDto));
+                .getNearestTown(col, row));
+    }
+
+    @GetMapping("/calcTownQuantity")
+    public ResponseEntity<Integer> calcTownQuantity (){
+        return ResponseEntity.ok(mapService.calcTownQuantity());
     }
 }

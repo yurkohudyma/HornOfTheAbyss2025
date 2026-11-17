@@ -23,6 +23,18 @@ public class MapService {
     private static final int TOWN_SIZE = 5;
     private static int MAP_SIZE_PARAM, col, row;
 
+    public int calcTownQuantity() {
+        var townIndexSet = new HashSet<Integer>();
+        for (int col = 0; col < mapArray[0].length; col++){
+            for (int row = 0; row < mapArray[0].length; row++){
+                if (mapArray[col][row] != 0){
+                    townIndexSet.add(mapArray[col][row]);
+                }
+            }
+        }
+        return townIndexSet.size();
+    }
+
     public List<TownDataDto> randomlyPositionTowns
             (int townQuantity, MapSize mapSize) {
         MAP_SIZE_PARAM = mapSize.getMapSize();
@@ -96,7 +108,7 @@ public class MapService {
         }
     }
 
-    public TownName getNearestTown(MapCoordinatesDto heroPositionDto) {
+    public TownName getNearestTown(int heroCol, int heroRow) {
         TownName nearestTown = TownName._NO_CITY_;
         int minimalDistance;
         if (townDataList.isEmpty())
@@ -105,8 +117,6 @@ public class MapService {
             return townDataList.get(0).townName();
         }
         else {
-            var heroCol = heroPositionDto.col();
-            var heroRow = heroPositionDto.row();
             minimalDistance = MAP_SIZE_PARAM;
             for (TownDataDto townData : townDataList){
                 var mapCoordinatesDto = townData.mapCoordinatesDto();
